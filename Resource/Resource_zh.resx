@@ -1,0 +1,858 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="DeviceLightClose" xml:space="preserve">
+    <value>关闭补光灯</value>
+  </data>
+  <data name="DeviceLightOpen" xml:space="preserve">
+    <value>打开补光灯</value>
+  </data>
+  <data name="DeviceOperationFailure" xml:space="preserve">
+    <value>操作失败</value>
+  </data>
+  <data name="DeviceOperationSucc" xml:space="preserve">
+    <value>操作成功</value>
+  </data>
+  <data name="DeviceUVClose" xml:space="preserve">
+    <value>关闭紫外灯</value>
+  </data>
+  <data name="DeviceUVOpen" xml:space="preserve">
+    <value>打开紫外灯</value>
+  </data>
+  <data name="FlowStepEnd" xml:space="preserve">
+    <value>结束</value>
+  </data>
+  <data name="FlowStepStart" xml:space="preserve">
+    <value>开始</value>
+  </data>
+  <data name="FlowStepSteps" xml:space="preserve">
+    <value>步骤</value>
+  </data>
+  <data name="FlowStepWaitContent" xml:space="preserve">
+    <value>等待操作</value>
+  </data>
+  <data name="GrpcDeviceLoadFail" xml:space="preserve">
+    <value>设备状态加载失败：</value>
+  </data>
+  <data name="GrpcDeviceLoadSucc" xml:space="preserve">
+    <value>设备状态加载完成</value>
+  </data>
+  <data name="GrpcFailDoor" xml:space="preserve">
+    <value>设备门未关闭</value>
+  </data>
+  <data name="GrpcIniting" xml:space="preserve">
+    <value>设备初始化中...</value>
+  </data>
+  <data name="GrpcInitStart" xml:space="preserve">
+    <value>设备开始初始化</value>
+  </data>
+  <data name="GrpcInitSucc" xml:space="preserve">
+    <value>设备复位成功</value>
+  </data>
+  <data name="GrpcIPFail" xml:space="preserve">
+    <value>IP地址加载失败</value>
+  </data>
+  <data name="GrpcLoadFail" xml:space="preserve">
+    <value>GRPC初始化失败：</value>
+  </data>
+  <data name="GrpcLoadSucc" xml:space="preserve">
+    <value>GRPC加载成功</value>
+  </data>
+  <data name="GrpcStartEndRemove" xml:space="preserve">
+    <value>开始和结束步骤不能删除</value>
+  </data>
+  <data name="GrpcStartRunning" xml:space="preserve">
+    <value>流程未停止</value>
+  </data>
+  <data name="MainWindowDetailLoadFail" xml:space="preserve">
+    <value>加载失败</value>
+  </data>
+  <data name="MainWindowDetailLoginIN" xml:space="preserve">
+    <value>当前登录：</value>
+  </data>
+  <data name="MainWindowDetailPassEmpty" xml:space="preserve">
+    <value>密码为空</value>
+  </data>
+  <data name="MainWindowDetailSTL" xml:space="preserve">
+    <value>STL文件未找到</value>
+  </data>
+  <data name="MainWindowDetailUserEmpty" xml:space="preserve">
+    <value>用户名为空</value>
+  </data>
+  <data name="OpenFileDialog_Empty" xml:space="preserve">
+    <value>选择的文件为空</value>
+  </data>
+  <data name="OpenFileDialog_Error" xml:space="preserve">
+    <value>读取文件失败</value>
+  </data>
+  <data name="OpenFileDialog_Filter" xml:space="preserve">
+    <value>JSON脚本文件 (*.json)|*.json|所有文件 (*.*)|*.*</value>
+  </data>
+  <data name="OpenFileDialog_Title" xml:space="preserve">
+    <value>选择要加载的脚本文件</value>
+  </data>
+  <data name="QuickAisPos" xml:space="preserve">
+    <value>请选择吸液位置</value>
+  </data>
+  <data name="QuickAspPos" xml:space="preserve">
+    <value>吸液位置:</value>
+  </data>
+  <data name="QuickColumn" xml:space="preserve">
+    <value>列</value>
+  </data>
+  <data name="QuickDisPos" xml:space="preserve">
+    <value>请选择注液位置</value>
+  </data>
+  <data name="QuickDispPos" xml:space="preserve">
+    <value>注液位置:</value>
+  </data>
+  <data name="QuickFixed" xml:space="preserve">
+    <value>是否固定</value>
+  </data>
+  <data name="QuickGenerate" xml:space="preserve">
+    <value>生成</value>
+  </data>
+  <data name="QuickLiquidSelection" xml:space="preserve">
+    <value>液体选择:</value>
+  </data>
+  <data name="QuickMixAsp" xml:space="preserve">
+    <value>是否混吸</value>
+  </data>
+  <data name="QuickMixAspTimes" xml:space="preserve">
+    <value>混吸次数:</value>
+  </data>
+  <data name="QuickMixAspVol" xml:space="preserve">
+    <value>混吸容量:</value>
+  </data>
+  <data name="QuickOne96Samples" xml:space="preserve">
+    <value>请输入1-96之间的样本数量</value>
+  </data>
+  <data name="QuickRinse" xml:space="preserve">
+    <value>是否润洗</value>
+  </data>
+  <data name="QuickRinseDelay" xml:space="preserve">
+    <value>润洗延迟:</value>
+  </data>
+  <data name="QuickRinseVol" xml:space="preserve">
+    <value>润洗容量:</value>
+  </data>
+  <data name="QuickSampleQty" xml:space="preserve">
+    <value>样本数量:</value>
+  </data>
+  <data name="QuickSelectLiquid" xml:space="preserve">
+    <value>请选择液体参数</value>
+  </data>
+  <data name="QuickTipChange" xml:space="preserve">
+    <value>是否换头</value>
+  </data>
+  <data name="QuickTipChangeSettings" xml:space="preserve">
+    <value>换头设置:</value>
+  </data>
+  <data name="QuickTipEjectPos" xml:space="preserve">
+    <value>退头位置:</value>
+  </data>
+  <data name="QuickTipOffPos" xml:space="preserve">
+    <value>请选择退头位置</value>
+  </data>
+  <data name="QuickTipOnPos" xml:space="preserve">
+    <value>请选择取头位置</value>
+  </data>
+  <data name="QuickTipPickPos" xml:space="preserve">
+    <value>取头位置:</value>
+  </data>
+  <data name="QuickTitile" xml:space="preserve">
+    <value>快速生成流程</value>
+  </data>
+  <data name="QuickValidAspirationVolume" xml:space="preserve">
+    <value>请输入有效的吸液体积</value>
+  </data>
+  <data name="ScriptContinue" xml:space="preserve">
+    <value>继续流程</value>
+  </data>
+  <data name="ScriptLoadFail" xml:space="preserve">
+    <value>加载脚本失败</value>
+  </data>
+  <data name="ScriptLoadSucc" xml:space="preserve">
+    <value>脚本加载成功</value>
+  </data>
+  <data name="ScriptNotStart" xml:space="preserve">
+    <value>流程未开始</value>
+  </data>
+  <data name="ScriptPause" xml:space="preserve">
+    <value>暂停流程</value>
+  </data>
+  <data name="ScriptStartCheckFail" xml:space="preserve">
+    <value>检查流程失败</value>
+  </data>
+  <data name="ScriptStartCreateFail" xml:space="preserve">
+    <value>创建脚本失败</value>
+  </data>
+  <data name="ScriptStartCreating" xml:space="preserve">
+    <value>正在创建流程脚本...</value>
+  </data>
+  <data name="ScriptStartEmpty" xml:space="preserve">
+    <value>请添加流程步骤后再开始</value>
+  </data>
+  <data name="ScriptStartFail" xml:space="preserve">
+    <value>开始流程失败</value>
+  </data>
+  <data name="ScriptStartLiquidEmpty" xml:space="preserve">
+    <value>部分步骤缺少液体参数</value>
+  </data>
+  <data name="ScriptStartSucc" xml:space="preserve">
+    <value>流程开始执行</value>
+  </data>
+  <data name="ScriptSuccCrea" xml:space="preserve">
+    <value>流程已成功生成</value>
+  </data>
+  <data name="ScriptUILogError" xml:space="preserve">
+    <value>错误</value>
+  </data>
+  <data name="ScriptUILogIdle" xml:space="preserve">
+    <value>待机</value>
+  </data>
+  <data name="ScriptUILogPause" xml:space="preserve">
+    <value>暂停</value>
+  </data>
+  <data name="ScriptUILogRun" xml:space="preserve">
+    <value>执行中</value>
+  </data>
+  <data name="ScriptUILogUnknown" xml:space="preserve">
+    <value>未知状态</value>
+  </data>
+  <data name="ScriptUINotRun" xml:space="preserve">
+    <value>未运行</value>
+  </data>
+  <data name="SettingCons2D" xml:space="preserve">
+    <value>耗材平面图</value>
+  </data>
+  <data name="SettingConsA1XDistance" xml:space="preserve">
+    <value>A1孔距X的距离</value>
+  </data>
+  <data name="SettingConsA1YDistance" xml:space="preserve">
+    <value>A1孔距Y的距离</value>
+  </data>
+  <data name="SettingConsAdd" xml:space="preserve">
+    <value>新增</value>
+  </data>
+  <data name="SettingConsbasicInfo" xml:space="preserve">
+    <value>基本信息</value>
+  </data>
+  <data name="SettingConsColumnSpacing" xml:space="preserve">
+    <value>列间距</value>
+  </data>
+  <data name="SettingConsConeMaxRadius" xml:space="preserve">
+    <value>圆锥最大半径</value>
+  </data>
+  <data name="SettingConsConeMinRadius" xml:space="preserve">
+    <value>圆锥最小半径</value>
+  </data>
+  <data name="SettingConsCube" xml:space="preserve">
+    <value>立方体</value>
+  </data>
+  <data name="SettingConsCylinder" xml:space="preserve">
+    <value>圆柱体</value>
+  </data>
+  <data name="SettingConsDescription" xml:space="preserve">
+    <value>描述</value>
+  </data>
+  <data name="SettingConsDimension" xml:space="preserve">
+    <value>耗材尺寸(mm)</value>
+  </data>
+  <data name="SettingConsGripperX" xml:space="preserve">
+    <value>抓手X</value>
+  </data>
+  <data name="SettingConsGripperY" xml:space="preserve">
+    <value>抓手Y</value>
+  </data>
+  <data name="SettingConsGripperZ" xml:space="preserve">
+    <value>抓手Z</value>
+  </data>
+  <data name="SettingConsHeight" xml:space="preserve">
+    <value>高</value>
+  </data>
+  <data name="SettingConsIn" xml:space="preserve">
+    <value>导入</value>
+  </data>
+  <data name="SettingConsLength" xml:space="preserve">
+    <value>长</value>
+  </data>
+  <data name="SettingConsMaxCap" xml:space="preserve">
+    <value>最大容量</value>
+  </data>
+  <data name="SettingConsMaxUsableCap" xml:space="preserve">
+    <value>可用最大容量</value>
+  </data>
+  <data name="SettingConsMaxUsableVolume" xml:space="preserve">
+    <value>可用最大体积(ul)</value>
+  </data>
+  <data name="SettingConsMaxWellCapacity" xml:space="preserve">
+    <value>最大孔容量(ul)</value>
+  </data>
+  <data name="SettingConsName" xml:space="preserve">
+    <value>耗材名称</value>
+  </data>
+  <data name="SettingConsNotchNE" xml:space="preserve">
+    <value>东北</value>
+  </data>
+  <data name="SettingConsNotchNW" xml:space="preserve">
+    <value>西北</value>
+  </data>
+  <data name="SettingConsNotchPosition" xml:space="preserve">
+    <value>缺口位置</value>
+  </data>
+  <data name="SettingConsNotchSE" xml:space="preserve">
+    <value>东南</value>
+  </data>
+  <data name="SettingConsNotchSetting" xml:space="preserve">
+    <value>缺口设置</value>
+  </data>
+  <data name="SettingConsNotchSW" xml:space="preserve">
+    <value>西南</value>
+  </data>
+  <data name="SettingConsNumColumns" xml:space="preserve">
+    <value>列数</value>
+  </data>
+  <data name="SettingConsNumRows" xml:space="preserve">
+    <value>行数</value>
+  </data>
+  <data name="SettingConsNumWells" xml:space="preserve">
+    <value>孔数</value>
+  </data>
+  <data name="SettingConsOffsetGripperPos" xml:space="preserve">
+    <value>偏移与抓手位置(mm)</value>
+  </data>
+  <data name="SettingConsOffsetX" xml:space="preserve">
+    <value>偏移X</value>
+  </data>
+  <data name="SettingConsOffsetY" xml:space="preserve">
+    <value>偏移Y</value>
+  </data>
+  <data name="SettingConsOut" xml:space="preserve">
+    <value>导出</value>
+  </data>
+  <data name="SettingConsPipetteTipParams" xml:space="preserve">
+    <value>枪头参数</value>
+  </data>
+  <data name="SettingConsRemove" xml:space="preserve">
+    <value>删除</value>
+  </data>
+  <data name="SettingConsRowSpacing" xml:space="preserve">
+    <value>行间距</value>
+  </data>
+  <data name="SettingConsSerialNum" xml:space="preserve">
+    <value>序号</value>
+  </data>
+  <data name="SettingConsTipConeLgth" xml:space="preserve">
+    <value>枪头圆锥长度</value>
+  </data>
+  <data name="SettingConsTipHeadHt" xml:space="preserve">
+    <value>枪头头部高度</value>
+  </data>
+  <data name="SettingConsTipMountPressDpth" xml:space="preserve">
+    <value>扎枪头下压深度</value>
+  </data>
+  <data name="SettingConsTipTotalLgth" xml:space="preserve">
+    <value>枪头总长度</value>
+  </data>
+  <data name="SettingConsTitile" xml:space="preserve">
+    <value>耗材管理</value>
+  </data>
+  <data name="SettingConsTopLength" xml:space="preserve">
+    <value>顶部长</value>
+  </data>
+  <data name="SettingConsTopRadius" xml:space="preserve">
+    <value>顶部半径</value>
+  </data>
+  <data name="SettingConsTopShape" xml:space="preserve">
+    <value>顶部形状</value>
+  </data>
+  <data name="SettingConsTopWidth" xml:space="preserve">
+    <value>顶部宽</value>
+  </data>
+  <data name="SettingConsType" xml:space="preserve">
+    <value>类型</value>
+  </data>
+  <data name="SettingConsTypeMicroplate" xml:space="preserve">
+    <value>微孔板</value>
+  </data>
+  <data name="SettingConsTypeOther" xml:space="preserve">
+    <value>其他</value>
+  </data>
+  <data name="SettingConsTypeReservoir" xml:space="preserve">
+    <value>储液槽</value>
+  </data>
+  <data name="SettingConsTypeTipBox" xml:space="preserve">
+    <value>TIP盒</value>
+  </data>
+  <data name="SettingConsWellDepth" xml:space="preserve">
+    <value>孔深度(mm)</value>
+  </data>
+  <data name="SettingConsWellSpec" xml:space="preserve">
+    <value>孔规格</value>
+  </data>
+  <data name="SettingConsWidth" xml:space="preserve">
+    <value>宽</value>
+  </data>
+  <data name="SettingDataSave" xml:space="preserve">
+    <value>数据已更新</value>
+  </data>
+  <data name="SettingLiquidAdd" xml:space="preserve">
+    <value>新增</value>
+  </data>
+  <data name="SettingLiquidAspDelay" xml:space="preserve">
+    <value>吸液延迟</value>
+  </data>
+  <data name="SettingLiquidAspirationParams" xml:space="preserve">
+    <value>吸液参数</value>
+  </data>
+  <data name="SettingLiquidAspSpeed" xml:space="preserve">
+    <value>吸液速度</value>
+  </data>
+  <data name="SettingLiquidbasicInfo" xml:space="preserve">
+    <value>基本信息</value>
+  </data>
+  <data name="SettingLiquidDescription" xml:space="preserve">
+    <value>描述</value>
+  </data>
+  <data name="SettingLiquidDispDelay" xml:space="preserve">
+    <value>注液延迟</value>
+  </data>
+  <data name="SettingLiquidDispensingParams" xml:space="preserve">
+    <value>注液参数</value>
+  </data>
+  <data name="SettingLiquidDispSpeed" xml:space="preserve">
+    <value>注液速度</value>
+  </data>
+  <data name="SettingLiquidDisttoWellBot" xml:space="preserve">
+    <value>距孔底距离</value>
+  </data>
+  <data name="SettingLiquidIn" xml:space="preserve">
+    <value>导入</value>
+  </data>
+  <data name="SettingLiquidName" xml:space="preserve">
+    <value>液体名称</value>
+  </data>
+  <data name="SettingLiquidOut" xml:space="preserve">
+    <value>导出</value>
+  </data>
+  <data name="SettingLiquidPostAspAir" xml:space="preserve">
+    <value>后吸空气</value>
+  </data>
+  <data name="SettingLiquidPostDispAir" xml:space="preserve">
+    <value>后吸空气</value>
+  </data>
+  <data name="SettingLiquidPreAspAir" xml:space="preserve">
+    <value>前吸空气</value>
+  </data>
+  <data name="SettingLiquidPreDispAir" xml:space="preserve">
+    <value>前吸空气</value>
+  </data>
+  <data name="SettingLiquidRemove" xml:space="preserve">
+    <value>删除</value>
+  </data>
+  <data name="SettingManualAspirate" xml:space="preserve">
+    <value>吸液</value>
+  </data>
+  <data name="SettingManualAspirationParams" xml:space="preserve">
+    <value>吸液参数：</value>
+  </data>
+  <data name="SettingManualBacklash" xml:space="preserve">
+    <value>回程差</value>
+  </data>
+  <data name="SettingManualCalibrationGear" xml:space="preserve">
+    <value>定标挡位：</value>
+  </data>
+  <data name="SettingManualClose" xml:space="preserve">
+    <value>关闭</value>
+  </data>
+  <data name="SettingManualControlCenter" xml:space="preserve">
+    <value>手动控制中心</value>
+  </data>
+  <data name="SettingManualCoordinateFineAdjustment" xml:space="preserve">
+    <value>坐标微调 (mm)：</value>
+  </data>
+  <data name="SettingManualCurrentPlateCoordinates" xml:space="preserve">
+    <value>当前板位坐标 (mm)：</value>
+  </data>
+  <data name="SettingManualDispense" xml:space="preserve">
+    <value>注液</value>
+  </data>
+  <data name="SettingManualDispensingParams" xml:space="preserve">
+    <value>注液参数：</value>
+  </data>
+  <data name="SettingManualEjectTip" xml:space="preserve">
+    <value>退头</value>
+  </data>
+  <data name="SettingManualGetCalibration" xml:space="preserve">
+    <value>获取定标</value>
+  </data>
+  <data name="SettingManualMovetoPlatePosition" xml:space="preserve">
+    <value>移动到板位</value>
+  </data>
+  <data name="SettingManualMoveZaxis" xml:space="preserve">
+    <value>移动Z轴</value>
+  </data>
+  <data name="SettingManualPipetteControl" xml:space="preserve">
+    <value>移液器控制</value>
+  </data>
+  <data name="SettingManualPlatePositionCalibration" xml:space="preserve">
+    <value>板位定标 (XYZ)</value>
+  </data>
+  <data name="SettingManualReset" xml:space="preserve">
+    <value>复位</value>
+  </data>
+  <data name="SettingManualResetX" xml:space="preserve">
+    <value>复位X</value>
+  </data>
+  <data name="SettingManualResetY" xml:space="preserve">
+    <value>复位Y</value>
+  </data>
+  <data name="SettingManualResetZ" xml:space="preserve">
+    <value>复位Z</value>
+  </data>
+  <data name="SettingManualSaveCoordinates" xml:space="preserve">
+    <value>保存坐标</value>
+  </data>
+  <data name="SettingManualSelectPlatePosition" xml:space="preserve">
+    <value>选择板位：</value>
+  </data>
+  <data name="SettingManualSetCalibration" xml:space="preserve">
+    <value>设置定标</value>
+  </data>
+  <data name="SettingManualSpeed" xml:space="preserve">
+    <value>速度 (μl/s)：</value>
+  </data>
+  <data name="SettingManualTitile" xml:space="preserve">
+    <value>手动控制</value>
+  </data>
+  <data name="SettingManualVolume" xml:space="preserve">
+    <value>容量 (μl)：</value>
+  </data>
+  <data name="SettingManualXCoordinate" xml:space="preserve">
+    <value>X坐标：</value>
+  </data>
+  <data name="SettingManualXDirection" xml:space="preserve">
+    <value>X方向</value>
+  </data>
+  <data name="SettingManualYCoordinate" xml:space="preserve">
+    <value>Y坐标：</value>
+  </data>
+  <data name="SettingManualYDirection" xml:space="preserve">
+    <value>Y方向</value>
+  </data>
+  <data name="SettingManualZCoordinate" xml:space="preserve">
+    <value>Z坐标：</value>
+  </data>
+  <data name="SettingManualZDirection" xml:space="preserve">
+    <value>Z方向</value>
+  </data>
+  <data name="SettingPipeTitile" xml:space="preserve">
+    <value>移液参数</value>
+  </data>
+  <data name="SettingTitle" xml:space="preserve">
+    <value>配置管理</value>
+  </data>
+  <data name="SQLPosNameNotEmpty" xml:space="preserve">
+    <value>板位名称不能为空</value>
+  </data>
+  <data name="StepDetailAspAirA" xml:space="preserve">
+    <value>吸液后吸空气：</value>
+  </data>
+  <data name="StepDetailAspAirB" xml:space="preserve">
+    <value>吸液前吸空气：</value>
+  </data>
+  <data name="StepDetailAspDelay" xml:space="preserve">
+    <value>吸液延迟：</value>
+  </data>
+  <data name="StepDetailAspDispConsTip" xml:space="preserve">
+    <value>吸液 / 注液步骤仅支持微孔板或储液槽</value>
+  </data>
+  <data name="StepDetailAspDist" xml:space="preserve">
+    <value>吸液距离：</value>
+  </data>
+  <data name="StepDetailAspirationParams" xml:space="preserve">
+    <value>吸液参数：</value>
+  </data>
+  <data name="StepDetailAspSpeed" xml:space="preserve">
+    <value>吸液速度：</value>
+  </data>
+  <data name="StepDetailCurrentCons" xml:space="preserve">
+    <value>（当前：{0}）</value>
+  </data>
+  <data name="StepDetailDetails" xml:space="preserve">
+    <value>详情</value>
+  </data>
+  <data name="StepDetailDispAirA" xml:space="preserve">
+    <value>注液后吸空气：</value>
+  </data>
+  <data name="StepDetailDispAirB" xml:space="preserve">
+    <value>注液前吸空气：</value>
+  </data>
+  <data name="StepDetailDispDelay" xml:space="preserve">
+    <value>注液延迟：</value>
+  </data>
+  <data name="StepDetailDispDist" xml:space="preserve">
+    <value>注液距离：</value>
+  </data>
+  <data name="StepDetailDispensingParams" xml:space="preserve">
+    <value>注液参数：</value>
+  </data>
+  <data name="StepDetailDispSpeed" xml:space="preserve">
+    <value>注液速度：</value>
+  </data>
+  <data name="StepDetailEnableMix" xml:space="preserve">
+    <value>启用混合</value>
+  </data>
+  <data name="StepDetailInitialDelay" xml:space="preserve">
+    <value>初始延迟 (ms)：</value>
+  </data>
+  <data name="StepDetailInitialVol" xml:space="preserve">
+    <value>初始体积 (ul)：</value>
+  </data>
+  <data name="StepDetailLiquidParams" xml:space="preserve">
+    <value>液体参数：</value>
+  </data>
+  <data name="StepDetailMixCount" xml:space="preserve">
+    <value>混合次数：</value>
+  </data>
+  <data name="StepDetailMixedSettings" xml:space="preserve">
+    <value>混合设置：</value>
+  </data>
+  <data name="StepDetailMixVolume" xml:space="preserve">
+    <value>混合体积 (ul)：</value>
+  </data>
+  <data name="StepDetailOperationPosition" xml:space="preserve">
+    <value>操作位置：</value>
+  </data>
+  <data name="StepDetailTipOnOffConsTip" xml:space="preserve">
+    <value>取头 / 退头步骤仅支持 TIP 盒或垃圾桶</value>
+  </data>
+  <data name="StepDetailVolume" xml:space="preserve">
+    <value>体积 (ul)：</value>
+  </data>
+  <data name="StepDetailWaitDesc" xml:space="preserve">
+    <value>等待描述：</value>
+  </data>
+  <data name="StepDetailWaitNote" xml:space="preserve">
+    <value>提示：等待时间将自动转换为毫秒执行</value>
+  </data>
+  <data name="StepDetailWaitTime" xml:space="preserve">
+    <value>等待时间 (秒)：</value>
+  </data>
+  <data name="StepDetailWellPosition" xml:space="preserve">
+    <value>孔位选择：</value>
+  </data>
+  <data name="StepDetailWellSelectionArea" xml:space="preserve">
+    <value>孔位选择区：</value>
+  </data>
+  <data name="WindowActionAspirate" xml:space="preserve">
+    <value>吸液</value>
+  </data>
+  <data name="WindowActionDispense" xml:space="preserve">
+    <value>注液</value>
+  </data>
+  <data name="WindowActionFunctionArea" xml:space="preserve">
+    <value>动作功能区</value>
+  </data>
+  <data name="WindowActionInit" xml:space="preserve">
+    <value>初始化</value>
+  </data>
+  <data name="WindowActionLight" xml:space="preserve">
+    <value>补光灯</value>
+  </data>
+  <data name="WindowActionLoad" xml:space="preserve">
+    <value>加载</value>
+  </data>
+  <data name="WindowActionPause" xml:space="preserve">
+    <value>暂停</value>
+  </data>
+  <data name="WindowActionStart" xml:space="preserve">
+    <value>开始</value>
+  </data>
+  <data name="WindowActionStop" xml:space="preserve">
+    <value>停止</value>
+  </data>
+  <data name="WindowActionTipOff" xml:space="preserve">
+    <value>退头</value>
+  </data>
+  <data name="WindowActionTipOn" xml:space="preserve">
+    <value>取头</value>
+  </data>
+  <data name="WindowActionUV" xml:space="preserve">
+    <value>紫外灯</value>
+  </data>
+  <data name="WindowActionWait" xml:space="preserve">
+    <value>等待</value>
+  </data>
+  <data name="WindowBoardPosition" xml:space="preserve">
+    <value>板位布局(4×3)</value>
+  </data>
+  <data name="WindowConsumablesWarehouse" xml:space="preserve">
+    <value>耗材库</value>
+  </data>
+  <data name="WindowLoginCancel" xml:space="preserve">
+    <value>退出</value>
+  </data>
+  <data name="WindowLoginOK" xml:space="preserve">
+    <value>登录</value>
+  </data>
+  <data name="WindowLoginPass" xml:space="preserve">
+    <value>密码</value>
+  </data>
+  <data name="WindowLoginPassTitle" xml:space="preserve">
+    <value>请输入密码</value>
+  </data>
+  <data name="WindowLoginUser" xml:space="preserve">
+    <value>用户名</value>
+  </data>
+  <data name="WindowLoginUserTitle" xml:space="preserve">
+    <value>请输入用户名</value>
+  </data>
+  <data name="WindowLogOut" xml:space="preserve">
+    <value>登出</value>
+  </data>
+  <data name="WindowOneclickdeletion" xml:space="preserve">
+    <value>清除</value>
+  </data>
+  <data name="WindowProcessList" xml:space="preserve">
+    <value>流程列表</value>
+  </data>
+  <data name="Windowrapidgenerating" xml:space="preserve">
+    <value>生成</value>
+  </data>
+  <data name="WindowStepdetails" xml:space="preserve">
+    <value>步骤详情</value>
+  </data>
+  <data name="WindowStepdetails2" xml:space="preserve">
+    <value>请选择流程步骤查看详情</value>
+  </data>
+  <data name="WindowTitle" xml:space="preserve">
+    <value>八通道移液工作站</value>
+  </data>
+  <data name="WindowUser" xml:space="preserve">
+    <value>当前用户 :</value>
+  </data>
+  <data name="WindowUserName" xml:space="preserve">
+    <value>管理员</value>
+  </data>
+  <data name="WindowVersion" xml:space="preserve">
+    <value>版本 1.0.0</value>
+  </data>
+</root>

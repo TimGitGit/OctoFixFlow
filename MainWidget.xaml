@@ -1,0 +1,1216 @@
+﻿<Window
+    x:Class="OctoFixFlow.MainWidget"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:OctoFixFlow"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:res="clr-namespace:OctoFixFlow.Resource"
+    Title="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowTitle}"
+    Width="1366"
+    Height="768"
+    WindowState="Maximized"
+    WindowStyle="None"
+    mc:Ignorable="d">
+
+    <Window.Resources>
+        <!--  颜色定义  -->
+        <SolidColorBrush x:Key="PrimaryColor" Color="#FA4616" />
+        <SolidColorBrush x:Key="SecondaryColor" Color="#3498db" />
+        <SolidColorBrush x:Key="SuccessColor" Color="#2ecc71" />
+        <SolidColorBrush x:Key="WarningColor" Color="#f39c12" />
+        <SolidColorBrush x:Key="DangerColor" Color="#e74c3c" />
+        <SolidColorBrush x:Key="DarkBackground" Color="#2c3e50" />
+        <SolidColorBrush x:Key="LightBackground" Color="#ecf0f1" />
+        <SolidColorBrush x:Key="PlateBackground" Color="#f8f9fa" />
+
+        <!--  板位样式  -->
+        <Style x:Key="PlateSlotStyle" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource PlateBackground}" />
+            <Setter Property="BorderBrush" Value="#BDC3C7" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="5" />
+            <Setter Property="Margin" Value="5" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+
+        <!--  耗材项样式  -->
+        <Style x:Key="ConsumableItemStyle" TargetType="Border">
+            <Setter Property="Background" Value="White" />
+            <Setter Property="BorderBrush" Value="#BDC3C7" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="5" />
+            <Setter Property="Margin" Value="5" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Padding" Value="10,5" />
+        </Style>
+
+        <!--  动作按钮样式  -->
+        <Style x:Key="ActionButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="120" />
+            <Setter Property="Height" Value="40" />
+            <Setter Property="Margin" Value="5" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Background" Value="{StaticResource SecondaryColor}" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="5">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!--  动作记录列表样式  -->
+        <Style x:Key="ActionRecordItemStyle" TargetType="ListBoxItem">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border
+                            Padding="10"
+                            Background="White"
+                            BorderBrush="#e0e0e0"
+                            BorderThickness="0,0,0,1">
+                            <ContentPresenter />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <!--  ComboBox样式  -->
+        <Style x:Key="InputComboBoxStyle" TargetType="{x:Type ComboBox}">
+            <Setter Property="Background" Value="#F9F9F9" />
+            <Setter Property="BorderBrush" Value="#E0E0E0" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Height" Value="30" />
+            <!--  减小高度与标签对齐  -->
+            <Setter Property="FontSize" Value="14" />
+            <!--  保持字体大小一致  -->
+            <Setter Property="Padding" Value="5" />
+            <!--  调整内边距  -->
+            <Setter Property="MinWidth" Value="90" />
+            <!--  确保基础宽度  -->
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ComboBox}">
+                        <Grid x:Name="MainGrid" SnapsToDevicePixels="True">
+                            <!--  主边框  -->
+                            <Border
+                                x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="5">
+                                <Grid>
+                                    <!--  显示选中内容  -->
+                                    <ContentPresenter
+                                        x:Name="ContentSite"
+                                        Margin="5,0,30,0"
+                                        VerticalAlignment="Center"
+                                        Content="{TemplateBinding SelectionBoxItem}"
+                                        ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" />
+
+                                    <!--  下拉按钮  -->
+                                    <ToggleButton
+                                        x:Name="ToggleButton"
+                                        Width="25"
+                                        Height="25"
+                                        Margin="0,2"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Center"
+                                        Focusable="False"
+                                        IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+                                        <ToggleButton.Template>
+                                            <ControlTemplate TargetType="{x:Type ToggleButton}">
+                                                <Border
+                                                    x:Name="btnBorder"
+                                                    Width="20"
+                                                    Height="20"
+                                                    Background="Transparent"
+                                                    CornerRadius="3">
+                                                    <!--  下拉箭头  -->
+                                                    <Path
+                                                        x:Name="Arrow"
+                                                        Width="8"
+                                                        Height="5"
+                                                        Data="M0,0 L8,0 L4,5 z"
+                                                        Fill="#666666" />
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="btnBorder" Property="Background" Value="#E0E0E0" />
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </ToggleButton.Template>
+                                    </ToggleButton>
+                                </Grid>
+                            </Border>
+
+                            <!--  下拉弹出框  -->
+                            <Popup
+                                x:Name="Popup"
+                                AllowsTransparency="True"
+                                Focusable="False"
+                                IsOpen="{TemplateBinding IsDropDownOpen}"
+                                Placement="Bottom"
+                                PopupAnimation="Slide">
+                                <!--  下拉框宽度与主控件一致  -->
+                                <Border
+                                    x:Name="DropDownBorder"
+                                    Width="{Binding ActualWidth, ElementName=MainGrid}"
+                                    MaxWidth="{TemplateBinding MaxWidth}"
+                                    Background="White"
+                                    BorderBrush="#E0E0E0"
+                                    BorderThickness="1"
+                                    CornerRadius="5">
+                                    <ScrollViewer x:Name="DropDownScrollViewer" MaxHeight="{TemplateBinding MaxDropDownHeight}">
+                                        <ItemsPresenter
+                                            x:Name="ItemsPresenter"
+                                            Margin="2"
+                                            SnapsToDevicePixels="True" />
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+
+                        <!--  触发器  -->
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <ColorAnimation
+                                                Storyboard.TargetName="border"
+                                                Storyboard.TargetProperty="BorderBrush.Color"
+                                                To="#FA4616"
+                                                Duration="0:0:0.2" />
+                                            <ThicknessAnimation
+                                                Storyboard.TargetName="border"
+                                                Storyboard.TargetProperty="BorderThickness"
+                                                From="1"
+                                                To="1.5"
+                                                Duration="0:0:0.2" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#CCCCCC" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Background" Value="#EEEEEE" />
+                                <Setter Property="Foreground" Value="#BDBDBD" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+
+            <!--  下拉选项样式  -->
+            <Style.Resources>
+                <Style TargetType="{x:Type ComboBoxItem}">
+                    <Setter Property="MinHeight" Value="32" />
+                    <!--  减小选项高度  -->
+                    <Setter Property="Padding" Value="8" />
+                    <!--  调整内边距  -->
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type ComboBoxItem}">
+                                <Border
+                                    x:Name="ItemBorder"
+                                    Padding="{TemplateBinding Padding}"
+                                    Background="Transparent"
+                                    SnapsToDevicePixels="True">
+                                    <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center" />
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter TargetName="ItemBorder" Property="Background" Value="#FA4616" />
+                                    </Trigger>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="ItemBorder" Property="Background" Value="#FFF3E0" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </Style.Resources>
+        </Style>
+        <!--  输入框样式（带动画）  -->
+        <Style x:Key="InputTextBoxStyle" TargetType="{x:Type Control}">
+            <Setter Property="Background" Value="#F9F9F9" />
+            <Setter Property="BorderBrush" Value="#E0E0E0" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Padding" Value="5" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Control}">
+                        <Border
+                            x:Name="border"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="5">
+                            <ScrollViewer x:Name="PART_ContentHost" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <!--  边框颜色动画（不变）  -->
+                                            <ColorAnimation
+                                                Storyboard.TargetName="border"
+                                                Storyboard.TargetProperty="BorderBrush.Color"
+                                                To="#FA4616"
+                                                Duration="0:0:0.2" />
+                                            <!--  边框厚度动画（替换为ThicknessAnimation）  -->
+                                            <ThicknessAnimation
+                                                Storyboard.TargetName="border"
+                                                Storyboard.TargetProperty="BorderThickness"
+                                                From="1"
+                                                To="1.5"
+                                                Duration="0:0:0.2" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                            </Trigger>
+                            <!--  鼠标悬停效果（不变）  -->
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#CCCCCC" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid Background="{StaticResource LightBackground}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <!--  标题栏  -->
+            <RowDefinition Height="*" />
+            <!--  主内容区  -->
+            <RowDefinition Height="Auto" />
+            <!--  状态栏  -->
+        </Grid.RowDefinitions>
+
+        <!--  标题栏  -->
+        <Border
+            Grid.Row="0"
+            Padding="10"
+            Background="{StaticResource DarkBackground}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <!--  Source="/OctoFixFlow;component/images/megarobo.png"  -->
+                <Image
+                    Grid.Column="0"
+                    Width="180"
+                    Margin="5"
+                    Stretch="Uniform" />
+                <TextBlock
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    FontSize="20"
+                    FontWeight="Bold"
+                    Foreground="White"
+                    Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowTitle}" />
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <TextBlock
+                        Margin="0,0,5,0"
+                        VerticalAlignment="Center"
+                        Foreground="White"
+                        Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowUser}" />
+                    <TextBlock
+                        x:Name="CurrentUserText"
+                        VerticalAlignment="Center"
+                        FontWeight="Bold"
+                        Foreground="White"
+                        Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowUserName}" />
+                    <!--  新增：语言切换Switch（注销按钮左侧）  -->
+                    <ToggleButton
+                        x:Name="LangSwitch"
+                        Width="60"
+                        Height="30"
+                        Margin="20,0,0,0"
+                        Checked="LangSwitch_Checked"
+                        Content="中/En"
+                        Cursor="Hand"
+                        IsChecked="False"
+                        Unchecked="LangSwitch_Unchecked">
+                        <!--  Switch样式（模拟iOS风格）  -->
+                        <ToggleButton.Template>
+                            <ControlTemplate TargetType="ToggleButton">
+                                <Grid Width="60" Height="30">
+                                    <!--  背景  -->
+                                    <Border
+                                        x:Name="BgBorder"
+                                        Width="60"
+                                        Height="30"
+                                        Background="#E0E0E0"
+                                        CornerRadius="15" />
+                                    <!--  滑块  -->
+                                    <Ellipse
+                                        x:Name="Slider"
+                                        Width="26"
+                                        Height="26"
+                                        Margin="2,0,0,0"
+                                        RenderTransformOrigin="0.5,0.5">
+                                        <Ellipse.RenderTransform>
+                                            <TranslateTransform x:Name="SliderTransform" X="0" />
+                                        </Ellipse.RenderTransform>
+                                    </Ellipse>
+                                    <!--  文本（居中）  -->
+                                    <TextBlock
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        FontSize="12"
+                                        FontWeight="Bold"
+                                        Foreground="White"
+                                        Text="{TemplateBinding Content}" />
+                                </Grid>
+                                <!--  切换动画  -->
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsChecked" Value="True">
+                                        <Setter TargetName="BgBorder" Property="Background" Value="{StaticResource PrimaryColor}" />
+                                        <Trigger.EnterActions>
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <DoubleAnimation
+                                                        Storyboard.TargetName="SliderTransform"
+                                                        Storyboard.TargetProperty="X"
+                                                        To="30"
+                                                        Duration="0:0:0.2" />
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </Trigger.EnterActions>
+                                    </Trigger>
+                                    <Trigger Property="IsChecked" Value="False">
+                                        <Setter TargetName="BgBorder" Property="Background" Value="#E0E0E0" />
+                                        <Trigger.EnterActions>
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <DoubleAnimation
+                                                        Storyboard.TargetName="SliderTransform"
+                                                        Storyboard.TargetProperty="X"
+                                                        To="0"
+                                                        Duration="0:0:0.2" />
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </Trigger.EnterActions>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </ToggleButton.Template>
+                    </ToggleButton>
+                    <Button
+                        Width="60"
+                        Margin="20,0,0,0"
+                        Background="#7f8c8d"
+                        Click="LogoutButton_Click"
+                        Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowLogOut}"
+                        Cursor="Hand" />
+                    <Button
+                        Width="30"
+                        Margin="20,0,0,0"
+                        Background="{StaticResource DangerColor}"
+                        Click="CloseButton_Click"
+                        Content="✕"
+                        Cursor="Hand" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!--  主内容区  -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250" />
+                <!--  左侧功能区  -->
+                <ColumnDefinition Width="*" />
+                <!--  板位显示区  -->
+                <ColumnDefinition Width="280" />
+                <!--  右侧信息区  -->
+                <ColumnDefinition Width="350" />
+                <!--  新增：流程与详情区  -->
+            </Grid.ColumnDefinitions>
+
+            <!--  左侧功能区  -->
+            <Grid Grid.Column="0" Width="250">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <!--  动作功能区  -->
+                    <RowDefinition Height="*" />
+                    <!--  耗材显示区  -->
+                </Grid.RowDefinitions>
+
+                <!--  动作功能区  -->
+                <GroupBox
+                    Grid.Row="0"
+                    Margin="10,10,10,5"
+                    Header="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionFunctionArea}">
+                    <StackPanel>
+                        <Button
+                            Click="AspirateButton_Click"
+                            Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionAspirate}"
+                            Style="{StaticResource ActionButtonStyle}" />
+                        <Button
+                            Click="DispenseButton_Click"
+                            Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionDispense}"
+                            Style="{StaticResource ActionButtonStyle}" />
+                        <Button
+                            Click="PickTipButton_Click"
+                            Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionTipOn}"
+                            Style="{StaticResource ActionButtonStyle}" />
+                        <Button
+                            Click="EjectTipButton_Click"
+                            Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionTipOff}"
+                            Style="{StaticResource ActionButtonStyle}" />
+                        <Button
+                            Click="WaitButton_Click"
+                            Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionWait}"
+                            Style="{StaticResource ActionButtonStyle}" />
+                    </StackPanel>
+                </GroupBox>
+
+                <!--  耗材显示区  -->
+                <!--  左侧功能区 - 耗材显示区（修改后）  -->
+                <GroupBox
+                    Grid.Row="1"
+                    Margin="10,5,10,10"
+                    Header="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowConsumablesWarehouse}">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <ItemsControl x:Name="ConsumablesList" ItemsSource="{Binding Consumables}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel
+                                        MaxWidth="210"
+                                        Margin="5"
+                                        ItemWidth="100"
+                                        Orientation="Horizontal" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+
+                            <!--  耗材项模板：平面图+文字（垂直布局）  -->
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border
+                                        Height="105"
+                                        MouseDown="ConsumableItem_MouseDown"
+                                        Style="{StaticResource ConsumableItemStyle}"
+                                        Tag="{Binding}">
+                                        <ToolTipService.ToolTip>
+                                            <ToolTip
+                                                Padding="8,4"
+                                                Background="#F5F5F5"
+                                                FontSize="12"
+                                                Foreground="#333333">
+                                                <!--  绑定当前耗材的Name属性，显示名称  -->
+                                                <TextBlock Text="{Binding Name}" />
+                                            </ToolTip>
+                                        </ToolTipService.ToolTip>
+                                        <StackPanel HorizontalAlignment="Center" Orientation="Vertical">
+                                            <!--  显示耗材平面图（使用已有的ConsumableCanvas）  -->
+                                            <local:ConsumableCanvas
+                                                Width="70"
+                                                Height="60"
+                                                Margin="0"
+                                                ConsData="{Binding Settings}" />
+
+
+
+                                            <TextBlock
+                                                Margin="0"
+                                                HorizontalAlignment="Center"
+                                                Text="{Binding Name}"
+                                                TextWrapping="Wrap" />
+                                            <!--  名称过长时自动换行  -->
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </GroupBox>
+            </Grid>
+
+            <!--  板位显示区 (4行3列)  -->
+            <Grid Grid.Column="1" Margin="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <!--  板位区域  -->
+                    <ColumnDefinition Width="Auto" />
+                    <!--  设置按钮区域  -->
+                </Grid.ColumnDefinitions>
+                <!--  控制按钮区（优化对齐方式）  -->
+                <Grid Grid.Row="0" Height="50">
+                    <!--  固定高度与按钮一致  -->
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <!--  标题区  -->
+                        <ColumnDefinition Width="*" />
+                        <!--  中间按钮区（自动填充）  -->
+                        <ColumnDefinition Width="Auto" />
+                        <!--  设置按钮区  -->
+                    </Grid.ColumnDefinitions>
+
+                    <!--  1. 标题左对齐  -->
+                    <TextBlock
+                        Grid.Column="0"
+                        VerticalAlignment="Center"
+                        FontSize="16"
+                        FontWeight="Bold"
+                        Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowBoardPosition}" />
+
+                    <!--  2. 操作按钮居中对齐  -->
+                    <StackPanel
+                        Grid.Column="1"
+                        HorizontalAlignment="Center"
+                        Orientation="Horizontal">
+                        <Button
+                            Width="80"
+                            Height="40"
+                            Margin="5"
+                            Background="{StaticResource SecondaryColor}"
+                            Click="InitButton_Click"
+                            Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionInit}"
+                            Cursor="Hand"
+                            FontWeight="Bold"
+                            Foreground="White" />
+                        <Button
+                            Width="80"
+                            Height="40"
+                            Margin="5"
+                            Background="{StaticResource SecondaryColor}"
+                            Click="LoadButton_Click"
+                            Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionLoad}"
+                            Cursor="Hand"
+                            FontWeight="Bold"
+                            Foreground="White" />
+                        <Button
+                            Width="80"
+                            Height="40"
+                            Margin="5"
+                            Background="{StaticResource SecondaryColor}"
+                            Click="StartButton_Click"
+                            Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionStart}"
+                            Cursor="Hand"
+                            FontWeight="Bold"
+                            Foreground="White" />
+                        <Button
+                            x:Name="mainPauseName"
+                            Width="80"
+                            Height="40"
+                            Margin="5"
+                            Background="{StaticResource SecondaryColor}"
+                            Click="PauseButton_Click"
+                            Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionPause}"
+                            Cursor="Hand"
+                            FontWeight="Bold"
+                            Foreground="White"
+                            Tag="pause" />
+                        <Button
+                            Width="80"
+                            Height="40"
+                            Margin="5"
+                            Background="{StaticResource SecondaryColor}"
+                            Click="StopButton_Click"
+                            Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionStop}"
+                            Cursor="Hand"
+                            FontWeight="Bold"
+                            Foreground="White" />
+                        <Button
+                            x:Name="LightControlButton"
+                            Width="80"
+                            Height="40"
+                            Margin="5"
+                            Background="{StaticResource SecondaryColor}"
+                            Click="LightControlButton_Click"
+                            Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionLight}"
+                            Cursor="Hand"
+                            FontWeight="Bold"
+                            Foreground="White" />
+
+                        <!--  新增：UV灯控制按钮  -->
+                        <Button
+                            x:Name="UVLightControlButton"
+                            Width="80"
+                            Height="40"
+                            Margin="5"
+                            Background="{StaticResource SecondaryColor}"
+                            Click="UVLightControlButton_Click"
+                            Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionUV}"
+                            Cursor="Hand"
+                            FontWeight="Bold"
+                            Foreground="White" />
+                    </StackPanel>
+
+                    <!--  3. 设置按钮右对齐  -->
+                    <Button
+                        x:Name="settingButton"
+                        Grid.Column="2"
+                        Width="30"
+                        Height="30"
+                        Margin="15,0,0,0"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Click="SettingsButton_Click"
+                        Cursor="Hand">
+                        <Path
+                            Data="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"
+                            Fill="#FA4616"
+                            Stretch="Uniform" />
+                    </Button>
+                </Grid>
+                <!--  12板位布局  -->
+                <UniformGrid
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    Columns="3"
+                    Rows="4">
+                    <!--  动态生成12个板位  -->
+                    <Border
+                        AllowDrop="True"
+                        DragEnter="PlateSlot_DragEnter"
+                        Drop="PlateSlot_Drop"
+                        Focusable="True"
+                        MouseEnter="PlateSlot_MouseEnter"
+                        MouseLeave="PlateSlot_MouseLeave"
+                        PreviewKeyDown="PlateSlot_PreviewKeyDown"
+                        Style="{StaticResource PlateSlotStyle}"
+                        Tag="10">
+                        <Grid x:Name="PlateGrid10">
+                            <TextBlock
+                                Margin="0,5,0,0"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Text="P10" />
+                        </Grid>
+                    </Border>
+                    <Border
+                        AllowDrop="True"
+                        DragEnter="PlateSlot_DragEnter"
+                        Drop="PlateSlot_Drop"
+                        Focusable="True"
+                        MouseEnter="PlateSlot_MouseEnter"
+                        MouseLeave="PlateSlot_MouseLeave"
+                        PreviewKeyDown="PlateSlot_PreviewKeyDown"
+                        Style="{StaticResource PlateSlotStyle}"
+                        Tag="11">
+                        <Grid x:Name="PlateGrid11">
+                            <TextBlock
+                                Margin="0,5,0,0"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Text="P11" />
+                        </Grid>
+                    </Border>
+                    <Border
+                        AllowDrop="True"
+                        DragEnter="PlateSlot_DragEnter"
+                        Drop="PlateSlot_Drop"
+                        Focusable="True"
+                        MouseEnter="PlateSlot_MouseEnter"
+                        MouseLeave="PlateSlot_MouseLeave"
+                        PreviewKeyDown="PlateSlot_PreviewKeyDown"
+                        Style="{StaticResource PlateSlotStyle}"
+                        Tag="12">
+                        <Grid x:Name="PlateGrid12">
+                            <TextBlock
+                                Margin="0,5,0,0"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Text="P12" />
+                        </Grid>
+                    </Border>
+                    <Border
+                        AllowDrop="True"
+                        DragEnter="PlateSlot_DragEnter"
+                        Drop="PlateSlot_Drop"
+                        Focusable="True"
+                        MouseEnter="PlateSlot_MouseEnter"
+                        MouseLeave="PlateSlot_MouseLeave"
+                        PreviewKeyDown="PlateSlot_PreviewKeyDown"
+                        Style="{StaticResource PlateSlotStyle}"
+                        Tag="7">
+                        <Grid x:Name="PlateGrid7">
+                            <TextBlock
+                                Margin="0,5,0,0"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Text="P7" />
+                        </Grid>
+                    </Border>
+                    <Border
+                        AllowDrop="True"
+                        DragEnter="PlateSlot_DragEnter"
+                        Drop="PlateSlot_Drop"
+                        Focusable="True"
+                        MouseEnter="PlateSlot_MouseEnter"
+                        MouseLeave="PlateSlot_MouseLeave"
+                        PreviewKeyDown="PlateSlot_PreviewKeyDown"
+                        Style="{StaticResource PlateSlotStyle}"
+                        Tag="8">
+                        <Grid x:Name="PlateGrid8">
+                            <TextBlock
+                                Margin="0,5,0,0"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Text="P8" />
+                        </Grid>
+                    </Border>
+                    <Border
+                        AllowDrop="True"
+                        DragEnter="PlateSlot_DragEnter"
+                        Drop="PlateSlot_Drop"
+                        Focusable="True"
+                        MouseEnter="PlateSlot_MouseEnter"
+                        MouseLeave="PlateSlot_MouseLeave"
+                        PreviewKeyDown="PlateSlot_PreviewKeyDown"
+                        Style="{StaticResource PlateSlotStyle}"
+                        Tag="9">
+                        <Grid x:Name="PlateGrid9">
+                            <TextBlock
+                                Margin="0,5,0,0"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Text="P9" />
+                        </Grid>
+                    </Border>
+                    <Border
+                        AllowDrop="True"
+                        DragEnter="PlateSlot_DragEnter"
+                        Drop="PlateSlot_Drop"
+                        Focusable="True"
+                        MouseEnter="PlateSlot_MouseEnter"
+                        MouseLeave="PlateSlot_MouseLeave"
+                        PreviewKeyDown="PlateSlot_PreviewKeyDown"
+                        Style="{StaticResource PlateSlotStyle}"
+                        Tag="4">
+                        <Grid x:Name="PlateGrid4">
+                            <TextBlock
+                                Margin="0,5,0,0"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Text="P4" />
+                        </Grid>
+                    </Border>
+                    <Border
+                        AllowDrop="True"
+                        DragEnter="PlateSlot_DragEnter"
+                        Drop="PlateSlot_Drop"
+                        Focusable="True"
+                        MouseEnter="PlateSlot_MouseEnter"
+                        MouseLeave="PlateSlot_MouseLeave"
+                        PreviewKeyDown="PlateSlot_PreviewKeyDown"
+                        Style="{StaticResource PlateSlotStyle}"
+                        Tag="5">
+                        <Grid x:Name="PlateGrid5">
+                            <TextBlock
+                                Margin="0,5,0,0"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Text="P5" />
+                        </Grid>
+                    </Border>
+                    <Border
+                        AllowDrop="True"
+                        DragEnter="PlateSlot_DragEnter"
+                        Drop="PlateSlot_Drop"
+                        Focusable="True"
+                        MouseEnter="PlateSlot_MouseEnter"
+                        MouseLeave="PlateSlot_MouseLeave"
+                        PreviewKeyDown="PlateSlot_PreviewKeyDown"
+                        Style="{StaticResource PlateSlotStyle}"
+                        Tag="6">
+                        <Grid x:Name="PlateGrid6">
+                            <TextBlock
+                                Margin="0,5,0,0"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Text="P6" />
+                        </Grid>
+                    </Border>
+                    <Border
+                        AllowDrop="True"
+                        DragEnter="PlateSlot_DragEnter"
+                        Drop="PlateSlot_Drop"
+                        Focusable="True"
+                        MouseEnter="PlateSlot_MouseEnter"
+                        MouseLeave="PlateSlot_MouseLeave"
+                        PreviewKeyDown="PlateSlot_PreviewKeyDown"
+                        Style="{StaticResource PlateSlotStyle}"
+                        Tag="1">
+                        <Grid x:Name="PlateGrid1">
+                            <TextBlock
+                                Margin="0,5,0,0"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Text="P1" />
+                        </Grid>
+                    </Border>
+                    <Border
+                        AllowDrop="True"
+                        DragEnter="PlateSlot_DragEnter"
+                        Drop="PlateSlot_Drop"
+                        Focusable="True"
+                        MouseEnter="PlateSlot_MouseEnter"
+                        MouseLeave="PlateSlot_MouseLeave"
+                        PreviewKeyDown="PlateSlot_PreviewKeyDown"
+                        Style="{StaticResource PlateSlotStyle}"
+                        Tag="2">
+                        <Grid x:Name="PlateGrid2">
+                            <TextBlock
+                                Margin="0,5,0,0"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Text="P2" />
+                        </Grid>
+                    </Border>
+                    <Border
+                        AllowDrop="True"
+                        DragEnter="PlateSlot_DragEnter"
+                        Drop="PlateSlot_Drop"
+                        Focusable="True"
+                        MouseEnter="PlateSlot_MouseEnter"
+                        MouseLeave="PlateSlot_MouseLeave"
+                        PreviewKeyDown="PlateSlot_PreviewKeyDown"
+                        Style="{StaticResource PlateSlotStyle}"
+                        Tag="3">
+                        <Grid x:Name="PlateGrid3">
+                            <TextBlock
+                                Margin="0,5,0,0"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Text="P3" />
+                        </Grid>
+                    </Border>
+                </UniformGrid>
+            </Grid>
+            <!--  新增：流程列表与步骤详情区域  -->
+            <!--  3. 流程列表区（独立整列）  -->
+            <Grid Grid.Column="2" Margin="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <!--  标题  -->
+                    <RowDefinition Height="*" />
+                    <!--  流程列表  -->
+                </Grid.RowDefinitions>
+
+                <!--  流程列表标题  -->
+                <TextBlock
+                    Grid.Row="0"
+                    Margin="0,10,0,5"
+                    FontSize="16"
+                    FontWeight="Bold"
+                    Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowProcessList}" />
+                <Button
+                    Width="80"
+                    Margin="10,0,0,5"
+                    Background="#f44336"
+                    Click="AllClearButton_Click"
+                    Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowOneclickdeletion}"
+                    Style="{StaticResource ActionButtonStyle}" />
+                <Button
+                    Width="80"
+                    Margin="180,0,0,5"
+                    Background="#9b59b6"
+                    Click="QuickGenerateButton_Click"
+                    Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=Windowrapidgenerating}"
+                    Style="{StaticResource ActionButtonStyle}" />
+
+                <!--  流程列表（整列布局）  -->
+                <ScrollViewer
+                    Grid.Row="1"
+                    BorderBrush="#BDC3C7"
+                    BorderThickness="1"
+                    PreviewKeyDown="FlowList_PreviewKeyDown">
+                    <ItemsControl x:Name="FlowList" Margin="5">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Vertical" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border
+                                    Margin="3"
+                                    Padding="10,5"
+                                    CornerRadius="3"
+                                    Cursor="Hand"
+                                    MouseDown="FlowStep_MouseDown"
+                                    Tag="{Binding}">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background" Value="White" />
+                                            <Setter Property="BorderBrush" Value="#BDC3C7" />
+                                            <Setter Property="BorderThickness" Value="1" />
+                                            <Style.Triggers>
+                                                <!--  开始步骤样式  -->
+                                                <DataTrigger Binding="{Binding Type}" Value="start">
+                                                    <Setter Property="Background" Value="#E8F5E9" />
+                                                    <Setter Property="BorderBrush" Value="#A5D6A7" />
+                                                </DataTrigger>
+                                                <!--  结束步骤样式  -->
+                                                <DataTrigger Binding="{Binding Type}" Value="end">
+                                                    <Setter Property="Background" Value="#FFF3E0" />
+                                                    <Setter Property="BorderBrush" Value="#FFCC80" />
+                                                </DataTrigger>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="#F5F5F5" />
+                                                </Trigger>
+                                                <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                    <Setter Property="BorderBrush" Value="#FA4616" />
+                                                    <Setter Property="BorderThickness" Value="1.5" />
+                                                    <Setter Property="Background" Value="#FFF9F5" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock
+                                            Width="30"
+                                            FontWeight="Bold"
+                                            Foreground="#FA4616"
+                                            Text="{Binding Index}" />
+                                        <TextBlock Text="{Binding Name}" />
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
+            <!--  4. 右侧分页区（步骤详情/运行信息切换）  -->
+            <Grid Grid.Column="3" Margin="10">
+                <!--  切换逻辑：通过Visibility控制显示  -->
+                <Grid x:Name="StepDetailView" Visibility="Visible">
+                    <!--  步骤详情视图（默认显示）  -->
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <TextBlock
+                        Grid.Row="0"
+                        Margin="0,10,0,10"
+                        FontSize="16"
+                        FontWeight="Bold"
+                        Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowStepdetails}" />
+                    <Border
+                        Grid.Row="1"
+                        Padding="10"
+                        Background="White"
+                        BorderBrush="#BDC3C7"
+                        BorderThickness="1"
+                        CornerRadius="5">
+                        <StackPanel x:Name="StepDetailPanel">
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Foreground="#999"
+                                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowStepdetails2}" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <Grid x:Name="RunInfoView" Visibility="Collapsed">
+                    <!--  运行信息视图（点击开始后显示）  -->
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <TextBlock
+                        Grid.Row="0"
+                        Margin="0,10,0,10"
+                        FontSize="16"
+                        FontWeight="Bold"
+                        Text="运行信息" />
+                    <!--  2. 固定内容区域（运行状态+进度条，不滚动）  -->
+                    <StackPanel Grid.Row="1" Margin="0,0,0,10">
+                        <!--  运行状态信息  -->
+                        <Grid Margin="0,0,0,15">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock
+                                Grid.Row="0"
+                                Margin="0,5,0,0"
+                                FontWeight="Bold"
+                                Text="运行时间:" />
+                            <TextBlock
+                                x:Name="RunTimeText"
+                                Grid.Row="0"
+                                Grid.Column="1"
+                                Margin="10,5,0,0"
+                                Text="00:00:00" />
+
+                            <TextBlock
+                                Grid.Row="1"
+                                Margin="0,5,0,0"
+                                FontWeight="Bold"
+                                Text="当前步骤:" />
+                            <TextBlock
+                                x:Name="CurrentStepText"
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                Margin="10,5,0,0"
+                                Text="0/0" />
+
+                            <TextBlock
+                                Grid.Row="2"
+                                Margin="0,5,0,0"
+                                FontWeight="Bold"
+                                Text="状态:" />
+                            <StackPanel
+                                Grid.Row="2"
+                                Grid.Column="1"
+                                Margin="10,5,0,0"
+                                Orientation="Horizontal">
+                                <Ellipse
+                                    x:Name="StatusIndicator"
+                                    Width="10"
+                                    Height="10"
+                                    Fill="Green" />
+                                <TextBlock
+                                    x:Name="StatusText"
+                                    Foreground="Green"
+                                    Text="运行中" />
+                            </StackPanel>
+                        </Grid>
+
+                        <!--  进度条区域  -->
+                        <StackPanel Margin="0,5,0,15">
+                            <Grid Margin="0,5,0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="60" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock
+                                    FontSize="12"
+                                    Foreground="#7F8C8D"
+                                    Text="运行进度" />
+                                <TextBlock
+                                    x:Name="ProgressPercentText"
+                                    Grid.Column="1"
+                                    FontSize="12"
+                                    Foreground="#7F8C8D"
+                                    Text="30%"
+                                    TextAlignment="Right" />
+                            </Grid>
+                            <ProgressBar
+                                x:Name="RunProgressBar"
+                                Height="10"
+                                Margin="0,0,0,5"
+                                Background="#ECF0F1"
+                                Foreground="#3498DB"
+                                Maximum="100"
+                                Value="30" />
+                        </StackPanel>
+                    </StackPanel>
+                    <ScrollViewer
+                        Grid.Row="2"
+                        Background="White"
+                        BorderBrush="#BDC3C7"
+                        BorderThickness="1">
+                        <StackPanel Margin="10">
+                            <!--  运行日志  -->
+                            <TextBlock
+                                Margin="0,10,0,5"
+                                FontWeight="Bold"
+                                Text="运行日志:" />
+                            <ListBox
+                                x:Name="RunLogListBox"
+                                Height="auto"
+                                Background="White"
+                                BorderThickness="0"
+                                ItemsSource="{Binding RunLogs}"
+                                ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock
+                                            Margin="0,2"
+                                            Text="{Binding}"
+                                            TextWrapping="Wrap" />
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </Grid>
+        </Grid>
+
+        <!--  状态栏  -->
+        <StatusBar Grid.Row="2" Background="{StaticResource DarkBackground}">
+            <StatusBarItem>
+                <TextBlock Foreground="White" Text="Ready | " />
+            </StatusBarItem>
+            <StatusBarItem>
+                <TextBlock x:Name="DateTimeText" Foreground="White" />
+            </StatusBarItem>
+            <StatusBarItem HorizontalAlignment="Right">
+                <TextBlock Foreground="White" Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowVersion}" />
+            </StatusBarItem>
+        </StatusBar>
+        <Canvas
+            x:Name="NotificationHost"
+            Width="350"
+            Margin="0,20,10,0"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Top"
+            Panel.ZIndex="10000" />
+    </Grid>
+</Window>

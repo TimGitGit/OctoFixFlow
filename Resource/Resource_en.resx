@@ -1,0 +1,873 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="DeviceLightClose" xml:space="preserve">
+    <value>Turn off the fill light</value>
+  </data>
+  <data name="DeviceLightOpen" xml:space="preserve">
+    <value>Turn on the fill light</value>
+  </data>
+  <data name="DeviceOperationFailure" xml:space="preserve">
+    <value>Operation failed:</value>
+  </data>
+  <data name="DeviceOperationSucc" xml:space="preserve">
+    <value>Operate successfully</value>
+  </data>
+  <data name="DeviceUVClose" xml:space="preserve">
+    <value>Turn off the UV light</value>
+  </data>
+  <data name="DeviceUVOpen" xml:space="preserve">
+    <value>Turn on the UV light</value>
+  </data>
+  <data name="FlowStepEnd" xml:space="preserve">
+    <value>End</value>
+  </data>
+  <data name="FlowStepStart" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="FlowStepSteps" xml:space="preserve">
+    <value>Steps</value>
+  </data>
+  <data name="FlowStepWaitContent" xml:space="preserve">
+    <value>Waiting for operation</value>
+  </data>
+  <data name="GrpcDeviceLoadFail" xml:space="preserve">
+    <value>Device status loading failed:</value>
+  </data>
+  <data name="GrpcDeviceLoadSucc" xml:space="preserve">
+    <value>Equipment status loading completed</value>
+  </data>
+  <data name="GrpcFailDoor" xml:space="preserve">
+    <value>Device door not closed</value>
+  </data>
+  <data name="GrpcIniting" xml:space="preserve">
+    <value>Device Initializing...</value>
+  </data>
+  <data name="GrpcInitStart" xml:space="preserve">
+    <value>The device begins initialization.</value>
+  </data>
+  <data name="GrpcInitSucc" xml:space="preserve">
+    <value>Device reset successful</value>
+  </data>
+  <data name="GrpcIPFail" xml:space="preserve">
+    <value>IP address loading failed</value>
+  </data>
+  <data name="GrpcLoadFail" xml:space="preserve">
+    <value>GRPC initialization failed:</value>
+  </data>
+  <data name="GrpcLoadSucc" xml:space="preserve">
+    <value>GRPC loading is successful</value>
+  </data>
+  <data name="GrpcStartEndRemove" xml:space="preserve">
+    <value>Start and end steps are non-deletable</value>
+  </data>
+  <data name="GrpcStartRunning" xml:space="preserve">
+    <value>Process has not stopped</value>
+  </data>
+  <data name="MainWindowDetailLoadFail" xml:space="preserve">
+    <value>Load fail</value>
+  </data>
+  <data name="MainWindowDetailLoginIN" xml:space="preserve">
+    <value>Logged in is:</value>
+  </data>
+  <data name="MainWindowDetailPassEmpty" xml:space="preserve">
+    <value>The password is empty</value>
+  </data>
+  <data name="MainWindowDetailSTL" xml:space="preserve">
+    <value>STL file not found</value>
+  </data>
+  <data name="MainWindowDetailUserEmpty" xml:space="preserve">
+    <value>Username is empty</value>
+  </data>
+  <data name="OpenFileDialog_Empty" xml:space="preserve">
+    <value>The selected file is empty</value>
+  </data>
+  <data name="OpenFileDialog_Error" xml:space="preserve">
+    <value>Failed to read the file</value>
+  </data>
+  <data name="OpenFileDialog_Filter" xml:space="preserve">
+    <value>JSON Script Files (*.json)|*.json|All Files (*.*)|*.*</value>
+  </data>
+  <data name="OpenFileDialog_Title" xml:space="preserve">
+    <value>Select Script File to Load</value>
+  </data>
+  <data name="QuickAisPos" xml:space="preserve">
+    <value>Please select aspiration position</value>
+  </data>
+  <data name="QuickAspPos" xml:space="preserve">
+    <value>Asp Pos:</value>
+  </data>
+  <data name="QuickColumn" xml:space="preserve">
+    <value>Column</value>
+  </data>
+  <data name="QuickDisPos" xml:space="preserve">
+    <value>Please select dispensing position</value>
+  </data>
+  <data name="QuickDispPos" xml:space="preserve">
+    <value>Disp Pos:</value>
+  </data>
+  <data name="QuickFixed" xml:space="preserve">
+    <value>Fixed?:</value>
+  </data>
+  <data name="QuickGenerate" xml:space="preserve">
+    <value>Generate</value>
+  </data>
+  <data name="QuickLiquidSelection" xml:space="preserve">
+    <value>Liquid Selection:</value>
+  </data>
+  <data name="QuickMixAsp" xml:space="preserve">
+    <value>Mix Asp?:</value>
+  </data>
+  <data name="QuickMixAspTimes" xml:space="preserve">
+    <value>Times:</value>
+  </data>
+  <data name="QuickMixAspVol" xml:space="preserve">
+    <value>Volue:</value>
+  </data>
+  <data name="QuickOne96Samples" xml:space="preserve">
+    <value>Please enter sample count between 1-96</value>
+  </data>
+  <data name="QuickRinse" xml:space="preserve">
+    <value>Rinse?:</value>
+  </data>
+  <data name="QuickRinseDelay" xml:space="preserve">
+    <value>Delay:</value>
+  </data>
+  <data name="QuickRinseVol" xml:space="preserve">
+    <value>Volue:</value>
+  </data>
+  <data name="QuickSampleQty" xml:space="preserve">
+    <value>Sample Qty:</value>
+  </data>
+  <data name="QuickSelectLiquid" xml:space="preserve">
+    <value>Please select liquid parameters</value>
+  </data>
+  <data name="QuickTipChange" xml:space="preserve">
+    <value>Tip Change?:</value>
+  </data>
+  <data name="QuickTipChangeSettings" xml:space="preserve">
+    <value>Tip Change Settings:</value>
+  </data>
+  <data name="QuickTipEjectPos" xml:space="preserve">
+    <value>Tip Eject Pos:</value>
+  </data>
+  <data name="QuickTipOffPos" xml:space="preserve">
+    <value>Please select tip ejection position</value>
+  </data>
+  <data name="QuickTipOnPos" xml:space="preserve">
+    <value>Please select tip pickup position</value>
+  </data>
+  <data name="QuickTipPickPos" xml:space="preserve">
+    <value>Tip Pick Pos:</value>
+  </data>
+  <data name="QuickTitile" xml:space="preserve">
+    <value>Quick Generate Process</value>
+  </data>
+  <data name="QuickValidAspirationVolume" xml:space="preserve">
+    <value>Please enter valid aspiration volume</value>
+  </data>
+  <data name="ScriptContinue" xml:space="preserve">
+    <value>Resume process</value>
+  </data>
+  <data name="ScriptLoadFail" xml:space="preserve">
+    <value>Script loading failed</value>
+  </data>
+  <data name="ScriptLoadSucc" xml:space="preserve">
+    <value>Script loading successful</value>
+  </data>
+  <data name="ScriptNotStart" xml:space="preserve">
+    <value>Process not started</value>
+  </data>
+  <data name="ScriptPause" xml:space="preserve">
+    <value>Pause process</value>
+  </data>
+  <data name="ScriptStartCheckFail" xml:space="preserve">
+    <value>Check process failed</value>
+  </data>
+  <data name="ScriptStartCreateFail" xml:space="preserve">
+    <value>Create script failed</value>
+  </data>
+  <data name="ScriptStartCreating" xml:space="preserve">
+    <value>Creating process scripts...</value>
+  </data>
+  <data name="ScriptStartEmpty" xml:space="preserve">
+    <value>Please add process steps before starting</value>
+  </data>
+  <data name="ScriptStartFail" xml:space="preserve">
+    <value>Start process failed</value>
+  </data>
+  <data name="ScriptStartLiquidEmpty" xml:space="preserve">
+    <value>Some steps lack liquid parameters</value>
+  </data>
+  <data name="ScriptStartSucc" xml:space="preserve">
+    <value>Process starting execution</value>
+  </data>
+  <data name="ScriptSuccCrea" xml:space="preserve">
+    <value>Process successfully generated</value>
+  </data>
+  <data name="ScriptUILogError" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="ScriptUILogIdle" xml:space="preserve">
+    <value>Idle</value>
+  </data>
+  <data name="ScriptUILogPause" xml:space="preserve">
+    <value>Pause</value>
+  </data>
+  <data name="ScriptUILogRun" xml:space="preserve">
+    <value>Running</value>
+  </data>
+  <data name="ScriptUILogUnknown" xml:space="preserve">
+    <value>Unknown state</value>
+  </data>
+  <data name="ScriptUINotRun" xml:space="preserve">
+    <value>Not running</value>
+  </data>
+  <data name="SettingCons2D" xml:space="preserve">
+    <value>Consumable 2D Drawing</value>
+  </data>
+  <data name="SettingConsA1XDistance" xml:space="preserve">
+    <value>A1 Well X Dist.</value>
+  </data>
+  <data name="SettingConsA1YDistance" xml:space="preserve">
+    <value>A1 Well Y Dist.</value>
+  </data>
+  <data name="SettingConsAdd" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="SettingConsbasicInfo" xml:space="preserve">
+    <value>Basic Information</value>
+  </data>
+  <data name="SettingConsColumnSpacing" xml:space="preserve">
+    <value>Column Spacing</value>
+  </data>
+  <data name="SettingConsConeMaxRadius" xml:space="preserve">
+    <value>Cone Max Rad</value>
+  </data>
+  <data name="SettingConsConeMinRadius" xml:space="preserve">
+    <value>Cone Min Rad</value>
+  </data>
+  <data name="SettingConsCube" xml:space="preserve">
+    <value>Cube</value>
+  </data>
+  <data name="SettingConsCylinder" xml:space="preserve">
+    <value>Cylinder</value>
+  </data>
+  <data name="SettingConsDescription" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="SettingConsDimension" xml:space="preserve">
+    <value>Consumable Dimension (mm)</value>
+  </data>
+  <data name="SettingConsGripperX" xml:space="preserve">
+    <value>Gripper X</value>
+  </data>
+  <data name="SettingConsGripperY" xml:space="preserve">
+    <value>Gripper Y</value>
+  </data>
+  <data name="SettingConsGripperZ" xml:space="preserve">
+    <value>Gripper Z</value>
+  </data>
+  <data name="SettingConsHeight" xml:space="preserve">
+    <value>Height</value>
+  </data>
+  <data name="SettingConsIn" xml:space="preserve">
+    <value>In</value>
+  </data>
+  <data name="SettingConsLength" xml:space="preserve">
+    <value>Length</value>
+  </data>
+  <data name="SettingConsMaxCap" xml:space="preserve">
+    <value>Max Cap</value>
+  </data>
+  <data name="SettingConsMaxUsableCap" xml:space="preserve">
+    <value>Max Usable Cap</value>
+  </data>
+  <data name="SettingConsMaxUsableVolume" xml:space="preserve">
+    <value>Max Usable Vol</value>
+  </data>
+  <data name="SettingConsMaxWellCapacity" xml:space="preserve">
+    <value>Max Well Cap</value>
+  </data>
+  <data name="SettingConsName" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="SettingConsNotchNE" xml:space="preserve">
+    <value>NE</value>
+  </data>
+  <data name="SettingConsNotchNW" xml:space="preserve">
+    <value>NW</value>
+  </data>
+  <data name="SettingConsNotchPosition" xml:space="preserve">
+    <value>Notch Position</value>
+  </data>
+  <data name="SettingConsNotchSE" xml:space="preserve">
+    <value>SE</value>
+  </data>
+  <data name="SettingConsNotchSetting" xml:space="preserve">
+    <value>Notch Setting</value>
+  </data>
+  <data name="SettingConsNotchSW" xml:space="preserve">
+    <value>SW</value>
+  </data>
+  <data name="SettingConsNumColumns" xml:space="preserve">
+    <value>Num of Columns</value>
+  </data>
+  <data name="SettingConsNumRows" xml:space="preserve">
+    <value>Num of Rows</value>
+  </data>
+  <data name="SettingConsNumWells" xml:space="preserve">
+    <value>Num of Wells</value>
+  </data>
+  <data name="SettingConsOffsetGripperPos" xml:space="preserve">
+    <value>Offset &amp; Gripper Pos (mm)</value>
+  </data>
+  <data name="SettingConsOffsetX" xml:space="preserve">
+    <value>Offset X</value>
+  </data>
+  <data name="SettingConsOffsetY" xml:space="preserve">
+    <value>Offset Y</value>
+  </data>
+  <data name="SettingConsOut" xml:space="preserve">
+    <value>Out</value>
+  </data>
+  <data name="SettingConsPipetteTipParams" xml:space="preserve">
+    <value>Pipette Tip Params</value>
+  </data>
+  <data name="SettingConsRemove" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="SettingConsRowSpacing" xml:space="preserve">
+    <value>Row Spacing</value>
+  </data>
+  <data name="SettingConsSerialNum" xml:space="preserve">
+    <value>Serial Number</value>
+  </data>
+  <data name="SettingConsTipConeLgth" xml:space="preserve">
+    <value>Tip Cone Lgth</value>
+  </data>
+  <data name="SettingConsTipHeadHt" xml:space="preserve">
+    <value>Tip Head Ht</value>
+  </data>
+  <data name="SettingConsTipMountPressDpth" xml:space="preserve">
+    <value>Tip Press Dpth</value>
+  </data>
+  <data name="SettingConsTipTotalLgth" xml:space="preserve">
+    <value>Tip Total Lgth</value>
+  </data>
+  <data name="SettingConsTitile" xml:space="preserve">
+    <value>Consumables Management</value>
+  </data>
+  <data name="SettingConsTopLength" xml:space="preserve">
+    <value>Top Length</value>
+  </data>
+  <data name="SettingConsTopRadius" xml:space="preserve">
+    <value>Top Radius</value>
+  </data>
+  <data name="SettingConsTopShape" xml:space="preserve">
+    <value>Top Shape</value>
+  </data>
+  <data name="SettingConsTopWidth" xml:space="preserve">
+    <value>Top Width</value>
+  </data>
+  <data name="SettingConsType" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="SettingConsTypeMicroplate" xml:space="preserve">
+    <value>Microplate</value>
+  </data>
+  <data name="SettingConsTypeOther" xml:space="preserve">
+    <value>Others</value>
+  </data>
+  <data name="SettingConsTypeReservoir" xml:space="preserve">
+    <value>Reservoir</value>
+  </data>
+  <data name="SettingConsTypeTipBox" xml:space="preserve">
+    <value>TipBox</value>
+  </data>
+  <data name="SettingConsWellDepth" xml:space="preserve">
+    <value>Well Dpth (mm)</value>
+  </data>
+  <data name="SettingConsWellSpec" xml:space="preserve">
+    <value>Well Spec</value>
+  </data>
+  <data name="SettingConsWidth" xml:space="preserve">
+    <value>Width</value>
+  </data>
+  <data name="SettingDataSave" xml:space="preserve">
+    <value>Data has been updated.</value>
+  </data>
+  <data name="SettingLiquidAdd" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="SettingLiquidAspDelay" xml:space="preserve">
+    <value>Asp Delay</value>
+  </data>
+  <data name="SettingLiquidAspirationParams" xml:space="preserve">
+    <value>Aspiration Params</value>
+  </data>
+  <data name="SettingLiquidAspSpeed" xml:space="preserve">
+    <value>Asp Speed</value>
+  </data>
+  <data name="SettingLiquidbasicInfo" xml:space="preserve">
+    <value>Basic Information</value>
+  </data>
+  <data name="SettingLiquidDescription" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="SettingLiquidDispDelay" xml:space="preserve">
+    <value>Disp Delay</value>
+  </data>
+  <data name="SettingLiquidDispensingParams" xml:space="preserve">
+    <value>Dispensing Params</value>
+  </data>
+  <data name="SettingLiquidDispSpeed" xml:space="preserve">
+    <value>Disp Speed</value>
+  </data>
+  <data name="SettingLiquidDisttoWellBot" xml:space="preserve">
+    <value>Dist to Well Bot</value>
+  </data>
+  <data name="SettingLiquidIn" xml:space="preserve">
+    <value>In</value>
+  </data>
+  <data name="SettingLiquidName" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="SettingLiquidOut" xml:space="preserve">
+    <value>Out</value>
+  </data>
+  <data name="SettingLiquidPostAspAir" xml:space="preserve">
+    <value>Post-Asp Air</value>
+  </data>
+  <data name="SettingLiquidPostDispAir" xml:space="preserve">
+    <value>Post-Disp Air</value>
+  </data>
+  <data name="SettingLiquidPreAspAir" xml:space="preserve">
+    <value>Pre-Asp Air</value>
+  </data>
+  <data name="SettingLiquidPreDispAir" xml:space="preserve">
+    <value>Pre-Disp Air</value>
+  </data>
+  <data name="SettingLiquidRemove" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="SettingManualAspirate" xml:space="preserve">
+    <value>Aspirate</value>
+  </data>
+  <data name="SettingManualAspirationParams" xml:space="preserve">
+    <value>Aspiration Params:</value>
+  </data>
+  <data name="SettingManualBacklash" xml:space="preserve">
+    <value>Backlash</value>
+  </data>
+  <data name="SettingManualCalibrationGear" xml:space="preserve">
+    <value>Calibration Gear:</value>
+  </data>
+  <data name="SettingManualClose" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="SettingManualControlCenter" xml:space="preserve">
+    <value>Manual Control Center</value>
+  </data>
+  <data name="SettingManualCoordinateFineAdjustment" xml:space="preserve">
+    <value>Coord Fine Adj (mm):</value>
+  </data>
+  <data name="SettingManualCurrentPlateCoordinates" xml:space="preserve">
+    <value>Current Plate Coordinates (mm):</value>
+  </data>
+  <data name="SettingManualDispense" xml:space="preserve">
+    <value>Dispense</value>
+  </data>
+  <data name="SettingManualDispensingParams" xml:space="preserve">
+    <value>Dispensing Params:</value>
+  </data>
+  <data name="SettingManualEjectTip" xml:space="preserve">
+    <value>Eject Tip</value>
+  </data>
+  <data name="SettingManualGetCalibration" xml:space="preserve">
+    <value>Get Calib</value>
+  </data>
+  <data name="SettingManualMovetoPlatePosition" xml:space="preserve">
+    <value>Move Plate</value>
+  </data>
+  <data name="SettingManualMoveZaxis" xml:space="preserve">
+    <value>Move Z-axis</value>
+  </data>
+  <data name="SettingManualPipetteControl" xml:space="preserve">
+    <value>Pipette Control</value>
+  </data>
+  <data name="SettingManualPlatePositionCalibration" xml:space="preserve">
+    <value>Plate Position Calibration (XYZ)</value>
+  </data>
+  <data name="SettingManualReset" xml:space="preserve">
+    <value>Reset</value>
+  </data>
+  <data name="SettingManualResetX" xml:space="preserve">
+    <value>Reset X</value>
+  </data>
+  <data name="SettingManualResetY" xml:space="preserve">
+    <value>Reset Y</value>
+  </data>
+  <data name="SettingManualResetZ" xml:space="preserve">
+    <value>Reset Z</value>
+  </data>
+  <data name="SettingManualSaveCoordinates" xml:space="preserve">
+    <value>Save Coords</value>
+  </data>
+  <data name="SettingManualSelectPlatePosition" xml:space="preserve">
+    <value>Select Plate Position:</value>
+  </data>
+  <data name="SettingManualSetCalibration" xml:space="preserve">
+    <value>Set Calib</value>
+  </data>
+  <data name="SettingManualSpeed" xml:space="preserve">
+    <value>Speed (μl/s):</value>
+  </data>
+  <data name="SettingManualTitile" xml:space="preserve">
+    <value>Manual Control</value>
+  </data>
+  <data name="SettingManualVolume" xml:space="preserve">
+    <value>Volume (μl):</value>
+  </data>
+  <data name="SettingManualXCoordinate" xml:space="preserve">
+    <value>X Coordinate:</value>
+  </data>
+  <data name="SettingManualXDirection" xml:space="preserve">
+    <value>X Direction</value>
+  </data>
+  <data name="SettingManualYCoordinate" xml:space="preserve">
+    <value>Y Coordinate:</value>
+  </data>
+  <data name="SettingManualYDirection" xml:space="preserve">
+    <value>Y Direction</value>
+  </data>
+  <data name="SettingManualZCoordinate" xml:space="preserve">
+    <value>Z Coordinate:</value>
+  </data>
+  <data name="SettingManualZDirection" xml:space="preserve">
+    <value>Z Direction</value>
+  </data>
+  <data name="SettingPipeTitile" xml:space="preserve">
+    <value>Pipetting Parameters</value>
+  </data>
+  <data name="SettingTitle" xml:space="preserve">
+    <value>Configuration Management</value>
+  </data>
+  <data name="SQLPosNameNotEmpty" xml:space="preserve">
+    <value>Plate pos name not empty</value>
+  </data>
+  <data name="StepDetailAspAirA" xml:space="preserve">
+    <value>Air After Aspiration:</value>
+  </data>
+  <data name="StepDetailAspAirB" xml:space="preserve">
+    <value>Air Before Aspiration:</value>
+  </data>
+  <data name="StepDetailAspDelay" xml:space="preserve">
+    <value>Aspiration Delay:</value>
+  </data>
+  <data name="StepDetailAspDispConsTip" xml:space="preserve">
+    <value>Only supports microplates or reservoirs</value>
+  </data>
+  <data name="StepDetailAspDist" xml:space="preserve">
+    <value>Aspiration Distance:</value>
+  </data>
+  <data name="StepDetailAspirationParams" xml:space="preserve">
+    <value>Aspiration Parameters:</value>
+  </data>
+  <data name="StepDetailAspSpeed" xml:space="preserve">
+    <value>Aspiration Speed:</value>
+  </data>
+  <data name="StepDetailCurrentCons" xml:space="preserve">
+    <value>(Current: {0})</value>
+  </data>
+  <data name="StepDetailDetails" xml:space="preserve">
+    <value>Details</value>
+  </data>
+  <data name="StepDetailDispAirA" xml:space="preserve">
+    <value>Air After Dispensing:</value>
+  </data>
+  <data name="StepDetailDispAirB" xml:space="preserve">
+    <value>Air Before Dispensing:</value>
+  </data>
+  <data name="StepDetailDispDelay" xml:space="preserve">
+    <value>Dispensing Delay:</value>
+  </data>
+  <data name="StepDetailDispDist" xml:space="preserve">
+    <value>Dispensing Distance:</value>
+  </data>
+  <data name="StepDetailDispensingParams" xml:space="preserve">
+    <value>Dispensing Parameters:</value>
+  </data>
+  <data name="StepDetailDispSpeed" xml:space="preserve">
+    <value>Dispensing Speed:</value>
+  </data>
+  <data name="StepDetailEnableMix" xml:space="preserve">
+    <value>Enable Mixing</value>
+  </data>
+  <data name="StepDetailInitialDelay" xml:space="preserve">
+    <value>Initial Delay(ms):</value>
+  </data>
+  <data name="StepDetailInitialVol" xml:space="preserve">
+    <value>Initial Volume(ul):</value>
+  </data>
+  <data name="StepDetailLiquidParams" xml:space="preserve">
+    <value>Liquid parameters:</value>
+  </data>
+  <data name="StepDetailMixCount" xml:space="preserve">
+    <value>Mixing Times:</value>
+  </data>
+  <data name="StepDetailMixedSettings" xml:space="preserve">
+    <value>Mixed settings:</value>
+  </data>
+  <data name="StepDetailMixVolume" xml:space="preserve">
+    <value>Mixing Volume(ul):</value>
+  </data>
+  <data name="StepDetailOperationPosition" xml:space="preserve">
+    <value>Operation Position:</value>
+  </data>
+  <data name="StepDetailTipOnOffConsTip" xml:space="preserve">
+    <value>Only supports tip boxes or waste bins</value>
+  </data>
+  <data name="StepDetailVolume" xml:space="preserve">
+    <value>Volume(ul):</value>
+  </data>
+  <data name="StepDetailWaitDesc" xml:space="preserve">
+    <value>Waiting Description:</value>
+  </data>
+  <data name="StepDetailWaitNote" xml:space="preserve">
+    <value>Note: Waiting time will be auto-converted to milliseconds.</value>
+  </data>
+  <data name="StepDetailWaitTime" xml:space="preserve">
+    <value>Waiting Time (seconds):</value>
+  </data>
+  <data name="StepDetailWellPosition" xml:space="preserve">
+    <value>Well Position Selection:</value>
+  </data>
+  <data name="StepDetailWellSelectionArea" xml:space="preserve">
+    <value>Well Position Selection Area:</value>
+  </data>
+  <data name="WindowActionAspirate" xml:space="preserve">
+    <value>Aspirate</value>
+  </data>
+  <data name="WindowActionDispense" xml:space="preserve">
+    <value>Dispense</value>
+  </data>
+  <data name="WindowActionFunctionArea" xml:space="preserve">
+    <value>Action Function Area</value>
+  </data>
+  <data name="WindowActionInit" xml:space="preserve">
+    <value>Init</value>
+  </data>
+  <data name="WindowActionLight" xml:space="preserve">
+    <value>Light</value>
+    <comment>补光灯</comment>
+  </data>
+  <data name="WindowActionLoad" xml:space="preserve">
+    <value>Load</value>
+  </data>
+  <data name="WindowActionPause" xml:space="preserve">
+    <value>Pause</value>
+  </data>
+  <data name="WindowActionStart" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="WindowActionStop" xml:space="preserve">
+    <value>Stop</value>
+  </data>
+  <data name="WindowActionTipOff" xml:space="preserve">
+    <value>TipOff</value>
+  </data>
+  <data name="WindowActionTipOn" xml:space="preserve">
+    <value>TipOn</value>
+  </data>
+  <data name="WindowActionUV" xml:space="preserve">
+    <value>UV</value>
+    <comment>紫外灯</comment>
+  </data>
+  <data name="WindowActionWait" xml:space="preserve">
+    <value>Wait</value>
+  </data>
+  <data name="WindowBoardPosition" xml:space="preserve">
+    <value>Board position layout (4×3)</value>
+  </data>
+  <data name="WindowConsumablesWarehouse" xml:space="preserve">
+    <value>Consumables Warehouse</value>
+    <comment>耗材库</comment>
+  </data>
+  <data name="WindowLoginCancel" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>退出</comment>
+  </data>
+  <data name="WindowLoginOK" xml:space="preserve">
+    <value>Login</value>
+    <comment>登录</comment>
+  </data>
+  <data name="WindowLoginPass" xml:space="preserve">
+    <value>Password</value>
+    <comment>密码</comment>
+  </data>
+  <data name="WindowLoginPassTitle" xml:space="preserve">
+    <value>Please enter your password.</value>
+    <comment>请输入密码</comment>
+  </data>
+  <data name="WindowLoginUser" xml:space="preserve">
+    <value>User</value>
+    <comment>用户名</comment>
+  </data>
+  <data name="WindowLoginUserTitle" xml:space="preserve">
+    <value>Please enter your username.</value>
+    <comment>请输入用户名</comment>
+  </data>
+  <data name="WindowLogOut" xml:space="preserve">
+    <value>LogOut</value>
+  </data>
+  <data name="WindowOneclickdeletion" xml:space="preserve">
+    <value>Clear</value>
+    <comment>一键清除</comment>
+  </data>
+  <data name="WindowProcessList" xml:space="preserve">
+    <value>Process List</value>
+    <comment>流程列表</comment>
+  </data>
+  <data name="Windowrapidgenerating" xml:space="preserve">
+    <value>Build</value>
+    <comment>快速生成</comment>
+  </data>
+  <data name="WindowStepdetails" xml:space="preserve">
+    <value>Step details</value>
+    <comment>步骤详情</comment>
+  </data>
+  <data name="WindowStepdetails2" xml:space="preserve">
+    <value>Please select the process steps to view details.</value>
+    <comment>请选择流程步骤查看详情</comment>
+  </data>
+  <data name="WindowTitle" xml:space="preserve">
+    <value>8-Channel Pipetting Workstation</value>
+  </data>
+  <data name="WindowUser" xml:space="preserve">
+    <value>Current User:</value>
+  </data>
+  <data name="WindowUserName" xml:space="preserve">
+    <value>Admin</value>
+  </data>
+  <data name="WindowVersion" xml:space="preserve">
+    <value>Version 1.0.0</value>
+    <comment>镁伽科技 | 版本 1.0.0</comment>
+  </data>
+</root>
