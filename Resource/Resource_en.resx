@@ -180,6 +180,63 @@
   <data name="GrpcStartRunning" xml:space="preserve">
     <value>Process has not stopped</value>
   </data>
+  <data name="GuideBtnDeckLayout" xml:space="preserve">
+    <value>Deck Layout Configuration</value>
+  </data>
+  <data name="GuideBtnDeckLayoutModuleList" xml:space="preserve">
+    <value>Module List</value>
+  </data>
+  <data name="GuideBtnDeckLayoutTitile" xml:space="preserve">
+    <value>Configure Your Workstation Modules</value>
+  </data>
+  <data name="GuideBtnDeviceAddGripper" xml:space="preserve">
+    <value>Add your gripper</value>
+  </data>
+  <data name="GuideBtnDeviceAddGripperToolTip" xml:space="preserve">
+    <value>Automate labware transfer, essential for container movement.</value>
+  </data>
+  <data name="GuideBtnDeviceAddPCRModule" xml:space="preserve">
+    <value>Add your PCR module</value>
+  </data>
+  <data name="GuideBtnDeviceAddPCRModuleToolTip" xml:space="preserve">
+    <value>Core for gene amplification &amp; thermal cycling.</value>
+  </data>
+  <data name="GuideBtnDeviceAddPipettes" xml:space="preserve">
+    <value>Add your pipettes</value>
+  </data>
+  <data name="GuideBtnDeviceAddPipettesToolTip" xml:space="preserve">
+    <value>Precise aspiration/dispensing, core for volume-accurate experiments.</value>
+  </data>
+  <data name="GuideBtnDeviceAddWasteBin" xml:space="preserve">
+    <value>Add your labware waste bin</value>
+  </data>
+  <data name="GuideBtnDeviceAddWasteBinToolTip" xml:space="preserve">
+    <value>Store waste consumables, keep lab tidy.</value>
+  </data>
+  <data name="GuideBtnDeviceConfig" xml:space="preserve">
+    <value>Basic Device Configuration</value>
+  </data>
+  <data name="GuideBtnDeviceStart" xml:space="preserve">
+    <value>Let’s start with the basics</value>
+  </data>
+  <data name="GuideBtnExperimentProtocolInfoAuthor" xml:space="preserve">
+    <value>Author/Organization</value>
+  </data>
+  <data name="GuideBtnExperimentProtocolInfoDescription" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="GuideBtnExperimentProtocolInfoName" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="GuideBtnExperimentProtocolInfoTitile" xml:space="preserve">
+    <value>Specify Your Experiment Protocol Info</value>
+  </data>
+  <data name="GuideBtnProtocolInfo" xml:space="preserve">
+    <value>Experiment Protocol Info</value>
+  </data>
+  <data name="GuideTitle" xml:space="preserve">
+    <value>Device &amp; Protocol Guided Setup</value>
+  </data>
   <data name="MainWindowDetailLoadFail" xml:space="preserve">
     <value>Load fail</value>
   </data>
@@ -338,6 +395,9 @@
   </data>
   <data name="ScriptUINotRun" xml:space="preserve">
     <value>Not running</value>
+  </data>
+  <data name="SettingConfirm" xml:space="preserve">
+    <value>Confirm</value>
   </data>
   <data name="SettingCons2D" xml:space="preserve">
     <value>Consumable 2D Drawing</value>
@@ -591,17 +651,47 @@
   <data name="SettingManualCurrentPlateCoordinates" xml:space="preserve">
     <value>Current Plate Coordinates (mm):</value>
   </data>
+  <data name="SettingManualDeviceModuleManagement" xml:space="preserve">
+    <value>Device and Module Management</value>
+    <comment>设备与模块管理</comment>
+  </data>
   <data name="SettingManualDispense" xml:space="preserve">
     <value>Dispense</value>
   </data>
   <data name="SettingManualDispensingParams" xml:space="preserve">
     <value>Dispensing Params:</value>
   </data>
+  <data name="SettingManualEightChannel" xml:space="preserve">
+    <value>Eight Channel</value>
+  </data>
   <data name="SettingManualEjectTip" xml:space="preserve">
     <value>Eject Tip</value>
   </data>
+  <data name="SettingManualEnableGripper" xml:space="preserve">
+    <value>Enable gripper?</value>
+    <comment>是否启用抓手？</comment>
+  </data>
+  <data name="SettingManualEnablePCR" xml:space="preserve">
+    <value>Enable Thermocycler Module?</value>
+    <comment>是否启用PCR？</comment>
+  </data>
+  <data name="SettingManualEnableTrash" xml:space="preserve">
+    <value>Enable labware waste bin?</value>
+  </data>
   <data name="SettingManualGetCalibration" xml:space="preserve">
     <value>Get Calib</value>
+  </data>
+  <data name="SettingManualGripper" xml:space="preserve">
+    <value>Gripper</value>
+  </data>
+  <data name="SettingManualHeatingShaking" xml:space="preserve">
+    <value>Heater-Shaker Module</value>
+  </data>
+  <data name="SettingManualMagnetic" xml:space="preserve">
+    <value>Magnetic Module</value>
+  </data>
+  <data name="SettingManualModules" xml:space="preserve">
+    <value>Functional Modules</value>
   </data>
   <data name="SettingManualMovetoPlatePosition" xml:space="preserve">
     <value>Move Plate</value>
@@ -609,8 +699,15 @@
   <data name="SettingManualMoveZaxis" xml:space="preserve">
     <value>Move Z-axis</value>
   </data>
+  <data name="SettingManualPCR" xml:space="preserve">
+    <value>Thermocycler Module</value>
+  </data>
   <data name="SettingManualPipetteControl" xml:space="preserve">
     <value>Pipette Control</value>
+  </data>
+  <data name="SettingManualPipettes" xml:space="preserve">
+    <value>Pipettes</value>
+    <comment>移液器</comment>
   </data>
   <data name="SettingManualPlatePositionCalibration" xml:space="preserve">
     <value>Plate Position Calibration (XYZ)</value>
@@ -636,8 +733,14 @@
   <data name="SettingManualSetCalibration" xml:space="preserve">
     <value>Set Calib</value>
   </data>
+  <data name="SettingManualSingleChannel" xml:space="preserve">
+    <value>Single Channel</value>
+  </data>
   <data name="SettingManualSpeed" xml:space="preserve">
     <value>Speed (μl/s):</value>
+  </data>
+  <data name="SettingManualTemperatureControl" xml:space="preserve">
+    <value>Temperature Module</value>
   </data>
   <data name="SettingManualTitile" xml:space="preserve">
     <value>Manual Control</value>
@@ -781,14 +884,26 @@
   <data name="WindowActionLoad" xml:space="preserve">
     <value>Load</value>
   </data>
+  <data name="WindowActionMagnetic" xml:space="preserve">
+    <value>Magnetic</value>
+  </data>
   <data name="WindowActionPause" xml:space="preserve">
     <value>Pause</value>
+  </data>
+  <data name="WindowActionPCR" xml:space="preserve">
+    <value>PCR</value>
+  </data>
+  <data name="WindowActionShake" xml:space="preserve">
+    <value>Shake</value>
   </data>
   <data name="WindowActionStart" xml:space="preserve">
     <value>Start</value>
   </data>
   <data name="WindowActionStop" xml:space="preserve">
     <value>Stop</value>
+  </data>
+  <data name="WindowActionTemperature" xml:space="preserve">
+    <value>Temp Ctrl</value>
   </data>
   <data name="WindowActionTipOff" xml:space="preserve">
     <value>TipOff</value>
@@ -848,6 +963,9 @@
   <data name="Windowrapidgenerating" xml:space="preserve">
     <value>Build</value>
     <comment>快速生成</comment>
+  </data>
+  <data name="WindowRunningMessage" xml:space="preserve">
+    <value>Running Info</value>
   </data>
   <data name="WindowStepdetails" xml:space="preserve">
     <value>Step details</value>

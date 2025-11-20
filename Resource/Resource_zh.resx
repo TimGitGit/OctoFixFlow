@@ -180,6 +180,63 @@
   <data name="GrpcStartRunning" xml:space="preserve">
     <value>流程未停止</value>
   </data>
+  <data name="GuideBtnDeckLayout" xml:space="preserve">
+    <value>板位布局配置</value>
+  </data>
+  <data name="GuideBtnDeckLayoutModuleList" xml:space="preserve">
+    <value>模块列表</value>
+  </data>
+  <data name="GuideBtnDeckLayoutTitile" xml:space="preserve">
+    <value>配置您的工作站模块</value>
+  </data>
+  <data name="GuideBtnDeviceAddGripper" xml:space="preserve">
+    <value>添加您的抓手</value>
+  </data>
+  <data name="GuideBtnDeviceAddGripperToolTip" xml:space="preserve">
+    <value>抓手实现耗材自动移载，涉及自动容器转移的模块需依赖其运行。</value>
+  </data>
+  <data name="GuideBtnDeviceAddPCRModule" xml:space="preserve">
+    <value>添加您的PCR模块</value>
+  </data>
+  <data name="GuideBtnDeviceAddPCRModuleToolTip" xml:space="preserve">
+    <value>基因扩增核心，热循环控制。</value>
+  </data>
+  <data name="GuideBtnDeviceAddPipettes" xml:space="preserve">
+    <value>添加您的移液器</value>
+  </data>
+  <data name="GuideBtnDeviceAddPipettesToolTip" xml:space="preserve">
+    <value>移液器实现精准吸液 / 分液操作，是体积精准实验流程的关键。</value>
+  </data>
+  <data name="GuideBtnDeviceAddWasteBin" xml:space="preserve">
+    <value>添加您的耗材回收桶</value>
+  </data>
+  <data name="GuideBtnDeviceAddWasteBinToolTip" xml:space="preserve">
+    <value>收纳废弃耗材，保持实验整洁。</value>
+  </data>
+  <data name="GuideBtnDeviceConfig" xml:space="preserve">
+    <value>设备基础配置</value>
+  </data>
+  <data name="GuideBtnDeviceStart" xml:space="preserve">
+    <value>让我们从基础开始吧</value>
+  </data>
+  <data name="GuideBtnExperimentProtocolInfoAuthor" xml:space="preserve">
+    <value>作者/机构</value>
+  </data>
+  <data name="GuideBtnExperimentProtocolInfoDescription" xml:space="preserve">
+    <value>描述</value>
+  </data>
+  <data name="GuideBtnExperimentProtocolInfoName" xml:space="preserve">
+    <value>名称</value>
+  </data>
+  <data name="GuideBtnExperimentProtocolInfoTitile" xml:space="preserve">
+    <value>实验方案信息说明</value>
+  </data>
+  <data name="GuideBtnProtocolInfo" xml:space="preserve">
+    <value>实验协议信息</value>
+  </data>
+  <data name="GuideTitle" xml:space="preserve">
+    <value>设备与协议引导设置</value>
+  </data>
   <data name="MainWindowDetailLoadFail" xml:space="preserve">
     <value>加载失败</value>
   </data>
@@ -338,6 +395,9 @@
   </data>
   <data name="ScriptUINotRun" xml:space="preserve">
     <value>未运行</value>
+  </data>
+  <data name="SettingConfirm" xml:space="preserve">
+    <value>确认</value>
   </data>
   <data name="SettingCons2D" xml:space="preserve">
     <value>耗材平面图</value>
@@ -591,17 +651,44 @@
   <data name="SettingManualCurrentPlateCoordinates" xml:space="preserve">
     <value>当前板位坐标 (mm)：</value>
   </data>
+  <data name="SettingManualDeviceModuleManagement" xml:space="preserve">
+    <value>设备与模块管理</value>
+  </data>
   <data name="SettingManualDispense" xml:space="preserve">
     <value>注液</value>
   </data>
   <data name="SettingManualDispensingParams" xml:space="preserve">
     <value>注液参数：</value>
   </data>
+  <data name="SettingManualEightChannel" xml:space="preserve">
+    <value>八通道</value>
+  </data>
   <data name="SettingManualEjectTip" xml:space="preserve">
     <value>退头</value>
   </data>
+  <data name="SettingManualEnableGripper" xml:space="preserve">
+    <value>是否启用抓手？</value>
+  </data>
+  <data name="SettingManualEnablePCR" xml:space="preserve">
+    <value>是否启用热循环模块？</value>
+  </data>
+  <data name="SettingManualEnableTrash" xml:space="preserve">
+    <value>是否启用垃圾桶？</value>
+  </data>
   <data name="SettingManualGetCalibration" xml:space="preserve">
     <value>获取定标</value>
+  </data>
+  <data name="SettingManualGripper" xml:space="preserve">
+    <value>抓手</value>
+  </data>
+  <data name="SettingManualHeatingShaking" xml:space="preserve">
+    <value>加热振荡模块</value>
+  </data>
+  <data name="SettingManualMagnetic" xml:space="preserve">
+    <value>磁吸模块</value>
+  </data>
+  <data name="SettingManualModules" xml:space="preserve">
+    <value>功能模块</value>
   </data>
   <data name="SettingManualMovetoPlatePosition" xml:space="preserve">
     <value>移动到板位</value>
@@ -609,8 +696,14 @@
   <data name="SettingManualMoveZaxis" xml:space="preserve">
     <value>移动Z轴</value>
   </data>
+  <data name="SettingManualPCR" xml:space="preserve">
+    <value>热循环模块</value>
+  </data>
   <data name="SettingManualPipetteControl" xml:space="preserve">
     <value>移液器控制</value>
+  </data>
+  <data name="SettingManualPipettes" xml:space="preserve">
+    <value>移液器</value>
   </data>
   <data name="SettingManualPlatePositionCalibration" xml:space="preserve">
     <value>板位定标 (XYZ)</value>
@@ -636,8 +729,14 @@
   <data name="SettingManualSetCalibration" xml:space="preserve">
     <value>设置定标</value>
   </data>
+  <data name="SettingManualSingleChannel" xml:space="preserve">
+    <value>单通道</value>
+  </data>
   <data name="SettingManualSpeed" xml:space="preserve">
     <value>速度 (μl/s)：</value>
+  </data>
+  <data name="SettingManualTemperatureControl" xml:space="preserve">
+    <value>温控模块</value>
   </data>
   <data name="SettingManualTitile" xml:space="preserve">
     <value>手动控制</value>
@@ -780,14 +879,26 @@
   <data name="WindowActionLoad" xml:space="preserve">
     <value>加载</value>
   </data>
+  <data name="WindowActionMagnetic" xml:space="preserve">
+    <value>磁吸</value>
+  </data>
   <data name="WindowActionPause" xml:space="preserve">
     <value>暂停</value>
+  </data>
+  <data name="WindowActionPCR" xml:space="preserve">
+    <value>热循环</value>
+  </data>
+  <data name="WindowActionShake" xml:space="preserve">
+    <value>振荡</value>
   </data>
   <data name="WindowActionStart" xml:space="preserve">
     <value>开始</value>
   </data>
   <data name="WindowActionStop" xml:space="preserve">
     <value>停止</value>
+  </data>
+  <data name="WindowActionTemperature" xml:space="preserve">
+    <value>温控</value>
   </data>
   <data name="WindowActionTipOff" xml:space="preserve">
     <value>退头</value>
@@ -836,6 +947,9 @@
   </data>
   <data name="Windowrapidgenerating" xml:space="preserve">
     <value>生成</value>
+  </data>
+  <data name="WindowRunningMessage" xml:space="preserve">
+    <value>运行信息</value>
   </data>
   <data name="WindowStepdetails" xml:space="preserve">
     <value>步骤详情</value>

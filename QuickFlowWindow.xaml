@@ -12,10 +12,6 @@
     WindowStartupLocation="CenterOwner"
     mc:Ignorable="d">
     <Window.Resources>
-        <!--  复用主窗口的样式  -->
-        <SolidColorBrush x:Key="PrimaryColor" Color="#FA4616" />
-        <SolidColorBrush x:Key="SecondaryColor" Color="#3498db" />
-
         <Style x:Key="InputTextBoxStyle" TargetType="{x:Type TextBox}">
             <Setter Property="Background" Value="#F9F9F9" />
             <Setter Property="BorderBrush" Value="#E0E0E0" />
@@ -44,187 +40,6 @@
             </Setter>
         </Style>
 
-        <!--  ComboBox样式  -->
-        <Style x:Key="InputComboBoxStyle" TargetType="{x:Type ComboBox}">
-            <Setter Property="Background" Value="#F9F9F9" />
-            <Setter Property="BorderBrush" Value="#E0E0E0" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Height" Value="30" />
-            <!--  减小高度与标签对齐  -->
-            <Setter Property="FontSize" Value="14" />
-            <!--  保持字体大小一致  -->
-            <Setter Property="Padding" Value="5" />
-            <!--  调整内边距  -->
-            <Setter Property="MinWidth" Value="90" />
-            <!--  确保基础宽度  -->
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type ComboBox}">
-                        <Grid x:Name="MainGrid" SnapsToDevicePixels="True">
-                            <!--  主边框  -->
-                            <Border
-                                x:Name="border"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="5">
-                                <Grid>
-                                    <!--  显示选中内容  -->
-                                    <ContentPresenter
-                                        x:Name="ContentSite"
-                                        Margin="5,0,30,0"
-                                        VerticalAlignment="Center"
-                                        Content="{TemplateBinding SelectionBoxItem}"
-                                        ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" />
-
-                                    <!--  下拉按钮  -->
-                                    <ToggleButton
-                                        x:Name="ToggleButton"
-                                        Width="25"
-                                        Height="25"
-                                        Margin="0,2"
-                                        HorizontalAlignment="Right"
-                                        VerticalAlignment="Center"
-                                        Focusable="False"
-                                        IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
-                                        <ToggleButton.Template>
-                                            <ControlTemplate TargetType="{x:Type ToggleButton}">
-                                                <Border
-                                                    x:Name="btnBorder"
-                                                    Width="20"
-                                                    Height="20"
-                                                    Background="Transparent"
-                                                    CornerRadius="3">
-                                                    <!--  下拉箭头  -->
-                                                    <Path
-                                                        x:Name="Arrow"
-                                                        Width="8"
-                                                        Height="5"
-                                                        Data="M0,0 L8,0 L4,5 z"
-                                                        Fill="#666666" />
-                                                </Border>
-                                                <ControlTemplate.Triggers>
-                                                    <Trigger Property="IsMouseOver" Value="True">
-                                                        <Setter TargetName="btnBorder" Property="Background" Value="#E0E0E0" />
-                                                    </Trigger>
-                                                </ControlTemplate.Triggers>
-                                            </ControlTemplate>
-                                        </ToggleButton.Template>
-                                    </ToggleButton>
-                                </Grid>
-                            </Border>
-
-                            <!--  下拉弹出框  -->
-                            <Popup
-                                x:Name="Popup"
-                                AllowsTransparency="True"
-                                Focusable="False"
-                                IsOpen="{TemplateBinding IsDropDownOpen}"
-                                Placement="Bottom"
-                                PopupAnimation="Slide">
-                                <!--  下拉框宽度与主控件一致  -->
-                                <Border
-                                    x:Name="DropDownBorder"
-                                    Width="{Binding ActualWidth, ElementName=MainGrid}"
-                                    MaxWidth="{TemplateBinding MaxWidth}"
-                                    Background="White"
-                                    BorderBrush="#E0E0E0"
-                                    BorderThickness="1"
-                                    CornerRadius="5">
-                                    <ScrollViewer x:Name="DropDownScrollViewer" MaxHeight="{TemplateBinding MaxDropDownHeight}">
-                                        <ItemsPresenter
-                                            x:Name="ItemsPresenter"
-                                            Margin="2"
-                                            SnapsToDevicePixels="True" />
-                                    </ScrollViewer>
-                                </Border>
-                            </Popup>
-                        </Grid>
-
-                        <!--  触发器  -->
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsFocused" Value="True">
-                                <Trigger.EnterActions>
-                                    <BeginStoryboard>
-                                        <Storyboard>
-                                            <ColorAnimation
-                                                Storyboard.TargetName="border"
-                                                Storyboard.TargetProperty="BorderBrush.Color"
-                                                To="#FA4616"
-                                                Duration="0:0:0.2" />
-                                            <ThicknessAnimation
-                                                Storyboard.TargetName="border"
-                                                Storyboard.TargetProperty="BorderThickness"
-                                                From="1"
-                                                To="1.5"
-                                                Duration="0:0:0.2" />
-                                        </Storyboard>
-                                    </BeginStoryboard>
-                                </Trigger.EnterActions>
-                            </Trigger>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="BorderBrush" Value="#CCCCCC" />
-                            </Trigger>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="border" Property="Background" Value="#EEEEEE" />
-                                <Setter Property="Foreground" Value="#BDBDBD" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-
-            <!--  下拉选项样式  -->
-            <Style.Resources>
-                <Style TargetType="{x:Type ComboBoxItem}">
-                    <Setter Property="MinHeight" Value="32" />
-                    <!--  减小选项高度  -->
-                    <Setter Property="Padding" Value="8" />
-                    <!--  调整内边距  -->
-                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                    <Setter Property="Template">
-                        <Setter.Value>
-                            <ControlTemplate TargetType="{x:Type ComboBoxItem}">
-                                <Border
-                                    x:Name="ItemBorder"
-                                    Padding="{TemplateBinding Padding}"
-                                    Background="Transparent"
-                                    SnapsToDevicePixels="True">
-                                    <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center" />
-                                </Border>
-                                <ControlTemplate.Triggers>
-                                    <Trigger Property="IsSelected" Value="True">
-                                        <Setter TargetName="ItemBorder" Property="Background" Value="#FA4616" />
-                                    </Trigger>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter TargetName="ItemBorder" Property="Background" Value="#FFF3E0" />
-                                    </Trigger>
-                                </ControlTemplate.Triggers>
-                            </ControlTemplate>
-                        </Setter.Value>
-                    </Setter>
-                </Style>
-            </Style.Resources>
-        </Style>
-
-        <Style x:Key="ActionButtonStyle" TargetType="Button">
-            <Setter Property="Width" Value="100" />
-            <Setter Property="Height" Value="35" />
-            <Setter Property="Margin" Value="5" />
-            <Setter Property="FontSize" Value="14" />
-            <Setter Property="Foreground" Value="White" />
-            <Setter Property="Background" Value="{StaticResource SecondaryColor}" />
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="5">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
     </Window.Resources>
 
     <Grid Margin="20">
@@ -520,7 +335,6 @@
             Orientation="Horizontal">
             <Button
                 x:Name="GenerateButton"
-                Background="{StaticResource PrimaryColor}"
                 Click="GenerateButton_Click"
                 Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=QuickGenerate}"
                 Style="{StaticResource ActionButtonStyle}" />

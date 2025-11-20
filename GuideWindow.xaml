@@ -1,0 +1,792 @@
+﻿<Window
+    x:Class="OctoFixFlow.GuideWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:OctoFixFlow"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    MinWidth="1180"
+    MinHeight="750"
+    MaxWidth="1180"
+    MaxHeight="750"
+    Topmost="True"
+    WindowStyle="None"
+    mc:Ignorable="d">
+
+    <Grid Background="White">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50" />
+            <RowDefinition Height="50" />
+            <!--  标题行  -->
+            <RowDefinition Height="*" />
+            <!--  内容行  -->
+            <RowDefinition Height="55" />
+            <!--  按钮行  -->
+        </Grid.RowDefinitions>
+        <!--  标题栏  -->
+        <Border Grid.Row="0">
+            <TextBlock
+                Margin="20,0"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Center"
+                FontSize="16"
+                FontWeight="Bold"
+                Foreground="{StaticResource PrimaryColor}"
+                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=GuideTitle}" />
+        </Border>
+        <Border Grid.Row="1" Background="{StaticResource PrimaryColor}">
+            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                <Button
+                    Margin="20,0"
+                    Click="GuideBasic_Click"
+                    Cursor="Hand"
+                    Style="{StaticResource TopToolbarButton}">
+                    <StackPanel Orientation="Horizontal">
+                        <Image
+                            Width="20"
+                            Height="20"
+                            Margin="0,0,5,0"
+                            Source="/OctoFixFlow;component/images/module.png" />
+                        <TextBlock Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=GuideBtnDeviceConfig}" />
+                    </StackPanel>
+                </Button>
+                <Rectangle
+                    Width="1"
+                    Height="30"
+                    Margin="10,0"
+                    Fill="White" />
+                <Button
+                    x:Name="GuideDeckLayoutTitle"
+                    Margin="20,0"
+                    Click="GuideDeckLayout_Click"
+                    IsEnabled="False"
+                    Style="{StaticResource TopToolbarButton}">
+                    <StackPanel Orientation="Horizontal">
+                        <Image
+                            Width="20"
+                            Height="20"
+                            Margin="0,0,5,0"
+                            Source="/OctoFixFlow;component/images/layout.png" />
+                        <TextBlock Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=GuideBtnDeckLayout}" />
+                    </StackPanel>
+                </Button>
+                <Rectangle
+                    Width="1"
+                    Height="30"
+                    Margin="10,0"
+                    Fill="White" />
+                <Button
+                    x:Name="GuideExperimentProtocolTitle"
+                    Margin="20,0"
+                    Click="GuideExperimentProtocol_Click"
+                    IsEnabled="False"
+                    Style="{StaticResource TopToolbarButton}">
+                    <StackPanel Orientation="Horizontal">
+                        <Image
+                            Width="20"
+                            Height="20"
+                            Margin="0,0,5,0"
+                            Source="/OctoFixFlow;component/images/basic.png" />
+                        <TextBlock Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=GuideBtnProtocolInfo}" />
+                    </StackPanel>
+                </Button>
+
+            </StackPanel>
+        </Border>
+        <TabControl
+            Name="mainGuideTable"
+            Grid.Row="2"
+            Background="#FCFCFC"
+            BorderThickness="0">
+            <TabControl.Resources>
+                <Style TargetType="{x:Type TabItem}">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                </Style>
+            </TabControl.Resources>
+            <!--  设备基础配置TabItem  -->
+            <TabItem>
+                <ScrollViewer Margin="10" VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <!--  标题栏  -->
+                        <TextBlock
+                            Margin="0,10,0,20"
+                            FontSize="18"
+                            FontWeight="Bold"
+                            Foreground="{StaticResource PrimaryColor}"
+                            Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=GuideBtnDeviceStart}" />
+                        <!--  添加移液器区域  -->
+                        <Border
+                            Margin="0,10,0,20"
+                            Background="White"
+                            BorderBrush="#E0E0E0"
+                            BorderThickness="1"
+                            CornerRadius="5">
+                            <StackPanel Margin="15">
+                                <TextBlock
+                                    Margin="0,0,0,15"
+                                    FontSize="16"
+                                    FontWeight="Medium"
+                                    Foreground="{StaticResource PrimaryColor}"
+                                    Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=GuideBtnDeviceAddPipettes}" />
+                                <StackPanel Grid.Column="0">
+                                    <StackPanel
+                                        Height="30"
+                                        Margin="0,0,0,10"
+                                        VerticalAlignment="Center"
+                                        Orientation="Horizontal">
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            FontSize="14"
+                                            Foreground="#666666"
+                                            Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=GuideBtnDeviceAddPipettesToolTip}" />
+                                    </StackPanel>
+                                    <StackPanel
+                                        Height="30"
+                                        Margin="0,0,0,10"
+                                        VerticalAlignment="Center"
+                                        Orientation="Horizontal">
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            FontSize="14"
+                                            Foreground="#666666"
+                                            Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualPipettes}" />
+                                        <Button
+                                            x:Name="btnAddPipette"
+                                            Width="30"
+                                            Height="30"
+                                            Margin="10,0,0,0"
+                                            HorizontalAlignment="Left"
+                                            Click="AddPipette_Click"
+                                            Content="➕"
+                                            Style="{StaticResource ActionButtonStyle}" />
+                                    </StackPanel>
+
+                                    <!--  移液器列表容器  -->
+                                    <StackPanel
+                                        x:Name="pipetteContainer"
+                                        Margin="0,0,0,10"
+                                        Visibility="Collapsed">
+                                        <StackPanel Margin="0,0,0,5" Orientation="Horizontal">
+                                            <ComboBox
+                                                x:Name="cmbPipette1"
+                                                Width="150"
+                                                SelectedIndex="0"
+                                                Style="{StaticResource InputComboBoxStyle}">
+                                                <ComboBoxItem Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualSingleChannel}" />
+                                                <ComboBoxItem Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualEightChannel}" />
+                                            </ComboBox>
+                                            <ComboBox
+                                                x:Name="cmbPipetteVolume"
+                                                Width="150"
+                                                Margin="5,0,0,0"
+                                                SelectedIndex="0"
+                                                Style="{StaticResource InputComboBoxStyle}">
+                                                <ComboBoxItem Content="200μL" />
+                                                <ComboBoxItem Content="1000μL" />
+                                            </ComboBox>
+                                            <Button
+                                                x:Name="btnRemPipette"
+                                                Width="30"
+                                                Height="30"
+                                                Margin="5,0,0,0"
+                                                HorizontalAlignment="Left"
+                                                Click="RemovePipette1_Click"
+                                                Content="➖"
+                                                Style="{StaticResource ActionButtonStyle}" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                    <StackPanel
+                                        x:Name="pipetteContainer2"
+                                        Margin="0,0,0,10"
+                                        Visibility="Collapsed">
+                                        <StackPanel Margin="0,0,0,5" Orientation="Horizontal">
+                                            <ComboBox
+                                                x:Name="cmbPipette2"
+                                                Width="150"
+                                                SelectedIndex="0"
+                                                Style="{StaticResource InputComboBoxStyle}">
+                                                <ComboBoxItem Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualSingleChannel}" />
+                                                <ComboBoxItem Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualEightChannel}" />
+                                            </ComboBox>
+                                            <ComboBox
+                                                x:Name="cmbPipetteVolume2"
+                                                Width="150"
+                                                Margin="5,0,0,0"
+                                                SelectedIndex="0"
+                                                Style="{StaticResource InputComboBoxStyle}">
+                                                <ComboBoxItem Content="200μL" />
+                                                <ComboBoxItem Content="1000μL" />
+                                            </ComboBox>
+                                            <Button
+                                                x:Name="btnRemPipette2"
+                                                Width="30"
+                                                Height="30"
+                                                Margin="5,0,0,0"
+                                                HorizontalAlignment="Left"
+                                                Click="RemovePipette2_Click"
+                                                Content="➖"
+                                                Style="{StaticResource ActionButtonStyle}" />
+                                        </StackPanel>
+
+                                    </StackPanel>
+                                </StackPanel>
+
+
+                            </StackPanel>
+                        </Border>
+                        <!--  添加抓手区域  -->
+                        <Border
+                            x:Name="gripperContainer"
+                            Margin="0,10,0,20"
+                            Background="White"
+                            BorderBrush="#E0E0E0"
+                            BorderThickness="1"
+                            CornerRadius="5"
+                            Visibility="Collapsed">
+                            <StackPanel Margin="15">
+                                <TextBlock
+                                    Margin="0,0,0,15"
+                                    FontSize="16"
+                                    FontWeight="Medium"
+                                    Foreground="{StaticResource PrimaryColor}"
+                                    Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=GuideBtnDeviceAddGripper}" />
+                                <StackPanel Grid.Column="0">
+                                    <StackPanel
+                                        Height="30"
+                                        Margin="0,0,0,10"
+                                        VerticalAlignment="Center"
+                                        Orientation="Horizontal">
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            FontSize="14"
+                                            Foreground="#666666"
+                                            Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=GuideBtnDeviceAddGripperToolTip}" />
+                                    </StackPanel>
+
+                                    <StackPanel Margin="0,0,0,10" Orientation="Horizontal">
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            FontSize="14"
+                                            Foreground="#666666"
+                                            Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualEnableGripper}" />
+                                        <Button
+                                            x:Name="btnToggleGripper"
+                                            Width="30"
+                                            Height="30"
+                                            Margin="5,0,0,0"
+                                            Click="EnableGripper_Click"
+                                            Content="❌"
+                                            Style="{StaticResource ActionButtonStyle}" />
+
+                                    </StackPanel>
+                                </StackPanel>
+
+
+                            </StackPanel>
+                        </Border>
+                        <!--  添加PCR区域  -->
+                        <Border
+                            x:Name="pcrContainer"
+                            Margin="0,10,0,20"
+                            Background="White"
+                            BorderBrush="#E0E0E0"
+                            BorderThickness="1"
+                            CornerRadius="5"
+                            Visibility="Collapsed">
+                            <StackPanel Margin="15">
+                                <TextBlock
+                                    Margin="0,0,0,15"
+                                    FontSize="16"
+                                    FontWeight="Medium"
+                                    Foreground="{StaticResource PrimaryColor}"
+                                    Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=GuideBtnDeviceAddPCRModule}" />
+                                <StackPanel Grid.Column="0">
+                                    <StackPanel
+                                        Height="30"
+                                        Margin="0,0,0,10"
+                                        VerticalAlignment="Center"
+                                        Orientation="Horizontal">
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            FontSize="14"
+                                            Foreground="#666666"
+                                            Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=GuideBtnDeviceAddPCRModuleToolTip}" />
+                                    </StackPanel>
+
+                                    <StackPanel Margin="0,0,0,10" Orientation="Horizontal">
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            FontSize="14"
+                                            Foreground="#666666"
+                                            Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualEnablePCR}" />
+                                        <Button
+                                            x:Name="btnTogglePCR"
+                                            Width="30"
+                                            Height="30"
+                                            Margin="5,0,0,0"
+                                            Click="EnablePCR_Click"
+                                            Content="❌"
+                                            Style="{StaticResource ActionButtonStyle}" />
+
+                                    </StackPanel>
+                                </StackPanel>
+
+
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+            <!--  板位布局配置TabItem  -->
+            <TabItem>
+                <Grid Margin="5">
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <!--  耗材区最小宽度，避免太窄  -->
+                        <ColumnDefinition Width="*" />
+                        <!--  板位区更宽，适配12个板位  -->
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <!--  标题栏  -->
+                        <TextBlock
+                            Margin="0,10,0,20"
+                            FontSize="18"
+                            FontWeight="Bold"
+                            Foreground="{StaticResource PrimaryColor}"
+                            Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=GuideBtnDeckLayoutTitile}" />
+                        <!--  模块显示区  -->
+                        <GroupBox
+                            Margin="145,5,50,10"
+                            FontSize="14"
+                            Header="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=GuideBtnDeckLayoutModuleList}">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <StackPanel Margin="5" Orientation="Vertical">
+                                    <!--  加热振荡  -->
+                                    <Border
+                                        MouseDown="ModuleItem_MouseDown"
+                                        Style="{StaticResource ConsumableItemStyle}"
+                                        Tag="5">
+                                        <ToolTipService.ToolTip>
+                                            <ToolTip
+                                                Padding="8,4"
+                                                Background="#F5F5F5"
+                                                FontSize="12"
+                                                Foreground="#333333">
+                                                <TextBlock Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualHeatingShaking}" />
+                                            </ToolTip>
+                                        </ToolTipService.ToolTip>
+                                        <StackPanel HorizontalAlignment="Center" Orientation="Vertical">
+                                            <Image
+                                                Width="150"
+                                                Height="100"
+                                                Margin="0"
+                                                Source="/OctoFixFlow;component/images/MixedHeating.png"
+                                                Stretch="Uniform" />
+                                            <TextBlock
+                                                Margin="0"
+                                                HorizontalAlignment="Center"
+                                                FontSize="14"
+                                                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualHeatingShaking}"
+                                                TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </Border>
+                                    <!--  磁吸  -->
+                                    <Border
+                                        MouseDown="ModuleItem_MouseDown"
+                                        Style="{StaticResource ConsumableItemStyle}"
+                                        Tag="6">
+                                        <ToolTipService.ToolTip>
+                                            <ToolTip
+                                                Padding="8,4"
+                                                Background="#F5F5F5"
+                                                FontSize="12"
+                                                Foreground="#333333">
+
+                                                <TextBlock Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualMagnetic}" />
+                                            </ToolTip>
+                                        </ToolTipService.ToolTip>
+                                        <StackPanel HorizontalAlignment="Center" Orientation="Vertical">
+                                            <Image
+                                                Width="150"
+                                                Height="100"
+                                                Margin="0"
+                                                Source="/OctoFixFlow;component/images/Magnet.png"
+                                                Stretch="Uniform" />
+                                            <TextBlock
+                                                Margin="0"
+                                                HorizontalAlignment="Center"
+                                                FontSize="14"
+                                                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualMagnetic}"
+                                                TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </Border>
+                                    <!--  温控  -->
+                                    <Border
+                                        MouseDown="ModuleItem_MouseDown"
+                                        Style="{StaticResource ConsumableItemStyle}"
+                                        Tag="6">
+                                        <ToolTipService.ToolTip>
+                                            <ToolTip
+                                                Padding="8,4"
+                                                Background="#F5F5F5"
+                                                FontSize="12"
+                                                Foreground="#333333">
+
+                                                <TextBlock Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualTemperatureControl}" />
+                                            </ToolTip>
+                                        </ToolTipService.ToolTip>
+                                        <StackPanel HorizontalAlignment="Center" Orientation="Vertical">
+                                            <Image
+                                                Width="150"
+                                                Height="100"
+                                                Margin="0"
+                                                Source="/OctoFixFlow;component/images/Temp.png"
+                                                Stretch="Uniform" />
+                                            <TextBlock
+                                                Margin="0"
+                                                HorizontalAlignment="Center"
+                                                FontSize="14"
+                                                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualTemperatureControl}"
+                                                TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </Border>
+
+                                </StackPanel>
+
+                            </ScrollViewer>
+                        </GroupBox>
+                    </StackPanel>
+
+                    <!--  12板位布局  -->
+                    <Grid Grid.Column="1" Margin="0,0,190,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="0.2*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Border
+                            x:Name="PlateBorder10"
+                            Grid.Row="1"
+                            Grid.Column="0"
+                            AllowDrop="True"
+                            Drop="PlateSlot_Drop"
+                            Focusable="True"
+                            MouseEnter="PlateSlot_MouseEnter"
+                            MouseLeave="PlateSlot_MouseLeave"
+                            PreviewKeyDown="PlateSlot_PreviewKeyDown"
+                            Style="{StaticResource PlateSlotStyle}"
+                            Tag="10">
+                            <Grid x:Name="PlateGrid10">
+                                <TextBlock
+                                    Margin="0,5,0,0"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontSize="16"
+                                    FontWeight="Bold"
+                                    Text="P10" />
+                            </Grid>
+                        </Border>
+                        <Border
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            AllowDrop="True"
+                            Drop="PlateSlot_Drop"
+                            Focusable="True"
+                            MouseEnter="PlateSlot_MouseEnter"
+                            MouseLeave="PlateSlot_MouseLeave"
+                            PreviewKeyDown="PlateSlot_PreviewKeyDown"
+                            Style="{StaticResource PlateSlotStyle}"
+                            Tag="11">
+                            <Grid x:Name="PlateGrid11">
+                                <TextBlock
+                                    Margin="0,5,0,0"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontSize="16"
+                                    FontWeight="Bold"
+                                    Text="P11" />
+                            </Grid>
+                        </Border>
+                        <Border
+                            Grid.Row="0"
+                            Grid.RowSpan="2"
+                            Grid.Column="2"
+                            Style="{StaticResource PlateSlotStyle}"
+                            Tag="12">
+                            <Grid x:Name="PlateGrid12">
+                                <Image
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Source="/OctoFixFlow;component/images/Trash.png"
+                                    Stretch="Uniform" />
+                            </Grid>
+                        </Border>
+                        <Border
+                            Grid.Row="2"
+                            Grid.Column="0"
+                            AllowDrop="True"
+                            Drop="PlateSlot_Drop"
+                            Focusable="True"
+                            MouseEnter="PlateSlot_MouseEnter"
+                            MouseLeave="PlateSlot_MouseLeave"
+                            PreviewKeyDown="PlateSlot_PreviewKeyDown"
+                            Style="{StaticResource PlateSlotStyle}"
+                            Tag="7">
+                            <Grid x:Name="PlateGrid7">
+                                <TextBlock
+                                    Margin="0,5,0,0"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontSize="16"
+                                    FontWeight="Bold"
+                                    Text="P7" />
+                            </Grid>
+                        </Border>
+                        <Border
+                            Grid.Row="2"
+                            Grid.Column="1"
+                            AllowDrop="True"
+                            Drop="PlateSlot_Drop"
+                            Focusable="True"
+                            MouseEnter="PlateSlot_MouseEnter"
+                            MouseLeave="PlateSlot_MouseLeave"
+                            PreviewKeyDown="PlateSlot_PreviewKeyDown"
+                            Style="{StaticResource PlateSlotStyle}"
+                            Tag="8">
+                            <Grid x:Name="PlateGrid8">
+                                <TextBlock
+                                    Margin="0,5,0,0"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontSize="16"
+                                    FontWeight="Bold"
+                                    Text="P8" />
+                            </Grid>
+                        </Border>
+                        <Border
+                            Grid.Row="2"
+                            Grid.Column="2"
+                            AllowDrop="True"
+                            Drop="PlateSlot_Drop"
+                            Focusable="True"
+                            MouseEnter="PlateSlot_MouseEnter"
+                            MouseLeave="PlateSlot_MouseLeave"
+                            PreviewKeyDown="PlateSlot_PreviewKeyDown"
+                            Style="{StaticResource PlateSlotStyle}"
+                            Tag="9">
+                            <Grid x:Name="PlateGrid9">
+                                <TextBlock
+                                    Margin="0,5,0,0"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontSize="16"
+                                    FontWeight="Bold"
+                                    Text="P9" />
+                            </Grid>
+                        </Border>
+                        <Border
+                            Grid.Row="3"
+                            Grid.Column="0"
+                            AllowDrop="True"
+                            Drop="PlateSlot_Drop"
+                            Focusable="True"
+                            MouseEnter="PlateSlot_MouseEnter"
+                            MouseLeave="PlateSlot_MouseLeave"
+                            PreviewKeyDown="PlateSlot_PreviewKeyDown"
+                            Style="{StaticResource PlateSlotStyle}"
+                            Tag="4">
+                            <Grid x:Name="PlateGrid4">
+                                <TextBlock
+                                    Margin="0,5,0,0"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontSize="16"
+                                    FontWeight="Bold"
+                                    Text="P4" />
+                            </Grid>
+                        </Border>
+                        <Border
+                            Grid.Row="3"
+                            Grid.Column="1"
+                            AllowDrop="True"
+                            Drop="PlateSlot_Drop"
+                            Focusable="True"
+                            MouseEnter="PlateSlot_MouseEnter"
+                            MouseLeave="PlateSlot_MouseLeave"
+                            PreviewKeyDown="PlateSlot_PreviewKeyDown"
+                            Style="{StaticResource PlateSlotStyle}"
+                            Tag="5">
+                            <Grid x:Name="PlateGrid5">
+                                <TextBlock
+                                    Margin="0,5,0,0"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontSize="16"
+                                    FontWeight="Bold"
+                                    Text="P5" />
+                            </Grid>
+                        </Border>
+                        <Border
+                            Grid.Row="3"
+                            Grid.Column="2"
+                            AllowDrop="True"
+                            Drop="PlateSlot_Drop"
+                            Focusable="True"
+                            MouseEnter="PlateSlot_MouseEnter"
+                            MouseLeave="PlateSlot_MouseLeave"
+                            PreviewKeyDown="PlateSlot_PreviewKeyDown"
+                            Style="{StaticResource PlateSlotStyle}"
+                            Tag="6">
+                            <Grid x:Name="PlateGrid6">
+                                <TextBlock
+                                    Margin="0,5,0,0"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontSize="16"
+                                    FontWeight="Bold"
+                                    Text="P6" />
+                            </Grid>
+                        </Border>
+                        <Border
+                            Grid.Row="4"
+                            Grid.Column="0"
+                            AllowDrop="True"
+                            Drop="PlateSlot_Drop"
+                            Focusable="True"
+                            MouseEnter="PlateSlot_MouseEnter"
+                            MouseLeave="PlateSlot_MouseLeave"
+                            PreviewKeyDown="PlateSlot_PreviewKeyDown"
+                            Style="{StaticResource PlateSlotStyle}"
+                            Tag="1">
+                            <Grid x:Name="PlateGrid1">
+                                <TextBlock
+                                    Margin="0,5,0,0"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontSize="16"
+                                    FontWeight="Bold"
+                                    Text="P1" />
+                            </Grid>
+                        </Border>
+                        <Border
+                            Grid.Row="4"
+                            Grid.Column="1"
+                            AllowDrop="True"
+                            Drop="PlateSlot_Drop"
+                            Focusable="True"
+                            MouseEnter="PlateSlot_MouseEnter"
+                            MouseLeave="PlateSlot_MouseLeave"
+                            PreviewKeyDown="PlateSlot_PreviewKeyDown"
+                            Style="{StaticResource PlateSlotStyle}"
+                            Tag="2">
+                            <Grid x:Name="PlateGrid2">
+                                <TextBlock
+                                    Margin="0,5,0,0"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontSize="16"
+                                    FontWeight="Bold"
+                                    Text="P2" />
+                            </Grid>
+                        </Border>
+                        <Border
+                            Grid.Row="4"
+                            Grid.Column="2"
+                            AllowDrop="True"
+                            Drop="PlateSlot_Drop"
+                            Focusable="True"
+                            MouseEnter="PlateSlot_MouseEnter"
+                            MouseLeave="PlateSlot_MouseLeave"
+                            PreviewKeyDown="PlateSlot_PreviewKeyDown"
+                            Style="{StaticResource PlateSlotStyle}"
+                            Tag="3">
+                            <Grid x:Name="PlateGrid3">
+                                <TextBlock
+                                    Margin="0,5,0,0"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontSize="16"
+                                    FontWeight="Bold"
+                                    Text="P3" />
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Grid>
+
+            </TabItem>
+            <!--  实验协议信息TabItem  -->
+            <TabItem>
+                <Grid Margin="5">
+                    <StackPanel>
+                        <!--  标题栏  -->
+                        <TextBlock
+                            Margin="0,10,0,20"
+                            FontSize="18"
+                            FontWeight="Bold"
+                            Foreground="{StaticResource PrimaryColor}"
+                            Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=GuideBtnExperimentProtocolInfoTitile}" />
+                        <Border
+                            Margin="0,10,0,20"
+                            Background="White"
+                            BorderBrush="#E0E0E0"
+                            BorderThickness="1"
+                            CornerRadius="5">
+                            <StackPanel Margin="15">
+                                <TextBlock
+                                    Margin="0,0,0,15"
+                                    FontSize="16"
+                                    FontWeight="Medium"
+                                    Foreground="{StaticResource PrimaryColor}"
+                                    Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=GuideBtnExperimentProtocolInfoName}" />
+                                <TextBox
+                                    Height="30"
+                                    Style="{StaticResource InputTextBoxStyle}"
+                                    TextWrapping="NoWrap" />
+                                <TextBlock
+                                    Margin="0,0,0,15"
+                                    FontSize="16"
+                                    FontWeight="Medium"
+                                    Foreground="{StaticResource PrimaryColor}"
+                                    Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=GuideBtnExperimentProtocolInfoDescription}" />
+                                <TextBox
+                                    MinHeight="100"
+                                    AcceptsReturn="True"
+                                    Style="{StaticResource InputTextBoxStyle}"
+                                    TextWrapping="Wrap" />
+                                <TextBlock
+                                    Margin="0,0,0,15"
+                                    FontSize="16"
+                                    FontWeight="Medium"
+                                    Foreground="{StaticResource PrimaryColor}"
+                                    Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=GuideBtnExperimentProtocolInfoAuthor}" />
+                                <TextBox
+                                    Height="30"
+                                    Style="{StaticResource InputTextBoxStyle}"
+                                    TextWrapping="NoWrap" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+        </TabControl>
+        <!--  继续按钮  -->
+        <Button
+            x:Name="GuideConfirmButton"
+            Grid.Row="3"
+            Width="70"
+            Height="35"
+            Margin="0,10"
+            Click="GuideConfirmButton_Click"
+            Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingConfirm}"
+            IsEnabled="False"
+            Style="{StaticResource ActionButtonStyle}" />
+    </Grid>
+</Window>

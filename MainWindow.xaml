@@ -55,7 +55,7 @@
                                             <ColorAnimation
                                                 Storyboard.TargetName="border"
                                                 Storyboard.TargetProperty="BorderBrush.Color"
-                                                To="#FA4616"
+                                                To="#E75333"
                                                 Duration="0:0:0.2" />
                                             <!--  边框厚度动画（替换为ThicknessAnimation）  -->
                                             <ThicknessAnimation
@@ -80,7 +80,7 @@
 
         <!--  按钮样式  -->
         <Style x:Key="AccentButtonStyle" TargetType="{x:Type Button}">
-            <Setter Property="Background" Value="#FA4616" />
+            <Setter Property="Background" Value="#E75333" />
             <Setter Property="Foreground" Value="White" />
             <Setter Property="FontSize" Value="14" />
             <Setter Property="FontWeight" Value="Medium" />
@@ -105,11 +105,11 @@
                         <ControlTemplate.Triggers>
                             <!--  鼠标悬停效果  -->
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#D93E12" />
+                                <Setter TargetName="border" Property="Background" Value="#FF987C" />
                             </Trigger>
                             <!--  点击效果  -->
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#C23710" />
+                                <Setter TargetName="border" Property="Background" Value="#DE4C25" />
                                 <Setter TargetName="contentPresenter" Property="RenderTransform">
                                     <Setter.Value>
                                         <ScaleTransform ScaleX="0.98" ScaleY="0.98" />

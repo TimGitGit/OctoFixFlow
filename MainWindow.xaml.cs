@@ -97,15 +97,43 @@ namespace OctoFixFlow
             MainWidget mWidget = new MainWidget();
             Application.Current.MainWindow = mWidget;
             this.Close();
-
             mWidget.Show();
             //mWidget.InitializeCameraAsync();
             ShowNotification($"{_res.MainWindowDetailLoginIN}: {login_Name.Text}", NotificationControl.NotificationType.Info);
+            ShowGuideWindow(mWidget);
         }
         //退出按钮
         private void ExitButton_Click(object sender, RoutedEventArgs e)
         {
             Application.Current.Shutdown();
+        }
+        // 显示引导窗口的方法
+        private void ShowGuideWindow(MainWidget mainWidget)
+        {
+            mainWidget.IsEnabled = false;
+
+            GuideWindow guideWindow = new GuideWindow();
+            guideWindow.Owner = mainWidget;
+            guideWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+
+            guideWindow.GuideCompleted += () =>
+            {
+                mainWidget.IsEnabled = true;
+                var plateModuleMap = AppGlobalConfig.Instance.PlateModuleMap;
+
+                foreach (var (plateId, moduleDatas) in plateModuleMap)
+                {
+                    Border targetBorder = mainWidget.FindPlateBorderByPlateId(plateId);
+
+                    mainWidget.Dispatcher.Invoke(() =>
+                    {
+                        mainWidget.UpdatePlateDisplay(targetBorder, moduleDatas);
+                    });
+                }
+            };
+
+            // 显示引导窗口（非模态，但由于MainWidget被禁用，用户必须先完成引导）
+            guideWindow.Show();
         }
         public void ShowNotification(string message, NotificationControl.NotificationType type, int duration = 3000)
         {

@@ -13,8 +13,6 @@
         <local:RowColumnMultiplierConverter x:Key="RowColumnMultiplierConverter" />
         <local:HightAddplierConverter x:Key="HightAddplierConverter" />
 
-        <SolidColorBrush x:Key="PrimaryBlue" Color="#3A5F85" />
-        <SolidColorBrush x:Key="PrimaryRed" Color="#FA4616" />
         <!--  输入框样式（带动画）  -->
         <Style x:Key="InputTextBoxStyle" TargetType="{x:Type Control}">
             <Setter Property="Background" Value="#F9F9F9" />
@@ -43,7 +41,7 @@
                                             <ColorAnimation
                                                 Storyboard.TargetName="border"
                                                 Storyboard.TargetProperty="BorderBrush.Color"
-                                                To="#FA4616"
+                                                To="#E75333"
                                                 Duration="0:0:0.2" />
                                             <!--  边框厚度动画（替换为ThicknessAnimation）  -->
                                             <ThicknessAnimation
@@ -65,220 +63,15 @@
                 </Setter.Value>
             </Setter>
         </Style>
-        <!--  ComboBox样式  -->
-        <Style x:Key="InputComboBoxStyle" TargetType="{x:Type ComboBox}">
-            <Setter Property="Background" Value="#F9F9F9" />
-            <Setter Property="BorderBrush" Value="#E0E0E0" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Height" Value="40" />
-            <Setter Property="FontSize" Value="14" />
-            <Setter Property="Padding" Value="8" />
-            <Setter Property="MinWidth" Value="90" />
-            <!--  确保基础宽度  -->
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type ComboBox}">
-                        <Grid x:Name="MainGrid" SnapsToDevicePixels="True">
-                            <!--  主边框（与TextBox样式一致）  -->
-                            <Border
-                                x:Name="border"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="5">
-                                <Grid>
-                                    <!--  显示选中内容  -->
-                                    <ContentPresenter
-                                        x:Name="ContentSite"
-                                        Margin="8,0,30,0"
-                                        VerticalAlignment="Center"
-                                        Content="{TemplateBinding SelectionBoxItem}"
-                                        ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" />
 
-                                    <!--  下拉按钮（修复消失问题）  -->
-                                    <ToggleButton
-                                        x:Name="ToggleButton"
-                                        Width="30"
-                                        Height="30"
-                                        Margin="0,5"
-                                        HorizontalAlignment="Right"
-                                        VerticalAlignment="Center"
-                                        Focusable="False"
-                                        IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
-                                        <ToggleButton.Template>
-                                            <ControlTemplate TargetType="{x:Type ToggleButton}">
-                                                <Border
-                                                    x:Name="btnBorder"
-                                                    Width="20"
-                                                    Height="20"
-                                                    Background="Transparent"
-                                                    CornerRadius="3">
-                                                    <!--  下拉箭头（修复消失问题）  -->
-                                                    <Path
-                                                        x:Name="Arrow"
-                                                        Width="8"
-                                                        Height="5"
-                                                        Data="M0,0 L8,0 L4,5 z"
-                                                        Fill="#666666" />
-                                                </Border>
-                                                <ControlTemplate.Triggers>
-                                                    <Trigger Property="IsMouseOver" Value="True">
-                                                        <Setter TargetName="btnBorder" Property="Background" Value="#E0E0E0" />
-                                                    </Trigger>
-                                                </ControlTemplate.Triggers>
-                                            </ControlTemplate>
-                                        </ToggleButton.Template>
-                                    </ToggleButton>
-                                </Grid>
-                            </Border>
-
-                            <!--  下拉弹出框（修复宽度问题）  -->
-                            <Popup
-                                x:Name="Popup"
-                                AllowsTransparency="True"
-                                Focusable="False"
-                                IsOpen="{TemplateBinding IsDropDownOpen}"
-                                Placement="Bottom"
-                                PopupAnimation="Slide">
-                                <!--  下拉框宽度与主控件一致  -->
-                                <Border
-                                    x:Name="DropDownBorder"
-                                    Width="{Binding ActualWidth, ElementName=MainGrid}"
-                                    MaxWidth="{TemplateBinding MaxWidth}"
-                                    Background="White"
-                                    BorderBrush="#E0E0E0"
-                                    BorderThickness="1"
-                                    CornerRadius="5">
-                                    <ScrollViewer x:Name="DropDownScrollViewer" MaxHeight="{TemplateBinding MaxDropDownHeight}">
-                                        <ItemsPresenter
-                                            x:Name="ItemsPresenter"
-                                            Margin="2"
-                                            SnapsToDevicePixels="True" />
-                                    </ScrollViewer>
-                                </Border>
-                            </Popup>
-                        </Grid>
-
-                        <!--  触发器（与TextBox样式同步）  -->
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsFocused" Value="True">
-                                <Trigger.EnterActions>
-                                    <BeginStoryboard>
-                                        <Storyboard>
-                                            <ColorAnimation
-                                                Storyboard.TargetName="border"
-                                                Storyboard.TargetProperty="BorderBrush.Color"
-                                                To="#FA4616"
-                                                Duration="0:0:0.2" />
-                                            <ThicknessAnimation
-                                                Storyboard.TargetName="border"
-                                                Storyboard.TargetProperty="BorderThickness"
-                                                From="1"
-                                                To="1.5"
-                                                Duration="0:0:0.2" />
-                                        </Storyboard>
-                                    </BeginStoryboard>
-                                </Trigger.EnterActions>
-                            </Trigger>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="BorderBrush" Value="#CCCCCC" />
-                            </Trigger>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="border" Property="Background" Value="#EEEEEE" />
-                                <Setter Property="Foreground" Value="#BDBDBD" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-
-            <!--  下拉选项样式（与主控件同宽）  -->
-            <Style.Resources>
-                <Style TargetType="{x:Type ComboBoxItem}">
-                    <Setter Property="Height" Value="35" />
-                    <Setter Property="Padding" Value="12,8" />
-                    <!--  内边距适配宽度  -->
-                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                    <!--  内容拉伸  -->
-                    <Setter Property="Template">
-                        <Setter.Value>
-                            <ControlTemplate TargetType="{x:Type ComboBoxItem}">
-                                <Border
-                                    x:Name="ItemBorder"
-                                    Padding="{TemplateBinding Padding}"
-                                    Background="Transparent"
-                                    SnapsToDevicePixels="True">
-                                    <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center" />
-                                </Border>
-                                <ControlTemplate.Triggers>
-                                    <Trigger Property="IsSelected" Value="True">
-                                        <Setter TargetName="ItemBorder" Property="Background" Value="#FA4616" />
-                                    </Trigger>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter TargetName="ItemBorder" Property="Background" Value="#FFF3E0" />
-                                    </Trigger>
-                                </ControlTemplate.Triggers>
-                            </ControlTemplate>
-                        </Setter.Value>
-                    </Setter>
-                </Style>
-            </Style.Resources>
-        </Style>
-        <!--  按钮样式  -->
-        <Style x:Key="AccentButtonStyle" TargetType="{x:Type Button}">
-            <Setter Property="Background" Value="#FA4616" />
-            <Setter Property="Foreground" Value="White" />
-            <Setter Property="FontSize" Value="14" />
-            <Setter Property="FontWeight" Value="Medium" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Width" Value="100" />
-            <Setter Property="Height" Value="40" />
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type Button}">
-                        <Border
-                            x:Name="border"
-                            Background="{TemplateBinding Background}"
-                            CornerRadius="5"
-                            SnapsToDevicePixels="True">
-                            <ContentPresenter
-                                x:Name="contentPresenter"
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center"
-                                Content="{TemplateBinding Content}" />
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <!--  鼠标悬停效果  -->
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#D93E12" />
-                            </Trigger>
-                            <!--  点击效果  -->
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#C23710" />
-                                <Setter TargetName="contentPresenter" Property="RenderTransform">
-                                    <Setter.Value>
-                                        <ScaleTransform ScaleX="0.98" ScaleY="0.98" />
-                                    </Setter.Value>
-                                </Setter>
-                            </Trigger>
-                            <!--  禁用状态  -->
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="border" Property="Background" Value="#CCCCCC" />
-                                <Setter TargetName="contentPresenter" Property="Opacity" Value="0.7" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
 
         <!--  退出按钮样式  -->
         <Style
             x:Key="ExitButtonStyle"
-            BasedOn="{StaticResource AccentButtonStyle}"
+            BasedOn="{StaticResource ActionButtonStyle}"
             TargetType="{x:Type Button}">
             <Setter Property="Background" Value="#666666" />
+            <Setter Property="Foreground" Value="White" />
             <Setter Property="Margin" Value="10,0,0,0" />
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
@@ -384,43 +177,7 @@
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Foreground" Value="#333333" />
         </Style>
-        <!--  顶部工具栏按钮样式  -->
-        <Style x:Key="TopToolbarButton" TargetType="Button">
-            <Setter Property="Foreground" Value="White" />
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="Padding" Value="15,0" />
-            <Setter Property="VerticalContentAlignment" Value="Center" />
-            <Setter Property="HorizontalContentAlignment" Value="Center" />
-            <Setter Property="FontSize" Value="20" />
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Grid>
-                            <!--  内容容器  -->
-                            <ContentPresenter
-                                x:Name="content"
-                                Margin="{TemplateBinding Padding}"
-                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-
-                            <!--  下划线  -->
-                            <Rectangle
-                                x:Name="underline"
-                                Height="3"
-                                VerticalAlignment="Bottom"
-                                Fill="White"
-                                Opacity="0" />
-                        </Grid>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="underline" Property="Opacity" Value="1" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+       
     </UserControl.Resources>
     <Grid Background="White">
         <Grid.RowDefinitions>
@@ -440,10 +197,10 @@
                 VerticalAlignment="Center"
                 FontSize="16"
                 FontWeight="Bold"
-                Foreground="{StaticResource PrimaryRed}"
+                Foreground="{StaticResource PrimaryColor}"
                 Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingTitle}" />
         </Border>
-        <Border Grid.Row="1" Background="{StaticResource PrimaryRed}">
+        <Border Grid.Row="1" Background="{StaticResource PrimaryColor}">
             <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                 <Button
                     Margin="20,0"
@@ -526,21 +283,21 @@
                                 Height="35"
                                 Click="addConsClick"
                                 Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingConsAdd}"
-                                Style="{StaticResource AccentButtonStyle}" />
+                                Style="{StaticResource ActionButtonStyle}" />
                             <Button
                                 Width="70"
                                 Height="35"
                                 Margin="5,0,0,0"
                                 Click="inConsClick"
                                 Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingConsIn}"
-                                Style="{StaticResource AccentButtonStyle}" />
+                                Style="{StaticResource ActionButtonStyle}" />
                             <Button
                                 Width="70"
                                 Height="35"
                                 Margin="5,0,0,0"
                                 Click="outConsClick"
                                 Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingConsOut}"
-                                Style="{StaticResource AccentButtonStyle}" />
+                                Style="{StaticResource ActionButtonStyle}" />
                             <Button
                                 Width="70"
                                 Height="35"
@@ -583,7 +340,7 @@
                                     <TextBlock
                                         FontSize="14"
                                         FontWeight="Medium"
-                                        Foreground="#FA4616"
+                                        Foreground="{StaticResource PrimaryColor}"
                                         Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingConsbasicInfo}" />
 
                                     <Grid Margin="12,12,0,0">
@@ -674,7 +431,7 @@
                                     <TextBlock
                                         FontSize="14"
                                         FontWeight="Medium"
-                                        Foreground="#FA4616"
+                                        Foreground="{StaticResource PrimaryColor}"
                                         Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingCons2D}" />
 
                                     <!--  使用自定义绘图控件，绑定ConsData到consNew  -->
@@ -701,7 +458,7 @@
                                     <TextBlock
                                         FontSize="14"
                                         FontWeight="Medium"
-                                        Foreground="#FA4616"
+                                        Foreground="{StaticResource PrimaryColor}"
                                         Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingConsNotchSetting}" />
 
                                     <Grid Margin="12,12,0,0">
@@ -751,7 +508,7 @@
                                     <TextBlock
                                         FontSize="14"
                                         FontWeight="Medium"
-                                        Foreground="#FA4616"
+                                        Foreground="{StaticResource PrimaryColor}"
                                         Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingConsDimension}" />
                                     <Grid Margin="12,12,0,0">
                                         <Grid.ColumnDefinitions>
@@ -926,7 +683,7 @@
                                     <TextBlock
                                         FontSize="14"
                                         FontWeight="Medium"
-                                        Foreground="#FA4616"
+                                        Foreground="{StaticResource PrimaryColor}"
                                         Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingConsOffsetGripperPos}" />
 
                                     <Grid Margin="12,12,0,0">
@@ -1025,7 +782,7 @@
                                     <TextBlock
                                         FontSize="14"
                                         FontWeight="Medium"
-                                        Foreground="#FA4616"
+                                        Foreground="{StaticResource PrimaryColor}"
                                         Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingConsWellSpec}" />
 
 
@@ -1156,7 +913,7 @@
                                     <TextBlock
                                         FontSize="14"
                                         FontWeight="Medium"
-                                        Foreground="#FA4616"
+                                        Foreground="{StaticResource PrimaryColor}"
                                         Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingConsPipetteTipParams}" />
 
                                     <Grid Margin="12,12,0,0">
@@ -1311,21 +1068,21 @@
                                 Height="35"
                                 Click="addLiquidClick"
                                 Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingLiquidAdd}"
-                                Style="{StaticResource AccentButtonStyle}" />
+                                Style="{StaticResource ActionButtonStyle}" />
                             <Button
                                 Width="70"
                                 Height="35"
                                 Margin="5,0,0,0"
                                 Click="inLiquidClick"
                                 Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingLiquidIn}"
-                                Style="{StaticResource AccentButtonStyle}" />
+                                Style="{StaticResource ActionButtonStyle}" />
                             <Button
                                 Width="70"
                                 Height="35"
                                 Margin="5,0,0,0"
                                 Click="outLiquidClick"
                                 Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingLiquidOut}"
-                                Style="{StaticResource AccentButtonStyle}" />
+                                Style="{StaticResource ActionButtonStyle}" />
                             <Button
                                 Width="70"
                                 Height="35"
@@ -1368,7 +1125,7 @@
                                     <TextBlock
                                         FontSize="14"
                                         FontWeight="Medium"
-                                        Foreground="#FA4616"
+                                        Foreground="{StaticResource PrimaryColor}"
                                         Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingLiquidbasicInfo}" />
 
                                     <Grid Margin="12,12,0,0">
@@ -1419,7 +1176,7 @@
                                     <TextBlock
                                         FontSize="14"
                                         FontWeight="Medium"
-                                        Foreground="#FA4616"
+                                        Foreground="{StaticResource PrimaryColor}"
                                         Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingLiquidAspirationParams}" />
                                     <Grid Margin="12,12,0,0">
                                         <Grid.ColumnDefinitions>
@@ -1464,7 +1221,7 @@
                                             VerticalAlignment="Center"
                                             FontSize="13"
                                             Foreground="#666666"
-                                            Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingLiquidAspSpeed}"/>
+                                            Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingLiquidAspSpeed}" />
                                         <TextBox
                                             Grid.Column="1"
                                             Style="{StaticResource InputTextBoxStyle}"
@@ -1515,7 +1272,7 @@
                                     <TextBlock
                                         FontSize="14"
                                         FontWeight="Medium"
-                                        Foreground="#FA4616"
+                                        Foreground="{StaticResource PrimaryColor}"
                                         Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingLiquidDispensingParams}" />
                                     <Grid Margin="12,12,0,0">
                                         <Grid.ColumnDefinitions>
@@ -1611,9 +1368,326 @@
                             Margin="0,10,0,20"
                             FontSize="18"
                             FontWeight="Bold"
-                            Foreground="{StaticResource PrimaryRed}"
+                            Foreground="{StaticResource PrimaryColor}"
                             Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualControlCenter}" />
-                        <!--  第一部分：板位定标（XYZ）  -->
+                        <!--  设备与模块管理区域  -->
+                        <Border
+                            Margin="0,10,0,20"
+                            Background="White"
+                            BorderBrush="#E0E0E0"
+                            BorderThickness="1"
+                            CornerRadius="5">
+                            <StackPanel Margin="15">
+                                <TextBlock
+                                    Margin="0,0,0,15"
+                                    FontSize="16"
+                                    FontWeight="Medium"
+                                    Foreground="{StaticResource PrimaryColor}"
+                                    Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualDeviceModuleManagement}" />
+
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <!--  移液器控制  -->
+                                    <StackPanel Grid.Column="0">
+                                        <StackPanel
+                                            Height="30"
+                                            Margin="0,0,0,10"
+                                            VerticalAlignment="Center"
+                                            Orientation="Horizontal">
+                                            <TextBlock
+                                                VerticalAlignment="Center"
+                                                FontSize="14"
+                                                Foreground="#666666"
+                                                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualPipettes}" />
+
+                                            <Button
+                                                x:Name="btnAddPipette"
+                                                Width="30"
+                                                Height="30"
+                                                Margin="10,0,0,0"
+                                                HorizontalAlignment="Left"
+                                                Click="AddPipette_Click"
+                                                Content="➕"
+                                                Style="{StaticResource ActionButtonStyle}" />
+                                        </StackPanel>
+
+                                        <!--  移液器列表容器  -->
+                                        <StackPanel x:Name="pipetteContainer" Margin="0,0,0,10">
+                                            <StackPanel Margin="0,0,0,5" Orientation="Horizontal">
+                                                <TextBlock
+                                                    VerticalAlignment="Center"
+                                                    FontSize="14"
+                                                    Foreground="#666666"
+                                                    Text="①" />
+
+                                                <ComboBox
+                                                    x:Name="cmbPipette1"
+                                                    Width="150"
+                                                    SelectedIndex="0"
+                                                    Style="{StaticResource InputComboBoxStyle}">
+                                                    <ComboBoxItem Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualSingleChannel}" />
+                                                    <ComboBoxItem Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualEightChannel}" />
+                                                </ComboBox>
+                                                <Button
+                                                    x:Name="btnEditPipette1"
+                                                    Width="30"
+                                                    Height="30"
+                                                    Margin="5,0,0,0"
+                                                    Background="Transparent"
+                                                    BorderThickness="0"
+                                                    Cursor="Hand">
+                                                    <Path
+                                                        Data="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"
+                                                        Fill="{StaticResource PrimaryColor}"
+                                                        Stretch="Uniform" />
+                                                </Button>
+                                            </StackPanel>
+                                        </StackPanel>
+                                        <StackPanel Margin="0,0,0,10">
+                                            <StackPanel
+                                                x:Name="pipetteContainer2"
+                                                Margin="0,0,0,5"
+                                                Orientation="Horizontal"
+                                                Visibility="Collapsed">
+                                                <TextBlock
+                                                    VerticalAlignment="Center"
+                                                    FontSize="14"
+                                                    Foreground="#666666"
+                                                    Text="②" />
+
+                                                <ComboBox
+                                                    x:Name="cmbPipette2"
+                                                    Width="150"
+                                                    SelectedIndex="0"
+                                                    Style="{StaticResource InputComboBoxStyle}">
+                                                    <ComboBoxItem Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualSingleChannel}" />
+                                                    <ComboBoxItem Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualEightChannel}" />
+                                                </ComboBox>
+                                                <Button
+                                                    x:Name="btnEditPipette2"
+                                                    Width="30"
+                                                    Height="30"
+                                                    Margin="5,0,0,0"
+                                                    Background="Transparent"
+                                                    BorderThickness="0"
+                                                    Cursor="Hand">
+                                                    <Path
+                                                        Data="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"
+                                                        Fill="{StaticResource PrimaryColor}"
+                                                        Stretch="Uniform" />
+                                                </Button>
+                                                <Button
+                                                    x:Name="btnRemPipette"
+                                                    Width="30"
+                                                    Height="30"
+                                                    Margin="5,0,0,0"
+                                                    HorizontalAlignment="Left"
+                                                    Click="RemovePipette_Click"
+                                                    Content="➖"
+                                                    Style="{StaticResource ActionButtonStyle}" />
+                                            </StackPanel>
+
+                                        </StackPanel>
+                                    </StackPanel>
+                                    <!--  抓手控制/PCR  -->
+                                    <StackPanel Grid.Column="1">
+                                        <StackPanel
+                                            Height="30"
+                                            Margin="0,0,0,10"
+                                            VerticalAlignment="Center"
+                                            Orientation="Horizontal">
+                                            <TextBlock
+                                                VerticalAlignment="Center"
+                                                FontSize="14"
+                                                Foreground="#666666"
+                                                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualGripper}" />
+                                            <Button
+                                                x:Name="btnEditGripper"
+                                                Width="30"
+                                                Height="30"
+                                                Margin="10,0,0,0"
+                                                Background="Transparent"
+                                                BorderThickness="0"
+                                                Cursor="Hand">
+                                                <Path
+                                                    Data="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"
+                                                    Fill="{StaticResource PrimaryColor}"
+                                                    Stretch="Uniform" />
+                                            </Button>
+                                        </StackPanel>
+
+                                        <StackPanel Margin="0,0,0,10" Orientation="Horizontal">
+                                            <TextBlock
+                                                VerticalAlignment="Center"
+                                                FontSize="14"
+                                                Foreground="#666666"
+                                                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualEnableGripper}" />
+                                            <Button
+                                                x:Name="btnToggleGripper"
+                                                Width="30"
+                                                Height="30"
+                                                Margin="5,0,0,0"
+                                                Click="EnableGripper_Click"
+                                                Style="{StaticResource ActionButtonStyle}">
+                                                <Button.Content>
+                                                    <Image>
+                                                        <Image.Source>
+                                                            <BitmapImage UriSource="/OctoFixFlow;component/images/gou.png" />
+                                                        </Image.Source>
+                                                    </Image>
+                                                </Button.Content>
+                                            </Button>
+
+                                        </StackPanel>
+                                        <StackPanel
+                                            Height="30"
+                                            Margin="0,0,0,10"
+                                            VerticalAlignment="Center"
+                                            Orientation="Horizontal">
+                                            <TextBlock
+                                                VerticalAlignment="Center"
+                                                FontSize="14"
+                                                Foreground="#666666"
+                                                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualPCR}" />
+                                            <Button
+                                                x:Name="btnEditPCR"
+                                                Width="30"
+                                                Height="30"
+                                                Margin="10,0,0,0"
+                                                Background="Transparent"
+                                                BorderThickness="0"
+                                                Cursor="Hand">
+                                                <Path
+                                                    Data="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"
+                                                    Fill="{StaticResource PrimaryColor}"
+                                                    Stretch="Uniform" />
+                                            </Button>
+                                        </StackPanel>
+
+                                        <StackPanel Margin="0,0,0,10" Orientation="Horizontal">
+                                            <TextBlock
+                                                VerticalAlignment="Center"
+                                                FontSize="14"
+                                                Foreground="#666666"
+                                                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualEnablePCR}" />
+                                            <Button
+                                                x:Name="btnTogglePCR"
+                                                Width="30"
+                                                Height="30"
+                                                Margin="5,0,0,0"
+                                                Click="EnablePCR_Click"
+                                                Style="{StaticResource ActionButtonStyle}">
+                                                <Button.Content>
+                                                    <Image>
+                                                        <Image.Source>
+                                                            <BitmapImage UriSource="/OctoFixFlow;component/images/gou.png" />
+                                                        </Image.Source>
+                                                    </Image>
+                                                </Button.Content>
+                                            </Button>
+
+                                        </StackPanel>
+                                    </StackPanel>
+                                    <!--  加热振荡控制  -->
+                                    <StackPanel Grid.Column="2">
+                                        <StackPanel
+                                            Margin="0,0,0,10"
+                                            VerticalAlignment="Center"
+                                            Orientation="Horizontal">
+                                            <TextBlock
+                                                VerticalAlignment="Center"
+                                                FontSize="14"
+                                                Foreground="#666666"
+                                                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualHeatingShaking}" />
+
+                                            <Button
+                                                x:Name="btnAddHeatingOscill"
+                                                Width="30"
+                                                Height="30"
+                                                Margin="10,0,0,0"
+                                                HorizontalAlignment="Left"
+                                                Click="AddHeatingOscill_Click"
+                                                Content="➕"
+                                                Style="{StaticResource ActionButtonStyle}" />
+                                        </StackPanel>
+                                        <ScrollViewer
+                                            Height="120"
+                                            Margin="0,0,0,10"
+                                            HorizontalScrollBarVisibility="Disabled"
+                                            VerticalScrollBarVisibility="Auto">
+                                            <StackPanel x:Name="heatingOscillContainer" />
+                                        </ScrollViewer>
+                                    </StackPanel>
+                                    <!--  磁吸控制  -->
+                                    <StackPanel Grid.Column="3">
+                                        <StackPanel
+                                            Margin="0,0,0,10"
+                                            VerticalAlignment="Center"
+                                            Orientation="Horizontal">
+                                            <TextBlock
+                                                VerticalAlignment="Center"
+                                                FontSize="14"
+                                                Foreground="#666666"
+                                                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualMagnetic}" />
+
+                                            <Button
+                                                x:Name="btnAddMagnet"
+                                                Width="30"
+                                                Height="30"
+                                                Margin="10,0,0,0"
+                                                HorizontalAlignment="Left"
+                                                Click="AddMagnet_Click"
+                                                Content="➕"
+                                                Style="{StaticResource ActionButtonStyle}" />
+                                        </StackPanel>
+                                        <ScrollViewer
+                                            Height="120"
+                                            Margin="0,0,0,10"
+                                            HorizontalScrollBarVisibility="Disabled"
+                                            VerticalScrollBarVisibility="Auto">
+                                            <StackPanel x:Name="magnetContainer" />
+                                        </ScrollViewer>
+                                    </StackPanel>
+                                    <!--  温控控制  -->
+                                    <StackPanel Grid.Column="4">
+                                        <StackPanel
+                                            Margin="0,0,0,10"
+                                            VerticalAlignment="Center"
+                                            Orientation="Horizontal">
+                                            <TextBlock
+                                                VerticalAlignment="Center"
+                                                FontSize="14"
+                                                Foreground="#666666"
+                                                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualTemperatureControl}" />
+
+                                            <Button
+                                                x:Name="btnAddTempControl"
+                                                Width="30"
+                                                Height="30"
+                                                Margin="10,0,0,0"
+                                                HorizontalAlignment="Left"
+                                                Click="AddTempControl_Click"
+                                                Content="➕"
+                                                Style="{StaticResource ActionButtonStyle}" />
+                                        </StackPanel>
+                                        <ScrollViewer
+                                            Height="120"
+                                            Margin="0,0,0,10"
+                                            HorizontalScrollBarVisibility="Disabled"
+                                            VerticalScrollBarVisibility="Auto">
+                                            <StackPanel x:Name="tempControlContainer" />
+                                        </ScrollViewer>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                        <!--  板位定标（XYZ）  -->
                         <Border
                             Margin="0,0,0,20"
                             Background="White"
@@ -1625,7 +1699,7 @@
                                     Margin="0,0,0,15"
                                     FontSize="16"
                                     FontWeight="Medium"
-                                    Foreground="{StaticResource PrimaryRed}"
+                                    Foreground="{StaticResource PrimaryColor}"
                                     Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualPlatePositionCalibration}" />
 
                                 <!--  1. 板位选择（12个板位按钮）  -->
@@ -1777,37 +1851,37 @@
                                         x:Name="btnMoveToPlate"
                                         Click="MoveToPlate_Click"
                                         Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualMovetoPlatePosition}"
-                                        Style="{StaticResource AccentButtonStyle}" />
+                                        Style="{StaticResource ActionButtonStyle}" />
                                     <Button
                                         x:Name="btnDownToPlate"
                                         Margin="10,0,0,0"
                                         Click="DownToPlate_Click"
                                         Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualMoveZaxis}"
-                                        Style="{StaticResource AccentButtonStyle}" />
+                                        Style="{StaticResource ActionButtonStyle}" />
                                     <Button
                                         x:Name="btnSavePlatePos"
                                         Margin="10,0,0,0"
                                         Click="SavePlatePos_Click"
                                         Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualSaveCoordinates}"
-                                        Style="{StaticResource AccentButtonStyle}" />
+                                        Style="{StaticResource ActionButtonStyle}" />
                                     <Button
                                         x:Name="btnResetX"
                                         Margin="10,0,0,0"
                                         Click="btnResetX_Click"
                                         Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualResetX}"
-                                        Style="{StaticResource AccentButtonStyle}" />
+                                        Style="{StaticResource ActionButtonStyle}" />
                                     <Button
                                         x:Name="btnResetY"
                                         Margin="10,0,0,0"
                                         Click="btnResetY_Click"
                                         Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualResetY}"
-                                        Style="{StaticResource AccentButtonStyle}" />
+                                        Style="{StaticResource ActionButtonStyle}" />
                                     <Button
                                         x:Name="btnResetZ"
                                         Margin="10,0,0,0"
                                         Click="btnResetZ_Click"
                                         Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualResetZ}"
-                                        Style="{StaticResource AccentButtonStyle}" />
+                                        Style="{StaticResource ActionButtonStyle}" />
                                 </StackPanel>
 
                                 <!--  4. 微调功能  -->
@@ -1906,7 +1980,7 @@
                                 </Grid>
                             </StackPanel>
                         </Border>
-                        <!--  第二部分：移液器控制  -->
+                        <!--  移液器控制  -->
                         <Border
                             Margin="0,0,0,20"
                             Background="White"
@@ -1918,7 +1992,7 @@
                                     Margin="0,0,0,15"
                                     FontSize="16"
                                     FontWeight="Medium"
-                                    Foreground="{StaticResource PrimaryRed}"
+                                    Foreground="{StaticResource PrimaryColor}"
                                     Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualPipetteControl}" />
 
                                 <!--  1. 吸液参数  -->
@@ -1965,7 +2039,7 @@
                                     HorizontalAlignment="Left"
                                     Click="Aspirate_Click"
                                     Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualAspirate}"
-                                    Style="{StaticResource AccentButtonStyle}" />
+                                    Style="{StaticResource ActionButtonStyle}" />
 
                                 <!--  2. 注液参数  -->
                                 <TextBlock
@@ -2011,7 +2085,7 @@
                                     HorizontalAlignment="Left"
                                     Click="Dispense_Click"
                                     Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualDispense}"
-                                    Style="{StaticResource AccentButtonStyle}" />
+                                    Style="{StaticResource ActionButtonStyle}" />
 
                                 <!--  3. 基础功能按钮  -->
                                 <StackPanel
@@ -2023,13 +2097,13 @@
                                         Margin="0,0,10,0"
                                         Click="EjectTip_Click"
                                         Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualEjectTip}"
-                                        Style="{StaticResource AccentButtonStyle}" />
+                                        Style="{StaticResource ActionButtonStyle}" />
                                     <Button
                                         x:Name="btnResetPipette"
                                         Margin="0,0,10,0"
                                         Click="ResetPipette_Click"
                                         Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualReset}"
-                                        Style="{StaticResource AccentButtonStyle}" />
+                                        Style="{StaticResource ActionButtonStyle}" />
 
                                 </StackPanel>
                                 <!--  4. 定标挡位设置  -->
@@ -2049,12 +2123,12 @@
                                         Margin="0,0,10,0"
                                         Click="GetCalibration_Click"
                                         Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualGetCalibration}"
-                                        Style="{StaticResource AccentButtonStyle}" />
+                                        Style="{StaticResource ActionButtonStyle}" />
                                     <Button
                                         x:Name="btnSetCalibration"
                                         Click="SetCalibration_Click"
                                         Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualSetCalibration}"
-                                        Style="{StaticResource AccentButtonStyle}" />
+                                        Style="{StaticResource ActionButtonStyle}" />
                                 </StackPanel>
 
                                 <!--  14个定标挡位的Label和Input组合  -->
@@ -2291,6 +2365,6 @@
             Margin="0,10"
             Click="ExitSetClick"
             Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualClose}"
-            Style="{StaticResource AccentButtonStyle}" />
+            Style="{StaticResource ActionButtonStyle}" />
     </Grid>
 </UserControl>

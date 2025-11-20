@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Windows;
 using System.Windows.Data;
 
 namespace OctoFixFlow
@@ -1016,6 +1017,109 @@ namespace OctoFixFlow
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
+
+    /// <summary>
+    /// 全局配置单例类：管理全局共享数据
+    /// </summary>
+    /// 
+    public class AppGlobalConfig : INotifyPropertyChanged
+    {
+    // 单例实例（线程安全）
+    private static readonly Lazy<AppGlobalConfig> _instance = new Lazy<AppGlobalConfig>(() => new AppGlobalConfig());
+    public static AppGlobalConfig Instance => _instance.Value;
+
+    // 私有构造函数：禁止外部创建实例
+    private AppGlobalConfig()
+    {
+        _isGripperEnabled = false;
+        _isPCREnabled = false;
+        _isTrashEnabled = false;
+        _plateModuleMap = new Dictionary<string, ModuleDatas>();
+        }
+
+    #region 全局属性
+    // 抓手启用状态
+    private bool _isGripperEnabled;
+    public bool IsGripperEnabled
+    {
+        get => _isGripperEnabled;
+        set
+        {
+            if (_isGripperEnabled != value)
+            {
+                _isGripperEnabled = value;
+                OnPropertyChanged(); 
+            }
+        }
+    }
+
+    // PCR启用状态
+    private bool _isPCREnabled;
+    public bool IsPCREnabled
+    {
+        get => _isPCREnabled;
+        set
+        {
+            if (_isPCREnabled != value)
+            {
+                _isPCREnabled = value;
+                OnPropertyChanged(); 
+            }
+        }
+    }
+        // 垃圾桶启用状态
+        private bool _isTrashEnabled;
+        public bool IsTrashEnabled
+        {
+            get => _isTrashEnabled;
+            set
+            {
+                if (_isTrashEnabled != value)
+                {
+                    _isTrashEnabled = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        // 设备模块列表
+        private Dictionary<string, ModuleDatas> _plateModuleMap;
+        public IReadOnlyDictionary<string, ModuleDatas> PlateModuleMap
+        {
+            get => _plateModuleMap; 
+        }
+
+
+        #endregion
+
+        #region INotifyPropertyChanged（属性通知接口）
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+         }
+        // 统一添加/修改模块（内部操作私有Dictionary，外部调用即可）
+        public void AddOrUpdateModule(string plateId, ModuleDatas module)
+        {
+            if (_plateModuleMap.ContainsKey(plateId))
+                _plateModuleMap[plateId] = module; // 已有则更新
+            else
+                _plateModuleMap.Add(plateId, module); // 没有则添加
+
+            OnPropertyChanged(nameof(PlateModuleMap)); // 触发通知，UI同步
+        }
+        #endregion
+    }
+// 模块数据类
+    public class ModuleDatas
+    {
+        public string Name { get; set; } // 名称（用于流程步骤）
+        public int Type { get; set; } // 类型：-1:空；0：单通道移液器；1：八通道移液器；2：96通道移液器；3：抓手；4：PCR；5：加热振荡；6：磁吸；7：温控;8:垃圾桶
+        public string PlatePosition { get; set; } // 板位（P1-P12）
+        public int PipetteVolume { get; set; } // 移液器的最大容量（200，1000）
+        public string ModuleImage { get; set; } // 模块图片地址
+
+    }
     //grpc
     public class MotorActionParams
     {
@@ -1059,5 +1163,15 @@ namespace OctoFixFlow
         public string Time { get; set; }
         public string Message { get; set; }
         public string Level { get; set; } // Info, Warning, Error
+    }
+    public class DeviceModuleSettings
+    {
+        public int Id { get; set; }
+        public string ModuleType { get; set; } // 模块类型：Pipette、Gripper、HeaterShaker、Magnetic、Temperature、Thermocycler
+        public string Name { get; set; }       // 模块名称：如 single_channel、shaker_1 等
+        public bool Enabled { get; set; }      // 是否启用
+        public string Position { get; set; }   // 位置：如 P1
+        public int? ChannelCount { get; set; } // 通道数（仅移液枪使用）
+        public string Description { get; set; }
     }
 }

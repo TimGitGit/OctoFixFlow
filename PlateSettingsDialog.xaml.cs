@@ -40,7 +40,7 @@ namespace OctoFixFlow
                 OnPropertyChanged(); // 实例变化时通知UI刷新
             }
         }
-        // 液体相关字段与属性（新增）
+        // 液体相关字段与属性
         private LiquidSettings _liquidNew;
         public LiquidSettings liquidNew
         {
@@ -60,6 +60,13 @@ namespace OctoFixFlow
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
         private string oldConsName;
+
+        private int _heatingOscillCount = 0; // 加热振荡模块计数器
+        private List<ModuleDatas> _heatingOscillModules = new List<ModuleDatas>(); // 加热振荡模块列表
+        private int _magneticCount = 0; // 磁吸模块计数器
+        private List<ModuleDatas> _magneticModules = new List<ModuleDatas>(); // 磁吸模块列表
+        private int _tempCount = 0; // 温控模块计数器
+        private List<ModuleDatas> _tempModules = new List<ModuleDatas>(); // 温控模块列表
         public PlateSettingsDialog(MainWidget mainWidget)
         {
             InitializeComponent();
@@ -1382,6 +1389,310 @@ namespace OctoFixFlow
                 return false;
             }
         }
+        #region 手动控制-模块添加
+        //添加移液器
+        private void AddPipette_Click(object sender, RoutedEventArgs e)
+        {
+            btnAddPipette.Visibility = Visibility.Collapsed;
+            pipetteContainer2.Visibility = Visibility.Visible;
+
+        }
+        //移除移液器
+        private void RemovePipette_Click(object sender, RoutedEventArgs e)
+        {
+            btnAddPipette.Visibility = Visibility.Visible;
+            pipetteContainer2.Visibility = Visibility.Collapsed;
+        }
+        //是否启动抓手
+        private void EnableGripper_Click(object sender, RoutedEventArgs e)
+        {
+            AppGlobalConfig.Instance.IsGripperEnabled = !AppGlobalConfig.Instance.IsGripperEnabled;
+
+            if (AppGlobalConfig.Instance.IsGripperEnabled)
+            {
+                btnToggleGripper.Content = new Image
+                {
+                    Source = new BitmapImage(new Uri("/OctoFixFlow;component/images/gou.png", UriKind.Relative))
+                };
+            }
+            else
+            {
+                btnToggleGripper.Content = "❌";
+            }
+        }
+        //是否启动PCR
+        private void EnablePCR_Click(object sender, RoutedEventArgs e)
+        {
+            AppGlobalConfig.Instance.IsPCREnabled = !AppGlobalConfig.Instance.IsPCREnabled;
+
+            if (AppGlobalConfig.Instance.IsPCREnabled)
+            {
+                btnTogglePCR.Content = new Image
+                {
+                    Source = new BitmapImage(new Uri("/OctoFixFlow;component/images/gou.png", UriKind.Relative))
+                };
+            }
+            else
+            {
+                btnTogglePCR.Content = "❌";
+            }
+        }
+        //添加加热振荡模块
+        private void AddHeatingOscill_Click(object sender, RoutedEventArgs e)
+        {
+            AddHeatingOscillModule();
+        }
+        private void AddHeatingOscillModule()
+        {
+            _heatingOscillCount++;
+            var newModule = new ModuleDatas { Name = $"shaker_{_heatingOscillCount}", Type = 5, PlatePosition = "P1" };
+            _heatingOscillModules.Add(newModule);
+
+            var rowPanel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 5) };
+
+            // 1. 名称（shaker_1、shaker_2...）
+            var nameText = new TextBlock
+            {
+                Text = $"shaker_{_heatingOscillCount}",
+                VerticalAlignment = VerticalAlignment.Center,
+                FontSize = 14,
+                Foreground = (SolidColorBrush)(new BrushConverter().ConvertFrom("#666666")),
+                Width = 66 
+            };
+            rowPanel.Children.Add(nameText);
+
+            // 2. 板位下拉框（P1-P12）
+            var plateCombo = new ComboBox
+            {
+                Margin = new Thickness(5, 0, 0, 0),
+                Style = (Style)FindResource("InputComboBoxStyle")
+            };
+            // 添加P1-P12选项
+            for (int i = 1; i <= 12; i++)
+            {
+                plateCombo.Items.Add(new ComboBoxItem { Content = $"P{i}" });
+            }
+            plateCombo.SelectedIndex = 0; 
+                                          
+            plateCombo.SelectionChanged += (s, e) =>
+            {
+                newModule.PlatePosition = (plateCombo.SelectedItem as ComboBoxItem)?.Content.ToString();
+            };
+            rowPanel.Children.Add(plateCombo);
+
+            // 3. 编辑按钮
+            var editBtn = new Button
+            {
+                Width = 30,
+                Height = 30,
+                Margin = new Thickness(5, 0, 0, 0),
+                Background = Brushes.Transparent,
+                BorderThickness = new Thickness(0),
+                Cursor = Cursors.Hand
+            };
+            editBtn.Content = new System.Windows.Shapes.Path
+            {
+                Data = Geometry.Parse("M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"),
+                Fill = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FA4616")),
+                Stretch = Stretch.Uniform
+            };
+            editBtn.Click += (s, e) =>
+            {
+                // 编辑按钮逻辑（打开编辑窗口等）
+                MessageBox.Show($"编辑加热振荡模块：shaker_{_heatingOscillCount}");
+            };
+            rowPanel.Children.Add(editBtn);
+
+            // 4. 删除按钮
+            var deleteBtn = new Button
+            {
+                Width = 30,
+                Height = 30,
+                Margin = new Thickness(5, 0, 0, 0),
+                Content = "➖",
+                Style = (Style)FindResource("ActionButtonStyle")
+            };
+            deleteBtn.Click += (s, e) =>
+            {
+                // 从容器中移除当前行
+                heatingOscillContainer.Children.Remove(rowPanel);
+                // 从列表中移除模块数据
+                _heatingOscillModules.Remove(newModule);
+            };
+            rowPanel.Children.Add(deleteBtn);
+
+            // 将行添加到容器
+            heatingOscillContainer.Children.Add(rowPanel);
+        }
+        //磁吸模块添加
+        private void AddMagnet_Click(object sender, RoutedEventArgs e)
+        {
+            _magneticCount++;
+            var newModule = new ModuleDatas { Name = $"magnetic_{_magneticCount}", Type = 6, PlatePosition = "P1" };
+
+            _magneticModules.Add(newModule);
+
+            var rowPanel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 5) };
+
+            // 1. 名称（magnetic_1、magnetic_2...）
+            var nameText = new TextBlock
+            {
+                Text = $"magnetic_{_magneticCount}",
+                VerticalAlignment = VerticalAlignment.Center,
+                FontSize = 14,
+                Foreground = (SolidColorBrush)(new BrushConverter().ConvertFrom("#666666")),
+                Width = 84
+            };
+            rowPanel.Children.Add(nameText);
+
+            // 2. 板位下拉框（P1-P12）
+            var plateCombo = new ComboBox
+            {
+                Margin = new Thickness(5, 0, 0, 0),
+                Style = (Style)FindResource("InputComboBoxStyle")
+            };
+            // 添加P1-P12选项
+            for (int i = 1; i <= 12; i++)
+            {
+                plateCombo.Items.Add(new ComboBoxItem { Content = $"P{i}" });
+            }
+            plateCombo.SelectedIndex = 0;
+
+            plateCombo.SelectionChanged += (s, e) =>
+            {
+                newModule.PlatePosition = (plateCombo.SelectedItem as ComboBoxItem)?.Content.ToString();
+            };
+            rowPanel.Children.Add(plateCombo);
+
+            // 3. 编辑按钮
+            var editBtn = new Button
+            {
+                Width = 30,
+                Height = 30,
+                Margin = new Thickness(5, 0, 0, 0),
+                Background = Brushes.Transparent,
+                BorderThickness = new Thickness(0),
+                Cursor = Cursors.Hand
+            };
+            editBtn.Content = new System.Windows.Shapes.Path
+            {
+                Data = Geometry.Parse("M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"),
+                Fill = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FA4616")),
+                Stretch = Stretch.Uniform
+            };
+            editBtn.Click += (s, e) =>
+            {
+                // 编辑按钮逻辑（打开编辑窗口等）
+                MessageBox.Show($"编辑磁吸模块：magnetic_{_magneticCount}");
+            };
+            rowPanel.Children.Add(editBtn);
+
+            // 4. 删除按钮
+            var deleteBtn = new Button
+            {
+                Width = 30,
+                Height = 30,
+                Margin = new Thickness(5, 0, 0, 0),
+                Content = "➖",
+                Style = (Style)FindResource("ActionButtonStyle")
+            };
+            deleteBtn.Click += (s, e) =>
+            {
+                // 从容器中移除当前行
+                magnetContainer.Children.Remove(rowPanel);
+                // 从列表中移除模块数据
+                _magneticModules.Remove(newModule);
+            };
+            rowPanel.Children.Add(deleteBtn);
+
+            // 将行添加到容器
+            magnetContainer.Children.Add(rowPanel);
+        }
+        //温控模块添加
+        private void AddTempControl_Click(object sender, RoutedEventArgs e)
+        {
+            _tempCount++;
+            var newModule = new ModuleDatas { Name = $"tempctrl_{_tempCount}", Type = 7, PlatePosition = "P1" };
+            _tempModules.Add(newModule);
+
+            var rowPanel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 5) };
+
+            // 1. 名称（tempctrl_1、tempctrl_2...）
+            var nameText = new TextBlock
+            {
+                Text = $"tempctrl_{_tempCount}",
+                VerticalAlignment = VerticalAlignment.Center,
+                FontSize = 14,
+                Foreground = (SolidColorBrush)(new BrushConverter().ConvertFrom("#666666")),
+                Width = 84
+            };
+            rowPanel.Children.Add(nameText);
+
+            // 2. 板位下拉框（P1-P12）
+            var plateCombo = new ComboBox
+            {
+                Margin = new Thickness(5, 0, 0, 0),
+                Style = (Style)FindResource("InputComboBoxStyle")
+            };
+            // 添加P1-P12选项
+            for (int i = 1; i <= 12; i++)
+            {
+                plateCombo.Items.Add(new ComboBoxItem { Content = $"P{i}" });
+            }
+            plateCombo.SelectedIndex = 0;
+
+            plateCombo.SelectionChanged += (s, e) =>
+            {
+                newModule.PlatePosition = (plateCombo.SelectedItem as ComboBoxItem)?.Content.ToString();
+            };
+            rowPanel.Children.Add(plateCombo);
+
+            // 3. 编辑按钮
+            var editBtn = new Button
+            {
+                Width = 30,
+                Height = 30,
+                Margin = new Thickness(5, 0, 0, 0),
+                Background = Brushes.Transparent,
+                BorderThickness = new Thickness(0),
+                Cursor = Cursors.Hand
+            };
+            editBtn.Content = new System.Windows.Shapes.Path
+            {
+                Data = Geometry.Parse("M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"),
+                Fill = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FA4616")),
+                Stretch = Stretch.Uniform
+            };
+            editBtn.Click += (s, e) =>
+            {
+                // 编辑按钮逻辑（打开编辑窗口等）
+                MessageBox.Show($"编辑温控模块：tempctrl_{_tempCount}");
+            };
+            rowPanel.Children.Add(editBtn);
+
+            // 4. 删除按钮
+            var deleteBtn = new Button
+            {
+                Width = 30,
+                Height = 30,
+                Margin = new Thickness(5, 0, 0, 0),
+                Content = "➖",
+                Style = (Style)FindResource("ActionButtonStyle")
+            };
+            deleteBtn.Click += (s, e) =>
+            {
+                // 从容器中移除当前行
+                tempControlContainer.Children.Remove(rowPanel);
+                // 从列表中移除模块数据
+                _tempModules.Remove(newModule);
+            };
+            rowPanel.Children.Add(deleteBtn);
+
+            // 将行添加到容器
+            tempControlContainer.Children.Add(rowPanel);
+        }
+
+        #endregion
 
 
     }

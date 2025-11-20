@@ -110,6 +110,17 @@ namespace OctoFixFlow
         disDelay REAL,                    -- 排液延迟
         disDistance REAL                  -- 排液距孔底距离
     );";
+            // 设备模块表
+            string createDeviceModulesQuery = @"  
+        CREATE TABLE IF NOT EXISTS device_modules (  
+            id INTEGER PRIMARY KEY AUTOINCREMENT,  
+            module_type TEXT NOT NULL,  
+            name TEXT NOT NULL,  
+            enabled INTEGER NOT NULL DEFAULT 0,  
+            position TEXT,  
+            channel_count INTEGER,  
+            description TEXT  
+        );";
             using (var command = new SQLiteCommand(createTableQuery, connection))
             {
                 command.ExecuteNonQuery();
@@ -148,7 +159,11 @@ namespace OctoFixFlow
                     Console.WriteLine("Users table is not empty.");
                 }
             }
-        
+            using (var command = new SQLiteCommand(createDeviceModulesQuery, connection))
+            {
+                command.ExecuteNonQuery();
+                Console.WriteLine("Device modules table initialized.");
+            }
 
         }
         public void Close()
@@ -815,6 +830,165 @@ namespace OctoFixFlow
                     }
                 }
                 return allLiquids;
+            });
+        }
+        /// <summary>
+        /// 新增模块
+        /// </summary>
+        public async Task<bool> AddDeviceModuleAsync(DeviceModuleSettings module)
+        {
+            return await Task.Run(() =>
+            {
+                if (connection.State != ConnectionState.Open)
+                    connection.Open();
+
+                // 检查模块是否已存在（类型+名称组合唯一）
+                string checkQuery = "SELECT COUNT(*) FROM device_modules WHERE module_type = @moduleType AND name = @name";
+                using (var checkCmd = new SQLiteCommand(checkQuery, connection))
+                {
+                    checkCmd.Parameters.AddWithValue("@moduleType", module.ModuleType);
+                    checkCmd.Parameters.AddWithValue("@name", module.Name);
+                    long count = (long)checkCmd.ExecuteScalar();
+                    if (count > 0)
+                        return false;
+                }
+
+                string insertQuery = @"
+            INSERT INTO device_modules (
+                module_type, name, enabled, position, channel_count, description
+            ) VALUES (
+                @moduleType, @name, @enabled, @position, @channelCount, @description
+            )";
+                using (var insertCmd = new SQLiteCommand(insertQuery, connection))
+                {
+                    insertCmd.Parameters.AddWithValue("@moduleType", module.ModuleType);
+                    insertCmd.Parameters.AddWithValue("@name", module.Name);
+                    insertCmd.Parameters.AddWithValue("@enabled", module.Enabled ? 1 : 0);
+                    insertCmd.Parameters.AddWithValue("@position", module.Position ?? "");
+                    insertCmd.Parameters.AddWithValue("@channelCount", module.ChannelCount ?? (object)DBNull.Value);
+                    insertCmd.Parameters.AddWithValue("@description", module.Description ?? "");
+
+                    int rowsAffected = insertCmd.ExecuteNonQuery();
+                    return rowsAffected > 0;
+                }
+            });
+        }
+        /// <summary>
+        /// 更新模块
+        /// </summary>
+        public async Task<bool> UpdateDeviceModuleAsync(DeviceModuleSettings module)
+        {
+            return await Task.Run(() =>
+            {
+                if (connection.State != ConnectionState.Open)
+                    connection.Open();
+
+                string updateQuery = @"
+            UPDATE device_modules SET
+                enabled = @enabled,
+                position = @position,
+                channel_count = @channelCount,
+                description = @description
+            WHERE id = @id";
+                using (var cmd = new SQLiteCommand(updateQuery, connection))
+                {
+                    cmd.Parameters.AddWithValue("@id", module.Id);
+                    cmd.Parameters.AddWithValue("@enabled", module.Enabled ? 1 : 0);
+                    cmd.Parameters.AddWithValue("@position", module.Position ?? "");
+                    cmd.Parameters.AddWithValue("@channelCount", module.ChannelCount ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@description", module.Description ?? "");
+
+                    int rowsAffected = cmd.ExecuteNonQuery();
+                    return rowsAffected > 0;
+                }
+            });
+        }
+        /// <summary>
+        /// 获取所有模块
+        /// </summary>
+        public async Task<List<DeviceModuleSettings>> GetAllDeviceModulesAsync()
+        {
+            return await Task.Run(() =>
+            {
+                var modules = new List<DeviceModuleSettings>();
+                if (connection.State != ConnectionState.Open)
+                    connection.Open();
+
+                string query = "SELECT * FROM device_modules ORDER BY module_type, name";
+                using (var cmd = new SQLiteCommand(query, connection))
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        var module = new DeviceModuleSettings
+                        {
+                            Id = reader.GetInt32(reader.GetOrdinal("id")),
+                            ModuleType = reader.GetString(reader.GetOrdinal("module_type")),
+                            Name = reader.GetString(reader.GetOrdinal("name")),
+                            Enabled = reader.GetInt32(reader.GetOrdinal("enabled")) == 1,
+                            Position = reader.IsDBNull(reader.GetOrdinal("position")) ? "" : reader.GetString(reader.GetOrdinal("position")),
+                            ChannelCount = reader.IsDBNull(reader.GetOrdinal("channel_count")) ? (int?)null : reader.GetInt32(reader.GetOrdinal("channel_count")),
+                            Description = reader.IsDBNull(reader.GetOrdinal("description")) ? "" : reader.GetString(reader.GetOrdinal("description"))
+                        };
+                        modules.Add(module);
+                    }
+                }
+                return modules;
+            });
+        }
+        /// <summary>
+        /// 按类型获取模块
+        /// </summary>
+        public async Task<List<DeviceModuleSettings>> GetDeviceModulesByTypeAsync(string moduleType)
+        {
+            return await Task.Run(() =>
+            {
+                var modules = new List<DeviceModuleSettings>();
+                if (connection.State != ConnectionState.Open)
+                    connection.Open();
+
+                string query = "SELECT * FROM device_modules WHERE module_type = @moduleType ORDER BY name";
+                using (var cmd = new SQLiteCommand(query, connection))
+                {
+                    cmd.Parameters.AddWithValue("@moduleType", moduleType);
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            var module = new DeviceModuleSettings
+                            {
+                                Id = reader.GetInt32(reader.GetOrdinal("id")),
+                                ModuleType = reader.GetString(reader.GetOrdinal("module_type")),
+                                Name = reader.GetString(reader.GetOrdinal("name")),
+                                Enabled = reader.GetInt32(reader.GetOrdinal("enabled")) == 1,
+                                Position = reader.IsDBNull(reader.GetOrdinal("position")) ? "" : reader.GetString(reader.GetOrdinal("position")),
+                                ChannelCount = reader.IsDBNull(reader.GetOrdinal("channel_count")) ? (int?)null : reader.GetInt32(reader.GetOrdinal("channel_count")),
+                                Description = reader.IsDBNull(reader.GetOrdinal("description")) ? "" : reader.GetString(reader.GetOrdinal("description"))
+                            };
+                            modules.Add(module);
+                        }
+                    }
+                }
+                return modules;
+            });
+        }
+        /// <summary>
+        /// 删除模块
+        /// </summary>
+        public async Task<bool> DeleteDeviceModuleAsync(int id)
+        {
+            return await Task.Run(() =>
+            {
+                if (connection.State != ConnectionState.Open)
+                    connection.Open();
+
+                string deleteQuery = "DELETE FROM device_modules WHERE id = @id";
+                using (var cmd = new SQLiteCommand(deleteQuery, connection))
+                {
+                    cmd.Parameters.AddWithValue("@id", id);
+                    int rowsAffected = cmd.ExecuteNonQuery();
+                    return rowsAffected > 0;
+                }
             });
         }
     }

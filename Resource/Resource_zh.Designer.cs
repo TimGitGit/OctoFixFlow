@@ -250,6 +250,177 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 板位布局配置 的本地化字符串。
+        /// </summary>
+        public static string GuideBtnDeckLayout {
+            get {
+                return ResourceManager.GetString("GuideBtnDeckLayout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 模块列表 的本地化字符串。
+        /// </summary>
+        public static string GuideBtnDeckLayoutModuleList {
+            get {
+                return ResourceManager.GetString("GuideBtnDeckLayoutModuleList", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 配置您的工作站模块 的本地化字符串。
+        /// </summary>
+        public static string GuideBtnDeckLayoutTitile {
+            get {
+                return ResourceManager.GetString("GuideBtnDeckLayoutTitile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 添加您的抓手 的本地化字符串。
+        /// </summary>
+        public static string GuideBtnDeviceAddGripper {
+            get {
+                return ResourceManager.GetString("GuideBtnDeviceAddGripper", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 抓手实现耗材自动移载，涉及自动容器转移的模块需依赖其运行。 的本地化字符串。
+        /// </summary>
+        public static string GuideBtnDeviceAddGripperToolTip {
+            get {
+                return ResourceManager.GetString("GuideBtnDeviceAddGripperToolTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 添加您的PCR模块 的本地化字符串。
+        /// </summary>
+        public static string GuideBtnDeviceAddPCRModule {
+            get {
+                return ResourceManager.GetString("GuideBtnDeviceAddPCRModule", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 基因扩增核心，热循环控制。 的本地化字符串。
+        /// </summary>
+        public static string GuideBtnDeviceAddPCRModuleToolTip {
+            get {
+                return ResourceManager.GetString("GuideBtnDeviceAddPCRModuleToolTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 添加您的移液器 的本地化字符串。
+        /// </summary>
+        public static string GuideBtnDeviceAddPipettes {
+            get {
+                return ResourceManager.GetString("GuideBtnDeviceAddPipettes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 移液器实现精准吸液 / 分液操作，是体积精准实验流程的关键。 的本地化字符串。
+        /// </summary>
+        public static string GuideBtnDeviceAddPipettesToolTip {
+            get {
+                return ResourceManager.GetString("GuideBtnDeviceAddPipettesToolTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 添加您的耗材回收桶 的本地化字符串。
+        /// </summary>
+        public static string GuideBtnDeviceAddWasteBin {
+            get {
+                return ResourceManager.GetString("GuideBtnDeviceAddWasteBin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 收纳废弃耗材，保持实验整洁。 的本地化字符串。
+        /// </summary>
+        public static string GuideBtnDeviceAddWasteBinToolTip {
+            get {
+                return ResourceManager.GetString("GuideBtnDeviceAddWasteBinToolTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 设备基础配置 的本地化字符串。
+        /// </summary>
+        public static string GuideBtnDeviceConfig {
+            get {
+                return ResourceManager.GetString("GuideBtnDeviceConfig", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 让我们从基础开始吧 的本地化字符串。
+        /// </summary>
+        public static string GuideBtnDeviceStart {
+            get {
+                return ResourceManager.GetString("GuideBtnDeviceStart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 作者/机构 的本地化字符串。
+        /// </summary>
+        public static string GuideBtnExperimentProtocolInfoAuthor {
+            get {
+                return ResourceManager.GetString("GuideBtnExperimentProtocolInfoAuthor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 描述 的本地化字符串。
+        /// </summary>
+        public static string GuideBtnExperimentProtocolInfoDescription {
+            get {
+                return ResourceManager.GetString("GuideBtnExperimentProtocolInfoDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 名称 的本地化字符串。
+        /// </summary>
+        public static string GuideBtnExperimentProtocolInfoName {
+            get {
+                return ResourceManager.GetString("GuideBtnExperimentProtocolInfoName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 实验方案信息说明 的本地化字符串。
+        /// </summary>
+        public static string GuideBtnExperimentProtocolInfoTitile {
+            get {
+                return ResourceManager.GetString("GuideBtnExperimentProtocolInfoTitile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 实验协议信息 的本地化字符串。
+        /// </summary>
+        public static string GuideBtnProtocolInfo {
+            get {
+                return ResourceManager.GetString("GuideBtnProtocolInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 设备与协议引导设置 的本地化字符串。
+        /// </summary>
+        public static string GuideTitle {
+            get {
+                return ResourceManager.GetString("GuideTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 加载失败 的本地化字符串。
         /// </summary>
         public static string MainWindowDetailLoadFail {
@@ -723,6 +894,15 @@ namespace OctoFixFlow.Resource {
         public static string ScriptUINotRun {
             get {
                 return ResourceManager.GetString("ScriptUINotRun", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 确认 的本地化字符串。
+        /// </summary>
+        public static string SettingConfirm {
+            get {
+                return ResourceManager.GetString("SettingConfirm", resourceCulture);
             }
         }
         
@@ -1483,6 +1663,15 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 设备与模块管理 的本地化字符串。
+        /// </summary>
+        public static string SettingManualDeviceModuleManagement {
+            get {
+                return ResourceManager.GetString("SettingManualDeviceModuleManagement", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 注液 的本地化字符串。
         /// </summary>
         public static string SettingManualDispense {
@@ -1501,6 +1690,15 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 八通道 的本地化字符串。
+        /// </summary>
+        public static string SettingManualEightChannel {
+            get {
+                return ResourceManager.GetString("SettingManualEightChannel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 退头 的本地化字符串。
         /// </summary>
         public static string SettingManualEjectTip {
@@ -1510,11 +1708,74 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 是否启用抓手？ 的本地化字符串。
+        /// </summary>
+        public static string SettingManualEnableGripper {
+            get {
+                return ResourceManager.GetString("SettingManualEnableGripper", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 是否启用热循环模块？ 的本地化字符串。
+        /// </summary>
+        public static string SettingManualEnablePCR {
+            get {
+                return ResourceManager.GetString("SettingManualEnablePCR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 是否启用垃圾桶？ 的本地化字符串。
+        /// </summary>
+        public static string SettingManualEnableTrash {
+            get {
+                return ResourceManager.GetString("SettingManualEnableTrash", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 获取定标 的本地化字符串。
         /// </summary>
         public static string SettingManualGetCalibration {
             get {
                 return ResourceManager.GetString("SettingManualGetCalibration", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 抓手 的本地化字符串。
+        /// </summary>
+        public static string SettingManualGripper {
+            get {
+                return ResourceManager.GetString("SettingManualGripper", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 加热振荡模块 的本地化字符串。
+        /// </summary>
+        public static string SettingManualHeatingShaking {
+            get {
+                return ResourceManager.GetString("SettingManualHeatingShaking", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 磁吸模块 的本地化字符串。
+        /// </summary>
+        public static string SettingManualMagnetic {
+            get {
+                return ResourceManager.GetString("SettingManualMagnetic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 功能模块 的本地化字符串。
+        /// </summary>
+        public static string SettingManualModules {
+            get {
+                return ResourceManager.GetString("SettingManualModules", resourceCulture);
             }
         }
         
@@ -1537,11 +1798,29 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 热循环模块 的本地化字符串。
+        /// </summary>
+        public static string SettingManualPCR {
+            get {
+                return ResourceManager.GetString("SettingManualPCR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 移液器控制 的本地化字符串。
         /// </summary>
         public static string SettingManualPipetteControl {
             get {
                 return ResourceManager.GetString("SettingManualPipetteControl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 移液器 的本地化字符串。
+        /// </summary>
+        public static string SettingManualPipettes {
+            get {
+                return ResourceManager.GetString("SettingManualPipettes", resourceCulture);
             }
         }
         
@@ -1618,11 +1897,29 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 单通道 的本地化字符串。
+        /// </summary>
+        public static string SettingManualSingleChannel {
+            get {
+                return ResourceManager.GetString("SettingManualSingleChannel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 速度 (μl/s)： 的本地化字符串。
         /// </summary>
         public static string SettingManualSpeed {
             get {
                 return ResourceManager.GetString("SettingManualSpeed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 温控模块 的本地化字符串。
+        /// </summary>
+        public static string SettingManualTemperatureControl {
+            get {
+                return ResourceManager.GetString("SettingManualTemperatureControl", resourceCulture);
             }
         }
         
@@ -2050,11 +2347,38 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 磁吸 的本地化字符串。
+        /// </summary>
+        public static string WindowActionMagnetic {
+            get {
+                return ResourceManager.GetString("WindowActionMagnetic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 暂停 的本地化字符串。
         /// </summary>
         public static string WindowActionPause {
             get {
                 return ResourceManager.GetString("WindowActionPause", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 热循环 的本地化字符串。
+        /// </summary>
+        public static string WindowActionPCR {
+            get {
+                return ResourceManager.GetString("WindowActionPCR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 振荡 的本地化字符串。
+        /// </summary>
+        public static string WindowActionShake {
+            get {
+                return ResourceManager.GetString("WindowActionShake", resourceCulture);
             }
         }
         
@@ -2073,6 +2397,15 @@ namespace OctoFixFlow.Resource {
         public static string WindowActionStop {
             get {
                 return ResourceManager.GetString("WindowActionStop", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 温控 的本地化字符串。
+        /// </summary>
+        public static string WindowActionTemperature {
+            get {
+                return ResourceManager.GetString("WindowActionTemperature", resourceCulture);
             }
         }
         
@@ -2217,6 +2550,15 @@ namespace OctoFixFlow.Resource {
         public static string Windowrapidgenerating {
             get {
                 return ResourceManager.GetString("Windowrapidgenerating", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 运行信息 的本地化字符串。
+        /// </summary>
+        public static string WindowRunningMessage {
+            get {
+                return ResourceManager.GetString("WindowRunningMessage", resourceCulture);
             }
         }
         

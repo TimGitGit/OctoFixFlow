@@ -10,16 +10,25 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="images\basic.png" />
     <None Remove="images\conSet.png" />
     <None Remove="images\divice.jpg" />
     <None Remove="images\divice.png" />
+    <None Remove="images\gou.png" />
     <None Remove="images\handControl.png" />
+    <None Remove="images\layout.png" />
     <None Remove="images\liquidSet.png" />
     <None Remove="images\LOGO.png" />
+    <None Remove="images\Magnet.png" />
     <None Remove="images\megarobo.png" />
+    <None Remove="images\MixedHeating.png" />
+    <None Remove="images\module.png" />
     <None Remove="images\OctoFlow3D.STL" />
     <None Remove="images\OctoFlow3D3.STL" />
+    <None Remove="images\PCR.png" />
     <None Remove="images\pipee1000.obj" />
+    <None Remove="images\Temp.png" />
+    <None Remove="images\Trash.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -44,13 +53,22 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="images\basic.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="images\conSet.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
     <Resource Include="images\divice.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
+    <Resource Include="images\gou.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="images\handControl.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="images\layout.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
     <Resource Include="images\liquidSet.png">
@@ -59,13 +77,31 @@
     <Resource Include="images\LOGO.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
+    <Resource Include="images\Magnet.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="images\megarobo.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="images\MixedHeating.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="images\module.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
     <Resource Include="images\OctoFlow3D.STL">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
+    <Resource Include="images\PCR.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="images\pipee1000.obj">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="images\Temp.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="images\Trash.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
   </ItemGroup>

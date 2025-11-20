@@ -35,6 +35,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.ComponentModel;
 using OctoFixFlow.Resource;
+using HelixToolkit.Wpf;
 namespace OctoFixFlow
 {
     /// <summary>
@@ -310,42 +311,81 @@ namespace OctoFixFlow
             if (sender is Border plateBorder &&
                 e.Data.GetData(typeof(ConsumableItem)) is ConsumableItem consumable)
             {
-                // 获取板位的Grid容器（用于显示平面图）
                 var plateGrid = plateBorder.Child as Grid;
                 if (plateGrid == null) return;
-
-                // 清空板位原有内容（保留板位编号）
-                plateGrid.Children.Clear();
-                plateGrid.Children.Add(new TextBlock
-                {
-                    Text = $"P{plateBorder.Tag}", // 显示板位编号（如P1、P2）
-                    FontSize = 16,
-                    FontWeight = FontWeights.Bold,
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Top,
-                    Margin = new Thickness(0, 5, 0, 0)
-                });
                 var plateId = plateBorder.Tag.ToString();
 
-                // 添加耗材平面图到板位
+                // 修复：转换为 FrameworkElement（可访问 Tag）
+                var oldConsumableCanvas = plateGrid.Children.Cast<FrameworkElement>()
+                    .FirstOrDefault(child => child.Tag?.ToString() == "TopConsumable");
+                if (oldConsumableCanvas != null)
+                    plateGrid.Children.Remove(oldConsumableCanvas);
+
+                // 修复：转换为 FrameworkElement，再筛选 TextBlock
+                var bottomTextBlock = plateGrid.Children.Cast<FrameworkElement>()
+                    .OfType<TextBlock>()
+                    .FirstOrDefault(t => t.Tag?.ToString() == "BottomLayer");
+                if (bottomTextBlock != null)
+                    bottomTextBlock.Visibility = Visibility.Collapsed;
+
                 var canvas = new ConsumableCanvas
                 {
-                    ConsData = consumable.Settings, // 绑定耗材的平面图数据
-                    Height = 250, // 板位内平面图高度
-                    Width = 250,  // 板位内平面图宽度
+                    Tag = "TopConsumable", // 确保 ConsumableCanvas 继承 FrameworkElement
+                    ConsData = consumable.Settings,
+                    Height = 250,
+                    Width = 250,
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
                     Background = Brushes.Transparent,
                     PlateId = plateId
                 };
                 canvas.SelectedColumnsChanged += OnPlateColumnsSelected;
-
                 plateGrid.Children.Add(canvas);
 
-                // 记录板位与耗材的关联（用于后续操作）
                 _plateConsumableMap[plateId] = consumable;
             }
         }
+        //private void PlateSlot_Drop(object sender, DragEventArgs e)
+        //{
+        //    if (sender is Border plateBorder &&
+        //        e.Data.GetData(typeof(ConsumableItem)) is ConsumableItem consumable)
+        //    {
+        //        // 获取板位的Grid容器（用于显示平面图）
+        //        var plateGrid = plateBorder.Child as Grid;
+        //        if (plateGrid == null) return;
+
+        //        // 清空板位原有内容（保留板位编号）
+        //        plateGrid.Children.Clear();
+        //        plateGrid.Children.Add(new TextBlock
+        //        {
+        //            Text = $"P{plateBorder.Tag}", // 显示板位编号（如P1、P2）
+        //            FontSize = 16,
+        //            FontWeight = FontWeights.Bold,
+        //            HorizontalAlignment = HorizontalAlignment.Center,
+        //            VerticalAlignment = VerticalAlignment.Top,
+        //            Margin = new Thickness(0, 5, 0, 0)
+        //        });
+        //        var plateId = plateBorder.Tag.ToString();
+
+        //        // 添加耗材平面图到板位
+        //        var canvas = new ConsumableCanvas
+        //        {
+        //            ConsData = consumable.Settings, // 绑定耗材的平面图数据
+        //            Height = 250, // 板位内平面图高度
+        //            Width = 250,  // 板位内平面图宽度
+        //            HorizontalAlignment = HorizontalAlignment.Center,
+        //            VerticalAlignment = VerticalAlignment.Center,
+        //            Background = Brushes.Transparent,
+        //            PlateId = plateId
+        //        };
+        //        canvas.SelectedColumnsChanged += OnPlateColumnsSelected;
+
+        //        plateGrid.Children.Add(canvas);
+
+        //        // 记录板位与耗材的关联（用于后续操作）
+        //        _plateConsumableMap[plateId] = consumable;
+        //    }
+        //}
         // 新增：处理板位列选择事件，更新孔位输入框
         private void OnPlateColumnsSelected(string plateId, string columnText)
         {
@@ -421,26 +461,77 @@ namespace OctoFixFlow
                 e.Handled = true; // 标记事件已处理，避免冒泡
             }
         }
+        public Border FindPlateBorderByPlateId(string plateId)
+        {
+            if (string.IsNullOrEmpty(plateId))
+                return null;
+
+            // 假设你的板位 Border 都放在一个容器内（比如名为 PlateContainer 的 Grid/StackPanel）
+            // 👉 关键：替换为你实际存储板位 Border 的父容器名称（必须在 XAML 中给父容器命名）
+            if (this.FindName("PlateContainer") is not Panel plateContainer)
+                return null;
+
+            // 遍历父容器内所有 Border，匹配 Tag == plateId
+            foreach (var child in plateContainer.Children)
+            {
+                if (child is Border border
+                    && border.Tag?.ToString()?.Trim() == plateId.Trim()
+                    && border.Style?.TargetType == typeof(Border) // 确保是板位 Border（避免匹配其他 Border）
+                    )
+                {
+                    return border;
+                }
+            }
+
+            // 找不到对应 Border 时返回 null（容错）
+            return null;
+        }
+        public void UpdatePlateDisplay(Border plateBorder, ModuleDatas plateModule)
+        {
+            if (plateBorder.Child is not Grid plateGrid) return;
+            var plateId = plateBorder.Tag.ToString();
+
+            var oldBottomLayer = plateGrid.Children.Cast<FrameworkElement>()
+                   .FirstOrDefault(child => child.Tag?.ToString() == "BottomLayer");
+            if (oldBottomLayer != null)
+                plateGrid.Children.Remove(oldBottomLayer);
+
+            var imageUri = new Uri(plateModule.ModuleImage, UriKind.RelativeOrAbsolute);
+            var moduleImage = new Image
+            {
+                Tag = "BottomLayer",  
+                Source = new BitmapImage(imageUri),
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                VerticalAlignment = VerticalAlignment.Stretch,
+                Stretch = Stretch.Uniform,
+                Margin = new Thickness(2)
+            };
+            plateGrid.Children.Add(moduleImage);  
+        }
 
         // 清除板位内容的方法
         private void ClearPlateContent(string plateId)
         {
-            // 根据板位ID获取对应的Grid
-            if (this.FindName($"PlateGrid{plateId}") is Grid plateGrid)
+            if (this.FindName($"PlateGrid{plateId}") is not Grid plateGrid) return;
+
+            // 修复：转换为 FrameworkElement（可访问 Tag）
+            var consumableCanvas = plateGrid.Children.Cast<FrameworkElement>()
+                .FirstOrDefault(child => child.Tag?.ToString() == "TopConsumable");
+            if (consumableCanvas != null)
+                plateGrid.Children.Remove(consumableCanvas);
+
+            // 修复：转换为 FrameworkElement，判断是否为 TextBlock
+            var bottomLayer = plateGrid.Children.Cast<FrameworkElement>()
+                .FirstOrDefault(child => child.Tag?.ToString() == "BottomLayer");
+            if (bottomLayer is TextBlock bottomTextBlock)
             {
-                // 清空Grid内容，只保留板位编号文本
-                plateGrid.Children.Clear();
-                plateGrid.Children.Add(new TextBlock
-                {
-                    Text = $"P{plateId}",
-                    FontSize = 16,
-                    FontWeight = FontWeights.Bold,
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    Margin = new Thickness(0, 5, 0, 0)
-                });
+                bottomTextBlock.Visibility = Visibility.Visible;
             }
+
+            if (_plateConsumableMap.ContainsKey(plateId))
+                _plateConsumableMap.Remove(plateId);
         }
+
         // 点击动作功能区按钮时添加流程步骤
         private void AddFlowStep(string type)
         {
@@ -1156,6 +1247,25 @@ namespace OctoFixFlow
         {
             //AddFlowStep("等待");
             AddFlowStep("Wait");
+        }
+        private void ShakeButton_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void MagneticButton_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void TemperatureButton_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void PCRButton_Click(object sender, RoutedEventArgs e)
+        {
+
         }
         private void LogoutButton_Click(object sender, RoutedEventArgs e)
         {
@@ -2609,8 +2719,8 @@ namespace OctoFixFlow
                 // 正确处理UI更新和返回值
                 var result = response.Errcode == 0 ? 0 : -1;
                 var message = response.Errcode == 0
-                    ? "设置开关成功"
-                    : $"操作失败 ({response.Errcode})";
+                    ? _res.DeviceOperationSucc
+                    : $"{_res.DeviceOperationFailure} ({response.Errcode})";
 
                 await Dispatcher.InvokeAsync(() =>
                 {

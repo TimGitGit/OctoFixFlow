@@ -40,6 +40,14 @@ namespace OctoFixFlow
         public string WindowActionTipOn => IsEnglish ? Resource.Resource_en.WindowActionTipOn : Resource.Resource_zh.WindowActionTipOn;
         public string WindowActionUV => IsEnglish ? Resource.Resource_en.WindowActionUV : Resource.Resource_zh.WindowActionUV;
         public string WindowActionWait => IsEnglish ? Resource.Resource_en.WindowActionWait : Resource.Resource_zh.WindowActionWait;
+        //振荡 /Shake
+        public string WindowActionShake => IsEnglish ? Resource.Resource_en.WindowActionShake : Resource.Resource_zh.WindowActionShake;
+        //磁吸 /Magnetic
+        public string WindowActionMagnetic => IsEnglish ? Resource.Resource_en.WindowActionMagnetic : Resource.Resource_zh.WindowActionMagnetic;
+        //温控 /Temp Ctrl
+        public string WindowActionTemperature => IsEnglish ? Resource.Resource_en.WindowActionTemperature : Resource.Resource_zh.WindowActionTemperature;
+        //热循环 /PCR
+        public string WindowActionPCR => IsEnglish ? Resource.Resource_en.WindowActionPCR : Resource.Resource_zh.WindowActionPCR;
         public string WindowBoardPosition => IsEnglish ? Resource.Resource_en.WindowBoardPosition : Resource.Resource_zh.WindowBoardPosition;
         public string WindowConsumablesWarehouse => IsEnglish ? Resource.Resource_en.WindowConsumablesWarehouse : Resource.Resource_zh.WindowConsumablesWarehouse;
         public string WindowLoginCancel => IsEnglish ? Resource.Resource_en.WindowLoginCancel : Resource.Resource_zh.WindowLoginCancel;
@@ -58,6 +66,11 @@ namespace OctoFixFlow
         public string WindowUser => IsEnglish ? Resource.Resource_en.WindowUser : Resource.Resource_zh.WindowUser;
         public string WindowUserName => IsEnglish ? Resource.Resource_en.WindowUserName : Resource.Resource_zh.WindowUserName;
         public string WindowVersion => IsEnglish ? Resource.Resource_en.WindowVersion : Resource.Resource_zh.WindowVersion;
+        // 运行信息（Running Info）
+        public string WindowRunningMessage => IsEnglish ? Resource.Resource_en.WindowRunningMessage : Resource.Resource_zh.WindowRunningMessage;
+
+
+
         public string SettingTitle => IsEnglish ? Resource.Resource_en.SettingTitle : Resource.Resource_zh.SettingTitle;
         public string SettingConsTitile => IsEnglish ? Resource.Resource_en.SettingConsTitile : Resource.Resource_zh.SettingConsTitile;
         public string SettingPipeTitile => IsEnglish ? Resource.Resource_en.SettingPipeTitile : Resource.Resource_zh.SettingPipeTitile;
@@ -180,6 +193,79 @@ namespace OctoFixFlow
         public string QuickRinseVol => IsEnglish ? Resource.Resource_en.QuickRinseVol : Resource.Resource_zh.QuickRinseVol;
         public string QuickRinseDelay => IsEnglish ? Resource.Resource_en.QuickRinseDelay : Resource.Resource_zh.QuickRinseDelay;
         public string QuickTipChangeSettings => IsEnglish ? Resource.Resource_en.QuickTipChangeSettings : Resource.Resource_zh.QuickTipChangeSettings;
+        #region 手动控制-模块添加
+        //设备与模块管理  Device and Module Management
+        public string SettingManualDeviceModuleManagement => IsEnglish ? Resource.Resource_en.SettingManualDeviceModuleManagement : Resource.Resource_zh.SettingManualDeviceModuleManagement;
+        //移液器  Pipettes
+        public string SettingManualPipettes => IsEnglish ? Resource.Resource_en.SettingManualPipettes : Resource.Resource_zh.SettingManualPipettes;
+        //单通道  Single Channel
+        public string SettingManualSingleChannel => IsEnglish ? Resource.Resource_en.SettingManualSingleChannel : Resource.Resource_zh.SettingManualSingleChannel;
+        //八通道  Eight Channel
+        public string SettingManualEightChannel => IsEnglish ? Resource.Resource_en.SettingManualEightChannel : Resource.Resource_zh.SettingManualEightChannel;
+        //抓手  Gripper
+        public string SettingManualGripper => IsEnglish ? Resource.Resource_en.SettingManualGripper : Resource.Resource_zh.SettingManualGripper;
+        //功能模块  Functional Modules
+        public string SettingManualModules => IsEnglish ? Resource.Resource_en.SettingManualModules : Resource.Resource_zh.SettingManualModules;
+        //加热振荡模块  Heating & Shaking Module
+        public string SettingManualHeatingShaking => IsEnglish ? Resource.Resource_en.SettingManualHeatingShaking : Resource.Resource_zh.SettingManualHeatingShaking;
+        //磁吸模块  Magnetic Module
+        public string SettingManualMagnetic => IsEnglish ? Resource.Resource_en.SettingManualMagnetic : Resource.Resource_zh.SettingManualMagnetic;
+        // 温控模块 Temperature Control Module
+        public string SettingManualTemperatureControl => IsEnglish ? Resource.Resource_en.SettingManualTemperatureControl : Resource.Resource_zh.SettingManualTemperatureControl;
+        //热循环模块  PCR Module
+        public string SettingManualPCR => IsEnglish ? Resource.Resource_en.SettingManualPCR : Resource.Resource_zh.SettingManualPCR;
+        //是否启用抓手？  Enable gripper?
+        public string SettingManualEnableGripper => IsEnglish ? Resource.Resource_en.SettingManualEnableGripper : Resource.Resource_zh.SettingManualEnableGripper;
+        //是否启用PCR？  Enable Thermocycler Module??
+        public string SettingManualEnablePCR => IsEnglish ? Resource.Resource_en.SettingManualEnablePCR : Resource.Resource_zh.SettingManualEnablePCR;
+        //是否启用垃圾桶？  Enable labware waste bin?
+        public string SettingManualEnableTrash => IsEnglish ? Resource.Resource_en.SettingManualEnableTrash : Resource.Resource_zh.SettingManualEnableTrash;
+        //确认  Confirm
+        public string SettingConfirm => IsEnglish ? Resource.Resource_en.SettingConfirm : Resource.Resource_zh.SettingConfirm;
+
+
+        #endregion
+        #region 引导模块
+        // 设备与协议引导设置  Device & Protocol Guided Setup
+        public string GuideTitle => IsEnglish ? Resource.Resource_en.GuideTitle : Resource.Resource_zh.GuideTitle;
+        // 设备基础配置  Basic Device Configuration
+        public string GuideBtnDeviceConfig => IsEnglish ? Resource.Resource_en.GuideBtnDeviceConfig : Resource.Resource_zh.GuideBtnDeviceConfig;
+        // 板位布局配置  Deck Layout Configuration
+        public string GuideBtnDeckLayout => IsEnglish ? Resource.Resource_en.GuideBtnDeckLayout : Resource.Resource_zh.GuideBtnDeckLayout;
+        // 实验协议信息  Experiment Protocol Info
+        public string GuideBtnProtocolInfo => IsEnglish ? Resource.Resource_en.GuideBtnProtocolInfo : Resource.Resource_zh.GuideBtnProtocolInfo;
+        // 让我们从基础开始吧  Let’s start with the basics
+        public string GuideBtnDeviceStart => IsEnglish ? Resource.Resource_en.GuideBtnDeviceStart : Resource.Resource_zh.GuideBtnDeviceStart;
+        // 添加您的移液器  Add your pipettes
+        public string GuideBtnDeviceAddPipettes => IsEnglish ? Resource.Resource_en.GuideBtnDeviceAddPipettes : Resource.Resource_zh.GuideBtnDeviceAddPipettes;
+        // 精准吸液分液，体积实验核心。  Precise aspiration/dispensing, core for volume-accurate experiments.
+        public string GuideBtnDeviceAddPipettesToolTip => IsEnglish ? Resource.Resource_en.GuideBtnDeviceAddPipettesToolTip : Resource.Resource_zh.GuideBtnDeviceAddPipettesToolTip;
+        // 添加您的抓手  Add your gripper
+        public string GuideBtnDeviceAddGripper => IsEnglish ? Resource.Resource_en.GuideBtnDeviceAddGripper : Resource.Resource_zh.GuideBtnDeviceAddGripper;
+        // 自动移载耗材，容器转移必备。  Grippers automate labware movement. Necessary for modules with automated container transfer.
+        public string GuideBtnDeviceAddGripperToolTip => IsEnglish ? Resource.Resource_en.GuideBtnDeviceAddGripperToolTip : Resource.Resource_zh.GuideBtnDeviceAddGripperToolTip;
+        // 添加您的PCR模块  Add your PCR module
+        public string GuideBtnDeviceAddPCRModule => IsEnglish ? Resource.Resource_en.GuideBtnDeviceAddPCRModule : Resource.Resource_zh.GuideBtnDeviceAddPCRModule;
+        // 基因扩增核心，热循环控制。  Core for gene amplification & thermal cycling.
+        public string GuideBtnDeviceAddPCRModuleToolTip => IsEnglish ? Resource.Resource_en.GuideBtnDeviceAddPCRModuleToolTip : Resource.Resource_zh.GuideBtnDeviceAddPCRModuleToolTip;
+        // 添加您的耗材回收桶  Add your labware waste bin
+        public string GuideBtnDeviceAddWasteBin => IsEnglish ? Resource.Resource_en.GuideBtnDeviceAddWasteBin : Resource.Resource_zh.GuideBtnDeviceAddWasteBin;
+        // 收纳废弃耗材，保持实验整洁。  Store waste consumables, keep lab tidy.
+        public string GuideBtnDeviceAddWasteBinToolTip => IsEnglish ? Resource.Resource_en.GuideBtnDeviceAddWasteBinToolTip : Resource.Resource_zh.GuideBtnDeviceAddWasteBinToolTip;
+        // 配置您的工作站模块  Configure Your Workstation Modules
+        public string GuideBtnDeckLayoutTitile => IsEnglish ? Resource.Resource_en.GuideBtnDeckLayoutTitile : Resource.Resource_zh.GuideBtnDeckLayoutTitile ;
+        // 模块列表  Module List
+        public string GuideBtnDeckLayoutModuleList => IsEnglish ? Resource.Resource_en.GuideBtnDeckLayoutModuleList : Resource.Resource_zh.GuideBtnDeckLayoutModuleList;
+        // 实验方案信息说明  Specify Your Experiment Protocol Info
+        public string GuideBtnExperimentProtocolInfoTitile => IsEnglish ? Resource.Resource_en.GuideBtnExperimentProtocolInfoTitile : Resource.Resource_zh.GuideBtnExperimentProtocolInfoTitile;
+        // 名称  Name
+        public string GuideBtnExperimentProtocolInfoName => IsEnglish ? Resource.Resource_en.GuideBtnExperimentProtocolInfoName : Resource.Resource_zh.GuideBtnExperimentProtocolInfoName;
+        // 描述  Description
+        public string GuideBtnExperimentProtocolInfoDescription => IsEnglish ? Resource.Resource_en.GuideBtnExperimentProtocolInfoDescription : Resource.Resource_zh.GuideBtnExperimentProtocolInfoDescription;
+        // 作者/机构 Author/Organization
+        public string GuideBtnExperimentProtocolInfoAuthor => IsEnglish ? Resource.Resource_en.GuideBtnExperimentProtocolInfoAuthor : Resource.Resource_zh.GuideBtnExperimentProtocolInfoAuthor;
+        #endregion
+
         public string QuickTipChange => IsEnglish ? Resource.Resource_en.QuickTipChange : Resource.Resource_zh.QuickTipChange;
         public string QuickTipEjectPos => IsEnglish ? Resource.Resource_en.QuickTipEjectPos : Resource.Resource_zh.QuickTipEjectPos;
         public string QuickLiquidSelection => IsEnglish ? Resource.Resource_en.QuickLiquidSelection : Resource.Resource_zh.QuickLiquidSelection;

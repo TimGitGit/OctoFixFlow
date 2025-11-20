@@ -1,9 +1,326 @@
-﻿<Application x:Class="OctoFixFlow.App"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:OctoFixFlow"
-             StartupUri="MainWindow.xaml">
+﻿<Application
+    x:Class="OctoFixFlow.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:OctoFixFlow"
+    StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <!--  颜色定义  -->
+        <SolidColorBrush x:Key="PrimaryColor" Color="#E75333" />
+        <SolidColorBrush x:Key="SecondaryColor" Color="#FFFFFF" />
+        <SolidColorBrush x:Key="SuspendColor" Color="#FFDAD0" />
+        <SolidColorBrush x:Key="PlateBackground" Color="#f8f9fa" />
+
+        <!--  动作按钮样式  -->
+        <Style x:Key="ActionButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="120" />
+            <Setter Property="Height" Value="40" />
+            <Setter Property="Margin" Value="5" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Foreground" Value="{StaticResource PrimaryColor}" />
+            <Setter Property="Background" Value="{StaticResource SecondaryColor}" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="Gray"
+                            BorderThickness="1"
+                            CornerRadius="5">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="{StaticResource SuspendColor}" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="{StaticResource PrimaryColor}" />
+                                <Setter Property="Foreground" Value="{StaticResource SecondaryColor}" />
+                            </Trigger>
+                            <!--  禁用状态  -->
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Background" Value="#D8D8D8" />
+                                <Setter Property="Opacity" Value="0.7" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <!--  顶部工具栏按钮样式  -->
+        <Style x:Key="TopToolbarButton" TargetType="Button">
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Padding" Value="15,0" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid>
+                            <!--  内容容器  -->
+                            <ContentPresenter
+                                x:Name="content"
+                                Margin="{TemplateBinding Padding}"
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+
+                            <!--  下划线  -->
+                            <Rectangle
+                                x:Name="underline"
+                                Height="3"
+                                VerticalAlignment="Bottom"
+                                Fill="White"
+                                Opacity="0" />
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="underline" Property="Opacity" Value="1" />
+                            </Trigger>
+                            <!--  禁用状态  -->
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Background" Value="#D8D8D8" />
+                                <Setter Property="Opacity" Value="0.7" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <!--  ComboBox样式  -->
+        <Style x:Key="InputComboBoxStyle" TargetType="{x:Type ComboBox}">
+            <Setter Property="Background" Value="#F9F9F9" />
+            <Setter Property="BorderBrush" Value="#E0E0E0" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Height" Value="30" />
+            <!--  减小高度与标签对齐  -->
+            <Setter Property="FontSize" Value="14" />
+            <!--  保持字体大小一致  -->
+            <Setter Property="Padding" Value="5" />
+            <!--  调整内边距  -->
+            <Setter Property="MinWidth" Value="90" />
+            <!--  确保基础宽度  -->
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ComboBox}">
+                        <Grid x:Name="MainGrid" SnapsToDevicePixels="True">
+                            <!--  主边框  -->
+                            <Border
+                                x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="5">
+                                <Grid>
+                                    <!--  显示选中内容  -->
+                                    <ContentPresenter
+                                        x:Name="ContentSite"
+                                        Margin="5,0,30,0"
+                                        VerticalAlignment="Center"
+                                        Content="{TemplateBinding SelectionBoxItem}"
+                                        ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" />
+
+                                    <!--  下拉按钮  -->
+                                    <ToggleButton
+                                        x:Name="ToggleButton"
+                                        Width="25"
+                                        Height="25"
+                                        Margin="0,2"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Center"
+                                        Focusable="False"
+                                        IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+                                        <ToggleButton.Template>
+                                            <ControlTemplate TargetType="{x:Type ToggleButton}">
+                                                <Border
+                                                    x:Name="btnBorder"
+                                                    Width="20"
+                                                    Height="20"
+                                                    Background="Transparent"
+                                                    CornerRadius="3">
+                                                    <!--  下拉箭头  -->
+                                                    <Path
+                                                        x:Name="Arrow"
+                                                        Width="8"
+                                                        Height="5"
+                                                        Data="M0,0 L8,0 L4,5 z"
+                                                        Fill="#666666" />
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="btnBorder" Property="Background" Value="#E0E0E0" />
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </ToggleButton.Template>
+                                    </ToggleButton>
+                                </Grid>
+                            </Border>
+
+                            <!--  下拉弹出框  -->
+                            <Popup
+                                x:Name="Popup"
+                                AllowsTransparency="True"
+                                Focusable="False"
+                                IsOpen="{TemplateBinding IsDropDownOpen}"
+                                Placement="Bottom"
+                                PopupAnimation="Slide">
+                                <!--  下拉框宽度与主控件一致  -->
+                                <Border
+                                    x:Name="DropDownBorder"
+                                    Width="{Binding ActualWidth, ElementName=MainGrid}"
+                                    MaxWidth="{TemplateBinding MaxWidth}"
+                                    Background="White"
+                                    BorderBrush="#E0E0E0"
+                                    BorderThickness="1"
+                                    CornerRadius="5">
+                                    <ScrollViewer x:Name="DropDownScrollViewer" MaxHeight="{TemplateBinding MaxDropDownHeight}">
+                                        <ItemsPresenter
+                                            x:Name="ItemsPresenter"
+                                            Margin="2"
+                                            SnapsToDevicePixels="True" />
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+
+                        <!--  触发器  -->
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <ColorAnimation
+                                                Storyboard.TargetName="border"
+                                                Storyboard.TargetProperty="BorderBrush.Color"
+                                                To="#E75333"
+                                                Duration="0:0:0.2" />
+                                            <ThicknessAnimation
+                                                Storyboard.TargetName="border"
+                                                Storyboard.TargetProperty="BorderThickness"
+                                                From="1"
+                                                To="1.5"
+                                                Duration="0:0:0.2" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#CCCCCC" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Background" Value="#EEEEEE" />
+                                <Setter Property="Foreground" Value="#BDBDBD" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+
+            <!--  下拉选项样式  -->
+            <Style.Resources>
+                <Style TargetType="{x:Type ComboBoxItem}">
+                    <Setter Property="MinHeight" Value="32" />
+                    <!--  减小选项高度  -->
+                    <Setter Property="Padding" Value="8" />
+                    <!--  调整内边距  -->
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type ComboBoxItem}">
+                                <Border
+                                    x:Name="ItemBorder"
+                                    Padding="{TemplateBinding Padding}"
+                                    Background="Transparent"
+                                    SnapsToDevicePixels="True">
+                                    <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center" />
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter TargetName="ItemBorder" Property="Background" Value="{StaticResource PrimaryColor}" />
+                                    </Trigger>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="ItemBorder" Property="Background" Value="#FFF3E0" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </Style.Resources>
+        </Style>
+        <!--  输入框样式（带动画）  -->
+        <Style x:Key="InputTextBoxStyle" TargetType="{x:Type Control}">
+            <Setter Property="Background" Value="#F9F9F9" />
+            <Setter Property="BorderBrush" Value="#E0E0E0" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Padding" Value="5" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Control}">
+                        <Border
+                            x:Name="border"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="5">
+                            <ScrollViewer x:Name="PART_ContentHost" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <!--  边框颜色动画（不变）  -->
+                                            <ColorAnimation
+                                                Storyboard.TargetName="border"
+                                                Storyboard.TargetProperty="BorderBrush.Color"
+                                                To="#E75333"
+                                                Duration="0:0:0.2" />
+                                            <!--  边框厚度动画（替换为ThicknessAnimation）  -->
+                                            <ThicknessAnimation
+                                                Storyboard.TargetName="border"
+                                                Storyboard.TargetProperty="BorderThickness"
+                                                From="1"
+                                                To="1.5"
+                                                Duration="0:0:0.2" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                            </Trigger>
+                            <!--  鼠标悬停效果（不变）  -->
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#CCCCCC" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <!--  板位样式  -->
+        <Style x:Key="PlateSlotStyle" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource PlateBackground}" />
+            <Setter Property="BorderBrush" Value="#BDC3C7" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="5" />
+            <Setter Property="Margin" Value="5" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <!--  耗材项样式  -->
+        <Style x:Key="ConsumableItemStyle" TargetType="Border">
+            <Setter Property="Background" Value="White" />
+            <Setter Property="BorderBrush" Value="#BDC3C7" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="5" />
+            <Setter Property="Margin" Value="5" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Padding" Value="10,5" />
+        </Style>
     </Application.Resources>
 </Application>

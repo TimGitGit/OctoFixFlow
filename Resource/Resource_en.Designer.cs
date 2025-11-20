@@ -250,6 +250,177 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 Deck Layout Configuration 的本地化字符串。
+        /// </summary>
+        public static string GuideBtnDeckLayout {
+            get {
+                return ResourceManager.GetString("GuideBtnDeckLayout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Module List 的本地化字符串。
+        /// </summary>
+        public static string GuideBtnDeckLayoutModuleList {
+            get {
+                return ResourceManager.GetString("GuideBtnDeckLayoutModuleList", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Configure Your Workstation Modules 的本地化字符串。
+        /// </summary>
+        public static string GuideBtnDeckLayoutTitile {
+            get {
+                return ResourceManager.GetString("GuideBtnDeckLayoutTitile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Add your gripper 的本地化字符串。
+        /// </summary>
+        public static string GuideBtnDeviceAddGripper {
+            get {
+                return ResourceManager.GetString("GuideBtnDeviceAddGripper", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Automate labware transfer, essential for container movement. 的本地化字符串。
+        /// </summary>
+        public static string GuideBtnDeviceAddGripperToolTip {
+            get {
+                return ResourceManager.GetString("GuideBtnDeviceAddGripperToolTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Add your PCR module 的本地化字符串。
+        /// </summary>
+        public static string GuideBtnDeviceAddPCRModule {
+            get {
+                return ResourceManager.GetString("GuideBtnDeviceAddPCRModule", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Core for gene amplification &amp; thermal cycling. 的本地化字符串。
+        /// </summary>
+        public static string GuideBtnDeviceAddPCRModuleToolTip {
+            get {
+                return ResourceManager.GetString("GuideBtnDeviceAddPCRModuleToolTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Add your pipettes 的本地化字符串。
+        /// </summary>
+        public static string GuideBtnDeviceAddPipettes {
+            get {
+                return ResourceManager.GetString("GuideBtnDeviceAddPipettes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Precise aspiration/dispensing, core for volume-accurate experiments. 的本地化字符串。
+        /// </summary>
+        public static string GuideBtnDeviceAddPipettesToolTip {
+            get {
+                return ResourceManager.GetString("GuideBtnDeviceAddPipettesToolTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Add your labware waste bin 的本地化字符串。
+        /// </summary>
+        public static string GuideBtnDeviceAddWasteBin {
+            get {
+                return ResourceManager.GetString("GuideBtnDeviceAddWasteBin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Store waste consumables, keep lab tidy. 的本地化字符串。
+        /// </summary>
+        public static string GuideBtnDeviceAddWasteBinToolTip {
+            get {
+                return ResourceManager.GetString("GuideBtnDeviceAddWasteBinToolTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Basic Device Configuration 的本地化字符串。
+        /// </summary>
+        public static string GuideBtnDeviceConfig {
+            get {
+                return ResourceManager.GetString("GuideBtnDeviceConfig", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Let’s start with the basics 的本地化字符串。
+        /// </summary>
+        public static string GuideBtnDeviceStart {
+            get {
+                return ResourceManager.GetString("GuideBtnDeviceStart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Author/Organization 的本地化字符串。
+        /// </summary>
+        public static string GuideBtnExperimentProtocolInfoAuthor {
+            get {
+                return ResourceManager.GetString("GuideBtnExperimentProtocolInfoAuthor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Description 的本地化字符串。
+        /// </summary>
+        public static string GuideBtnExperimentProtocolInfoDescription {
+            get {
+                return ResourceManager.GetString("GuideBtnExperimentProtocolInfoDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Name 的本地化字符串。
+        /// </summary>
+        public static string GuideBtnExperimentProtocolInfoName {
+            get {
+                return ResourceManager.GetString("GuideBtnExperimentProtocolInfoName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Specify Your Experiment Protocol Info 的本地化字符串。
+        /// </summary>
+        public static string GuideBtnExperimentProtocolInfoTitile {
+            get {
+                return ResourceManager.GetString("GuideBtnExperimentProtocolInfoTitile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Experiment Protocol Info 的本地化字符串。
+        /// </summary>
+        public static string GuideBtnProtocolInfo {
+            get {
+                return ResourceManager.GetString("GuideBtnProtocolInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Device &amp; Protocol Guided Setup 的本地化字符串。
+        /// </summary>
+        public static string GuideTitle {
+            get {
+                return ResourceManager.GetString("GuideTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Load fail 的本地化字符串。
         /// </summary>
         public static string MainWindowDetailLoadFail {
@@ -723,6 +894,15 @@ namespace OctoFixFlow.Resource {
         public static string ScriptUINotRun {
             get {
                 return ResourceManager.GetString("ScriptUINotRun", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Confirm 的本地化字符串。
+        /// </summary>
+        public static string SettingConfirm {
+            get {
+                return ResourceManager.GetString("SettingConfirm", resourceCulture);
             }
         }
         
@@ -1483,6 +1663,15 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 Device and Module Management 的本地化字符串。
+        /// </summary>
+        public static string SettingManualDeviceModuleManagement {
+            get {
+                return ResourceManager.GetString("SettingManualDeviceModuleManagement", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Dispense 的本地化字符串。
         /// </summary>
         public static string SettingManualDispense {
@@ -1501,6 +1690,15 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 Eight Channel 的本地化字符串。
+        /// </summary>
+        public static string SettingManualEightChannel {
+            get {
+                return ResourceManager.GetString("SettingManualEightChannel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Eject Tip 的本地化字符串。
         /// </summary>
         public static string SettingManualEjectTip {
@@ -1510,11 +1708,74 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 Enable gripper? 的本地化字符串。
+        /// </summary>
+        public static string SettingManualEnableGripper {
+            get {
+                return ResourceManager.GetString("SettingManualEnableGripper", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Enable Thermocycler Module? 的本地化字符串。
+        /// </summary>
+        public static string SettingManualEnablePCR {
+            get {
+                return ResourceManager.GetString("SettingManualEnablePCR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Enable labware waste bin? 的本地化字符串。
+        /// </summary>
+        public static string SettingManualEnableTrash {
+            get {
+                return ResourceManager.GetString("SettingManualEnableTrash", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Get Calib 的本地化字符串。
         /// </summary>
         public static string SettingManualGetCalibration {
             get {
                 return ResourceManager.GetString("SettingManualGetCalibration", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Gripper 的本地化字符串。
+        /// </summary>
+        public static string SettingManualGripper {
+            get {
+                return ResourceManager.GetString("SettingManualGripper", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Heater-Shaker Module 的本地化字符串。
+        /// </summary>
+        public static string SettingManualHeatingShaking {
+            get {
+                return ResourceManager.GetString("SettingManualHeatingShaking", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Magnetic Module 的本地化字符串。
+        /// </summary>
+        public static string SettingManualMagnetic {
+            get {
+                return ResourceManager.GetString("SettingManualMagnetic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Functional Modules 的本地化字符串。
+        /// </summary>
+        public static string SettingManualModules {
+            get {
+                return ResourceManager.GetString("SettingManualModules", resourceCulture);
             }
         }
         
@@ -1537,11 +1798,29 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 Thermocycler Module 的本地化字符串。
+        /// </summary>
+        public static string SettingManualPCR {
+            get {
+                return ResourceManager.GetString("SettingManualPCR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Pipette Control 的本地化字符串。
         /// </summary>
         public static string SettingManualPipetteControl {
             get {
                 return ResourceManager.GetString("SettingManualPipetteControl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Pipettes 的本地化字符串。
+        /// </summary>
+        public static string SettingManualPipettes {
+            get {
+                return ResourceManager.GetString("SettingManualPipettes", resourceCulture);
             }
         }
         
@@ -1618,11 +1897,29 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 Single Channel 的本地化字符串。
+        /// </summary>
+        public static string SettingManualSingleChannel {
+            get {
+                return ResourceManager.GetString("SettingManualSingleChannel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Speed (μl/s): 的本地化字符串。
         /// </summary>
         public static string SettingManualSpeed {
             get {
                 return ResourceManager.GetString("SettingManualSpeed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Temperature Module 的本地化字符串。
+        /// </summary>
+        public static string SettingManualTemperatureControl {
+            get {
+                return ResourceManager.GetString("SettingManualTemperatureControl", resourceCulture);
             }
         }
         
@@ -2050,11 +2347,38 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 Magnetic 的本地化字符串。
+        /// </summary>
+        public static string WindowActionMagnetic {
+            get {
+                return ResourceManager.GetString("WindowActionMagnetic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Pause 的本地化字符串。
         /// </summary>
         public static string WindowActionPause {
             get {
                 return ResourceManager.GetString("WindowActionPause", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 PCR 的本地化字符串。
+        /// </summary>
+        public static string WindowActionPCR {
+            get {
+                return ResourceManager.GetString("WindowActionPCR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Shake 的本地化字符串。
+        /// </summary>
+        public static string WindowActionShake {
+            get {
+                return ResourceManager.GetString("WindowActionShake", resourceCulture);
             }
         }
         
@@ -2073,6 +2397,15 @@ namespace OctoFixFlow.Resource {
         public static string WindowActionStop {
             get {
                 return ResourceManager.GetString("WindowActionStop", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Temp Ctrl 的本地化字符串。
+        /// </summary>
+        public static string WindowActionTemperature {
+            get {
+                return ResourceManager.GetString("WindowActionTemperature", resourceCulture);
             }
         }
         
@@ -2217,6 +2550,15 @@ namespace OctoFixFlow.Resource {
         public static string Windowrapidgenerating {
             get {
                 return ResourceManager.GetString("Windowrapidgenerating", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Running Info 的本地化字符串。
+        /// </summary>
+        public static string WindowRunningMessage {
+            get {
+                return ResourceManager.GetString("WindowRunningMessage", resourceCulture);
             }
         }
         
