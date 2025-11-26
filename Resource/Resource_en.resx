@@ -796,6 +796,9 @@
   <data name="StepDetailAspSpeed" xml:space="preserve">
     <value>Aspiration Speed:</value>
   </data>
+  <data name="StepDetailColumnPrefix" xml:space="preserve">
+    <value>Col:</value>
+  </data>
   <data name="StepDetailCurrentCons" xml:space="preserve">
     <value>(Current: {0})</value>
   </data>
@@ -832,6 +835,18 @@
   <data name="StepDetailLiquidParams" xml:space="preserve">
     <value>Liquid parameters:</value>
   </data>
+  <data name="StepDetailMagnetDistance" xml:space="preserve">
+    <value>Magnet Distance:</value>
+  </data>
+  <data name="StepDetailMagnetDown" xml:space="preserve">
+    <value>Down</value>
+  </data>
+  <data name="StepDetailMagnetLiftDrop" xml:space="preserve">
+    <value>Magnet Action:</value>
+  </data>
+  <data name="StepDetailMagnetUp" xml:space="preserve">
+    <value>Up</value>
+  </data>
   <data name="StepDetailMixCount" xml:space="preserve">
     <value>Mixing Times:</value>
   </data>
@@ -844,8 +859,29 @@
   <data name="StepDetailOperationPosition" xml:space="preserve">
     <value>Operation Position:</value>
   </data>
+  <data name="StepDetailSelectedPipette" xml:space="preserve">
+    <value>Selected Pipette:</value>
+  </data>
+  <data name="StepDetailShakePreHeat" xml:space="preserve">
+    <value>Enable Pre-heat</value>
+  </data>
+  <data name="StepDetailShakeSpeed" xml:space="preserve">
+    <value>Speed (RPM):</value>
+  </data>
+  <data name="StepDetailShakeTemp" xml:space="preserve">
+    <value>Temp (℃):</value>
+  </data>
+  <data name="StepDetailShakeUnlockNext" xml:space="preserve">
+    <value>Unlock next step before shaking finished</value>
+  </data>
   <data name="StepDetailTipOnOffConsTip" xml:space="preserve">
     <value>Only supports tip boxes or waste bins</value>
+  </data>
+  <data name="StepDetailTransferFrom" xml:space="preserve">
+    <value>From Slot:</value>
+  </data>
+  <data name="StepDetailTransferTo" xml:space="preserve">
+    <value>To Slot:</value>
   </data>
   <data name="StepDetailVolume" xml:space="preserve">
     <value>Volume(ul):</value>
@@ -857,7 +893,7 @@
     <value>Note: Waiting time will be auto-converted to milliseconds.</value>
   </data>
   <data name="StepDetailWaitTime" xml:space="preserve">
-    <value>Waiting Time (seconds):</value>
+    <value>Time (seconds):</value>
   </data>
   <data name="StepDetailWellPosition" xml:space="preserve">
     <value>Well Position Selection:</value>
@@ -910,6 +946,9 @@
   </data>
   <data name="WindowActionTipOn" xml:space="preserve">
     <value>TipOn</value>
+  </data>
+  <data name="WindowActionTransfer" xml:space="preserve">
+    <value>Transfer</value>
   </data>
   <data name="WindowActionUV" xml:space="preserve">
     <value>UV</value>

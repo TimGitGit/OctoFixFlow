@@ -1,10 +1,8 @@
-﻿using System.Windows;
+﻿using System.ComponentModel;
+using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
-using System.ComponentModel;
-using System.Reflection;
 using System.Windows.Input;
-using System.Windows.Media.Media3D;
+using System.Windows.Media;
 
 namespace OctoFixFlow
 {
@@ -59,6 +57,9 @@ namespace OctoFixFlow
         {
             base.OnRender(dc);
 
+            //var backgroundRect = new Rect(0, 0, ActualWidth, ActualHeight);
+            //dc.DrawRectangle(Brushes.White, null, backgroundRect);
+
             if (ConsData == null)
                 return;
 
@@ -73,14 +74,104 @@ namespace OctoFixFlow
             double offsetY = (ActualHeight - ConsData.labW * scale) / 2;
 
             //绘制带缺口的耗材外框
-            DrawConsumableOutline(dc, borderPen, scale, offsetX, offsetY);
+            //DrawConsumableOutline(dc, borderPen, scale, offsetX, offsetY);
+            var outlineGeometry = DrawConsumableOutline(scale, offsetX, offsetY);
+            dc.DrawGeometry(Brushes.White, null, outlineGeometry);
+            dc.DrawGeometry(null, borderPen, outlineGeometry);
 
             //绘制孔
             DrawAllHoles(dc, holePen, selectedColumnPen, scale, offsetX, offsetY);
 
         }
 
-        private void DrawConsumableOutline(DrawingContext dc, Pen pen, double scale, double offsetX, double offsetY)
+        //private void DrawConsumableOutline(DrawingContext dc, Pen pen, double scale, double offsetX, double offsetY)
+        //{
+        //    double width = ConsData.labL * scale;
+        //    double height = ConsData.labW * scale;
+        //    double notchSize = 10 * scale; // 缺口大小
+
+        //    var outline = new PathGeometry();
+        //    var figure = new PathFigure();
+
+        //    // 计算起点（考虑缺口）
+        //    Point startPoint = new Point(offsetX, offsetY);
+
+        //    if (ConsData.NW == 1) // 左上角有缺口
+        //    {
+        //        startPoint = new Point(offsetX, offsetY + notchSize);
+        //    }
+
+        //    figure.StartPoint = startPoint;
+
+        //    // 上边线（考虑左右缺口）
+        //    if (ConsData.NW == 1) // 左上角缺口
+        //    {
+        //        figure.Segments.Add(new LineSegment(new Point(offsetX + notchSize, offsetY), true));
+        //    }
+
+        //    if (ConsData.NE == 1) // 右上角缺口
+        //    {
+        //        figure.Segments.Add(new LineSegment(new Point(offsetX + width - notchSize, offsetY), true));
+        //        figure.Segments.Add(new LineSegment(new Point(offsetX + width, offsetY + notchSize), true));
+        //    }
+        //    else
+        //    {
+        //        figure.Segments.Add(new LineSegment(new Point(offsetX + width, offsetY), true));
+        //    }
+
+        //    // 右边线（考虑上下缺口）
+        //    if (ConsData.NE == 1) // 右上角缺口
+        //    {
+        //        figure.Segments.Add(new LineSegment(new Point(offsetX + width, offsetY + notchSize), true));
+        //    }
+
+        //    if (ConsData.SE == 1) // 右下角缺口
+        //    {
+        //        figure.Segments.Add(new LineSegment(new Point(offsetX + width, offsetY + height - notchSize), true));
+        //        figure.Segments.Add(new LineSegment(new Point(offsetX + width - notchSize, offsetY + height), true));
+        //    }
+        //    else
+        //    {
+        //        figure.Segments.Add(new LineSegment(new Point(offsetX + width, offsetY + height), true));
+        //    }
+
+        //    // 下边线（考虑左右缺口）
+        //    if (ConsData.SE == 1) // 右下角缺口
+        //    {
+        //        figure.Segments.Add(new LineSegment(new Point(offsetX + width - notchSize, offsetY + height), true));
+        //    }
+
+        //    if (ConsData.SW == 1) // 左下角缺口
+        //    {
+        //        figure.Segments.Add(new LineSegment(new Point(offsetX + notchSize, offsetY + height), true));
+        //        figure.Segments.Add(new LineSegment(new Point(offsetX, offsetY + height - notchSize), true));
+        //    }
+        //    else
+        //    {
+        //        figure.Segments.Add(new LineSegment(new Point(offsetX, offsetY + height), true));
+        //    }
+
+        //    // 左边线（考虑上下缺口）
+        //    if (ConsData.SW == 1) // 左下角缺口
+        //    {
+        //        figure.Segments.Add(new LineSegment(new Point(offsetX, offsetY + height - notchSize), true));
+        //    }
+
+        //    if (ConsData.NW == 1) // 左上角缺口
+        //    {
+        //        figure.Segments.Add(new LineSegment(new Point(offsetX, offsetY + notchSize), true));
+        //    }
+        //    else
+        //    {
+        //        figure.Segments.Add(new LineSegment(new Point(offsetX, offsetY), true));
+        //    }
+
+        //    figure.IsClosed = true;
+        //    outline.Figures.Add(figure);
+
+        //    dc.DrawGeometry(null, pen, outline);
+        //}
+        private PathGeometry DrawConsumableOutline(double scale, double offsetX, double offsetY)
         {
             double width = ConsData.labL * scale;
             double height = ConsData.labW * scale;
@@ -165,7 +256,8 @@ namespace OctoFixFlow
             figure.IsClosed = true;
             outline.Figures.Add(figure);
 
-            dc.DrawGeometry(null, pen, outline);
+            //dc.DrawGeometry(null, pen, outline);
+            return outline;
         }
 
         private void DrawAllHoles(DrawingContext dc, Pen normalPen, Pen selectedPen, double scale, double offsetX, double offsetY)
@@ -277,18 +369,18 @@ namespace OctoFixFlow
             // 检查点击是否在有效列区域内
             //if (mousePos.X >= startX - colSpacing * 0.1 && mousePos.X <= endX + colSpacing * 0.1)
             //{
-                // 计算选中的列（核心修正：使用Math.Round避免浮点数精度问题）
-                double rawColumn = (mousePos.X - startX) / colSpacing;
-                int column = (int)Math.Round(rawColumn) + 1; // 四舍五入减少误差
-                                                             // 强制限制列号在有效范围内（1 ~ 最大列数）
-                column = Math.Clamp(column, 1, ConsData.numColumns);
+            // 计算选中的列（核心修正：使用Math.Round避免浮点数精度问题）
+            double rawColumn = (mousePos.X - startX) / colSpacing;
+            int column = (int)Math.Round(rawColumn) + 1; // 四舍五入减少误差
+                                                         // 强制限制列号在有效范围内（1 ~ 最大列数）
+            column = Math.Clamp(column, 1, ConsData.numColumns);
 
-                // 单选逻辑：先清空所有选中列，再添加当前列
-                _selectedColumns.Clear();
-                _selectedColumns.Add(column);
+            // 单选逻辑：先清空所有选中列，再添加当前列
+            _selectedColumns.Clear();
+            _selectedColumns.Add(column);
 
-                InvalidateVisual(); // 刷新绘制
-                SelectedColumnsChanged?.Invoke(PlateId, FormatSelectedColumns());
+            InvalidateVisual(); // 刷新绘制
+            SelectedColumnsChanged?.Invoke(PlateId, FormatSelectedColumns());
             //}
         }
 
@@ -316,7 +408,9 @@ namespace OctoFixFlow
             }
 
             ranges.Add(start == end ? $"{start}" : $"{start}~{end}");
-            return $"列：{string.Join("；", ranges)}";
+            //return $"{ResourceHelper.Instance.StepDetailColumnPrefix}{string.Join(ResourceHelper.Instance.StepDetailSeparator, ranges)}";
+
+            return $"{ResourceHelper.Instance.StepDetailColumnPrefix}{string.Join("；", ranges)}";
         }
 
         //清空选中状态

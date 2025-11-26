@@ -2086,6 +2086,15 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 列： 的本地化字符串。
+        /// </summary>
+        public static string StepDetailColumnPrefix {
+            get {
+                return ResourceManager.GetString("StepDetailColumnPrefix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 （当前：{0}） 的本地化字符串。
         /// </summary>
         public static string StepDetailCurrentCons {
@@ -2194,6 +2203,42 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 磁吸距离: 的本地化字符串。
+        /// </summary>
+        public static string StepDetailMagnetDistance {
+            get {
+                return ResourceManager.GetString("StepDetailMagnetDistance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 下降 的本地化字符串。
+        /// </summary>
+        public static string StepDetailMagnetDown {
+            get {
+                return ResourceManager.GetString("StepDetailMagnetDown", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 磁吸动作: 的本地化字符串。
+        /// </summary>
+        public static string StepDetailMagnetLiftDrop {
+            get {
+                return ResourceManager.GetString("StepDetailMagnetLiftDrop", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 上升 的本地化字符串。
+        /// </summary>
+        public static string StepDetailMagnetUp {
+            get {
+                return ResourceManager.GetString("StepDetailMagnetUp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 混合次数： 的本地化字符串。
         /// </summary>
         public static string StepDetailMixCount {
@@ -2230,11 +2275,74 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 选中移液器: 的本地化字符串。
+        /// </summary>
+        public static string StepDetailSelectedPipette {
+            get {
+                return ResourceManager.GetString("StepDetailSelectedPipette", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 启用预热 的本地化字符串。
+        /// </summary>
+        public static string StepDetailShakePreHeat {
+            get {
+                return ResourceManager.GetString("StepDetailShakePreHeat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 转速(RPM)： 的本地化字符串。
+        /// </summary>
+        public static string StepDetailShakeSpeed {
+            get {
+                return ResourceManager.GetString("StepDetailShakeSpeed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 温度(℃)： 的本地化字符串。
+        /// </summary>
+        public static string StepDetailShakeTemp {
+            get {
+                return ResourceManager.GetString("StepDetailShakeTemp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 振荡结束前解锁下一步运动 的本地化字符串。
+        /// </summary>
+        public static string StepDetailShakeUnlockNext {
+            get {
+                return ResourceManager.GetString("StepDetailShakeUnlockNext", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 取头 / 退头步骤仅支持 TIP 盒或垃圾桶 的本地化字符串。
         /// </summary>
         public static string StepDetailTipOnOffConsTip {
             get {
                 return ResourceManager.GetString("StepDetailTipOnOffConsTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 起始板位: 的本地化字符串。
+        /// </summary>
+        public static string StepDetailTransferFrom {
+            get {
+                return ResourceManager.GetString("StepDetailTransferFrom", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 终止板位： 的本地化字符串。
+        /// </summary>
+        public static string StepDetailTransferTo {
+            get {
+                return ResourceManager.GetString("StepDetailTransferTo", resourceCulture);
             }
         }
         
@@ -2266,7 +2374,7 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
-        ///   查找类似 等待时间 (秒)： 的本地化字符串。
+        ///   查找类似 时间 (秒)： 的本地化字符串。
         /// </summary>
         public static string StepDetailWaitTime {
             get {
@@ -2424,6 +2532,15 @@ namespace OctoFixFlow.Resource {
         public static string WindowActionTipOn {
             get {
                 return ResourceManager.GetString("WindowActionTipOn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 移载 的本地化字符串。
+        /// </summary>
+        public static string WindowActionTransfer {
+            get {
+                return ResourceManager.GetString("WindowActionTransfer", resourceCulture);
             }
         }
         

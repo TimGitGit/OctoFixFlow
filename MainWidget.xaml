@@ -238,18 +238,27 @@
                                 Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionTipOff}"
                                 Style="{StaticResource ActionButtonStyle}" />
                             <Button
+                                x:Name="ActionTransferButton"
+                                Click="TransferButton_Click"
+                                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionTransfer}"
+                                Style="{StaticResource ActionButtonStyle}" />
+                            <Button
+                                x:Name="ActionShakeButton"
                                 Click="ShakeButton_Click"
                                 Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionShake}"
                                 Style="{StaticResource ActionButtonStyle}" />
                             <Button
+                                x:Name="ActionMagneticButton"
                                 Click="MagneticButton_Click"
                                 Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionMagnetic}"
                                 Style="{StaticResource ActionButtonStyle}" />
                             <Button
+                                x:Name="ActionTemperatureButton"
                                 Click="TemperatureButton_Click"
                                 Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionTemperature}"
                                 Style="{StaticResource ActionButtonStyle}" />
                             <Button
+                                x:Name="ActionPCRButton"
                                 Click="PCRButton_Click"
                                 Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionPCR}"
                                 Style="{StaticResource ActionButtonStyle}" />
@@ -441,8 +450,8 @@
                     </Grid.ColumnDefinitions>
                     <!--  动态生成12个板位  -->
                     <Border
-                        Grid.Row="0"
-                        Grid.RowSpan="2"
+                        x:Name="PlateBorder10"
+                        Grid.Row="1"
                         Grid.Column="0"
                         AllowDrop="True"
                         DragEnter="PlateSlot_DragEnter"
@@ -488,13 +497,20 @@
                         </Grid>
                     </Border>
                     <Border
-                        Grid.Row="0"
-                        Grid.RowSpan="2"
+                        x:Name="PlateBorder12"
+                        Grid.Row="1"
                         Grid.Column="2"
                         Style="{StaticResource PlateSlotStyle}"
                         Tag="12">
                         <Grid x:Name="PlateGrid12">
-                            <Image Source="/OctoFixFlow;component/images/Trash.png" Stretch="Uniform" />
+                            <TextBlock
+                                Margin="0,5,0,0"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Tag="BottomLayer"
+                                Text="P12" />
                         </Grid>
                     </Border>
                     <Border

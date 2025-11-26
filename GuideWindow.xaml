@@ -425,7 +425,7 @@
                                     <Border
                                         MouseDown="ModuleItem_MouseDown"
                                         Style="{StaticResource ConsumableItemStyle}"
-                                        Tag="6">
+                                        Tag="7">
                                         <ToolTipService.ToolTip>
                                             <ToolTip
                                                 Padding="8,4"

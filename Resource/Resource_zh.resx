@@ -792,6 +792,9 @@
   <data name="StepDetailAspSpeed" xml:space="preserve">
     <value>吸液速度：</value>
   </data>
+  <data name="StepDetailColumnPrefix" xml:space="preserve">
+    <value>列：</value>
+  </data>
   <data name="StepDetailCurrentCons" xml:space="preserve">
     <value>（当前：{0}）</value>
   </data>
@@ -828,6 +831,18 @@
   <data name="StepDetailLiquidParams" xml:space="preserve">
     <value>液体参数：</value>
   </data>
+  <data name="StepDetailMagnetDistance" xml:space="preserve">
+    <value>磁吸距离:</value>
+  </data>
+  <data name="StepDetailMagnetDown" xml:space="preserve">
+    <value>下降</value>
+  </data>
+  <data name="StepDetailMagnetLiftDrop" xml:space="preserve">
+    <value>磁吸动作:</value>
+  </data>
+  <data name="StepDetailMagnetUp" xml:space="preserve">
+    <value>上升</value>
+  </data>
   <data name="StepDetailMixCount" xml:space="preserve">
     <value>混合次数：</value>
   </data>
@@ -840,8 +855,29 @@
   <data name="StepDetailOperationPosition" xml:space="preserve">
     <value>操作位置：</value>
   </data>
+  <data name="StepDetailSelectedPipette" xml:space="preserve">
+    <value>选中移液器:</value>
+  </data>
+  <data name="StepDetailShakePreHeat" xml:space="preserve">
+    <value>启用预热</value>
+  </data>
+  <data name="StepDetailShakeSpeed" xml:space="preserve">
+    <value>转速(RPM)：</value>
+  </data>
+  <data name="StepDetailShakeTemp" xml:space="preserve">
+    <value>温度(℃)：</value>
+  </data>
+  <data name="StepDetailShakeUnlockNext" xml:space="preserve">
+    <value>振荡结束前解锁下一步运动</value>
+  </data>
   <data name="StepDetailTipOnOffConsTip" xml:space="preserve">
     <value>取头 / 退头步骤仅支持 TIP 盒或垃圾桶</value>
+  </data>
+  <data name="StepDetailTransferFrom" xml:space="preserve">
+    <value>起始板位:</value>
+  </data>
+  <data name="StepDetailTransferTo" xml:space="preserve">
+    <value>终止板位：</value>
   </data>
   <data name="StepDetailVolume" xml:space="preserve">
     <value>体积 (ul)：</value>
@@ -853,7 +889,7 @@
     <value>提示：等待时间将自动转换为毫秒执行</value>
   </data>
   <data name="StepDetailWaitTime" xml:space="preserve">
-    <value>等待时间 (秒)：</value>
+    <value>时间 (秒)：</value>
   </data>
   <data name="StepDetailWellPosition" xml:space="preserve">
     <value>孔位选择：</value>
@@ -905,6 +941,9 @@
   </data>
   <data name="WindowActionTipOn" xml:space="preserve">
     <value>取头</value>
+  </data>
+  <data name="WindowActionTransfer" xml:space="preserve">
+    <value>移载</value>
   </data>
   <data name="WindowActionUV" xml:space="preserve">
     <value>紫外灯</value>

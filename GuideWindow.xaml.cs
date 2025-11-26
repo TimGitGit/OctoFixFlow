@@ -39,19 +39,6 @@ namespace OctoFixFlow
         }
         private void InitPlateModuleMap()
         {
-            //string[] platePositions = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12" };
-            //foreach (var pos in platePositions)
-            //{
-            //    var newModule = new ModuleDatas
-            //    {
-            //        Name = pos == "12" ? "Waste bin" : "",
-            //        Type = pos == "12" ? 8 : -1,
-            //        PlatePosition = pos,
-            //        PipetteVolume = 0,
-            //        ModuleImage = pos == "12" ? "/OctoFixFlow;component/images/Trash.png" : ""
-            //    };
-            //    AppGlobalConfig.Instance.AddOrUpdateModule(pos, newModule);
-            //}
             var newModule = new ModuleDatas
             {
                 Name ="Waste bin",
@@ -61,11 +48,56 @@ namespace OctoFixFlow
                 ModuleImage =  "/OctoFixFlow;component/images/Trash.png"
             };
             AppGlobalConfig.Instance.AddOrUpdateModule("12", newModule);
-
         }
 
         private void GuideConfirmButton_Click(object sender, RoutedEventArgs e)
         {
+            AppGlobalConfig.Instance.RenameModulesByType();
+            //判断一下移液器
+            //移液器1
+            int pipetteType1 = 0;
+            if (cmbPipette1.SelectedIndex == 1)
+            {
+                pipetteType1 = 1; 
+            }
+            int pipetteVolume1 = 200;
+            if (cmbPipetteVolume.SelectedIndex == 1)
+            {
+                pipetteVolume1 = 1000;
+            }
+            var pipetteModule = new ModuleDatas
+            {
+                Name = "pipette_1",
+                Type = pipetteType1,
+                PlatePosition = "",
+                PipetteVolume = pipetteVolume1,
+                ModuleImage = ""
+            };
+            AppGlobalConfig.Instance.AddOrUpdateModule("13", pipetteModule);
+            if (pipetteContainer2.Visibility == Visibility.Visible)
+            {
+                //移液器2
+                int pipetteType2 = 0;
+                if (cmbPipette2.SelectedIndex == 1)
+                {
+                    pipetteType2 = 1;
+                }
+                int pipetteVolume2 = 200;
+                if (cmbPipetteVolume2.SelectedIndex == 1)
+                {
+                    pipetteVolume2 = 1000;
+                }
+                var pipetteModule2 = new ModuleDatas
+                {
+                    Name = "pipette_2",
+                    Type = pipetteType2,
+                    PlatePosition = "",
+                    PipetteVolume = pipetteVolume2,
+                    ModuleImage = ""
+                };
+                AppGlobalConfig.Instance.AddOrUpdateModule("14", pipetteModule2);
+            }
+
             // 触发完成事件
             GuideCompleted?.Invoke();
             // 关闭引导窗口
@@ -83,6 +115,7 @@ namespace OctoFixFlow
                 GuideDeckLayoutTitle.IsEnabled = true;
                 GuideExperimentProtocolTitle.IsEnabled = true;
                 GuideConfirmButton.IsEnabled = true;
+
             }
             else if (pipetteContainer2.Visibility == Visibility.Collapsed)
             {

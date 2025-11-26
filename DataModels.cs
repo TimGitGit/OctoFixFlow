@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
-using System.Windows;
 using System.Windows.Data;
 
 namespace OctoFixFlow
@@ -39,9 +36,9 @@ namespace OctoFixFlow
                 float.TryParse(values[0]?.ToString(), out float rows) &&
                 float.TryParse(values[1]?.ToString(), out float columns))
             {
-                return (rows + columns).ToString(); 
+                return (rows + columns).ToString();
             }
-            return "0"; 
+            return "0";
         }
 
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
@@ -652,6 +649,18 @@ namespace OctoFixFlow
         private string _waitContent;
         private int _firstVol;//第一次的液体
         private int _firstDelay;//第一次的延迟
+        private string _selectedPipetteName;
+        private string _moduleName;
+        private int _shakeRPM;
+        private int _shakeTemp;
+        private bool _isPreHeat;
+        private bool _isUnlockNext = true;
+        private bool _isMagnetUpOrDown;
+        //private bool _isMagnetDown;
+        private int _magnetDistance;
+        private string _fromPos;
+        private string _toPos;
+
         public FlowStep()
         {
             // 初始化等待文本（多语言）
@@ -673,31 +682,24 @@ namespace OctoFixFlow
                 OnPropertyChanged();
             }
         }
-
-        //public string Name
-        //{
-        //    get => _name;
-        //    set
-        //    {
-        //        _name = value;
-        //        OnPropertyChanged();
-        //    }
-        //}
         public string Name
         {
             get
             {
-                // 根据Type值，从ResourceHelper获取对应多语言文本
                 string typeText = _type switch
                 {
-                    "start" => ResourceHelper.Instance.FlowStepStart,    // 开始步骤
-                    "end" => ResourceHelper.Instance.FlowStepEnd,        // 结束步骤
-                    "Aspirate" => ResourceHelper.Instance.WindowActionAspirate, 
+                    "start" => ResourceHelper.Instance.FlowStepStart,
+                    "end" => ResourceHelper.Instance.FlowStepEnd,
+                    "Aspirate" => ResourceHelper.Instance.WindowActionAspirate,
                     "Dispense" => ResourceHelper.Instance.WindowActionDispense,
                     "TipOn" => ResourceHelper.Instance.WindowActionTipOn,
                     "TipOff" => ResourceHelper.Instance.WindowActionTipOff,
                     "Wait" => ResourceHelper.Instance.WindowActionWait,
-
+                    "Shake" => ResourceHelper.Instance.WindowActionShake,
+                    "Magnetic" => ResourceHelper.Instance.WindowActionMagnetic,
+                    "Temp Ctrl" => ResourceHelper.Instance.WindowActionTemperature,
+                    "PCR" => ResourceHelper.Instance.WindowActionPCR,
+                    "Transfer" => ResourceHelper.Instance.WindowActionTransfer,
                     _ => _type // 未知类型时显示原始Type值（避免空值）
                 };
 
@@ -778,7 +780,7 @@ namespace OctoFixFlow
         {
             get => _mixVolume;
             set { _mixVolume = value; OnPropertyChanged(); }
-        } 
+        }
         public bool IsSystemStep
         {
             get => _isSystemstep;
@@ -791,27 +793,28 @@ namespace OctoFixFlow
         public int WaitTime
         {
             get => _waitTime;
-            set 
-            { _waitTime = value; 
-                OnPropertyChanged(); 
+            set
+            {
+                _waitTime = value;
+                OnPropertyChanged();
             }
         }
         public string WaitContent
         {
             get => _waitContent;
-            set 
-            { 
-                _waitContent = value; 
-                OnPropertyChanged(); 
+            set
+            {
+                _waitContent = value;
+                OnPropertyChanged();
             }
-        } 
+        }
         public int FirstVol
         {
             get => _firstVol;
-            set 
+            set
             {
-                _firstVol = value; 
-                OnPropertyChanged(); 
+                _firstVol = value;
+                OnPropertyChanged();
             }
         }
         public int FirstDelay
@@ -820,6 +823,94 @@ namespace OctoFixFlow
             set
             {
                 _firstDelay = value;
+                OnPropertyChanged();
+            }
+        }
+        public string SelectedPipetteName
+        {
+            get => _selectedPipetteName;
+            set
+            {
+                _selectedPipetteName = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(SelectedPipetteMaxVolume));
+            }
+        }
+        public string SelectedPipetteMaxVolume
+        {
+            get
+            {
+                var pipetteModule = AppGlobalConfig.Instance.PlateModuleMap
+                                    .Values
+                                    .FirstOrDefault(module => module.Name == _selectedPipetteName);
+                string pipetteMaxVolume = "0-" + pipetteModule.PipetteVolume.ToString() + "μL";
+
+                return pipetteMaxVolume;
+            }
+        }
+        public string ModuleName
+        {
+            get => _moduleName;
+            set
+            {
+                _moduleName = value;
+                OnPropertyChanged();
+            }
+        }
+        public int ShakeRPM
+        {
+            get => _shakeRPM;
+            set
+            {
+                _shakeRPM = value;
+                OnPropertyChanged();
+            }
+        }
+        public int ShakeTemp
+        {
+            get => _shakeTemp;
+            set
+            {
+                _shakeTemp = value;
+                OnPropertyChanged();
+            }
+        }
+        public bool IsPreHeat
+        {
+            get => _isPreHeat;
+            set { _isPreHeat = value; OnPropertyChanged(); }
+        }
+        public bool IsUnlockNext
+        {
+            get => _isUnlockNext;
+            set { _isUnlockNext = value; OnPropertyChanged(); }
+        }
+        public bool IsMagnetUpOrDown
+        {
+            get => _isMagnetUpOrDown;
+            set { _isMagnetUpOrDown = value; OnPropertyChanged(); }
+        }
+
+        public int MagnetDistance
+        {
+            get => _magnetDistance;
+            set { _magnetDistance = value; OnPropertyChanged(); }
+        }
+        public string FromPos
+        {
+            get => _fromPos;
+            set
+            {
+                _fromPos = value;
+                OnPropertyChanged();
+            }
+        }
+        public string ToPos
+        {
+            get => _toPos;
+            set
+            {
+                _toPos = value;
                 OnPropertyChanged();
             }
         }
@@ -839,7 +930,7 @@ namespace OctoFixFlow
     public class LiquidSettings : INotifyPropertyChanged
     {
         private string _name;
-         private string _description;
+        private string _description;
         private float _aisAirB;
         private float _aisAirA;
         private float _aisSpeed;
@@ -1024,49 +1115,49 @@ namespace OctoFixFlow
     /// 
     public class AppGlobalConfig : INotifyPropertyChanged
     {
-    // 单例实例（线程安全）
-    private static readonly Lazy<AppGlobalConfig> _instance = new Lazy<AppGlobalConfig>(() => new AppGlobalConfig());
-    public static AppGlobalConfig Instance => _instance.Value;
+        // 单例实例（线程安全）
+        private static readonly Lazy<AppGlobalConfig> _instance = new Lazy<AppGlobalConfig>(() => new AppGlobalConfig());
+        public static AppGlobalConfig Instance => _instance.Value;
 
-    // 私有构造函数：禁止外部创建实例
-    private AppGlobalConfig()
-    {
-        _isGripperEnabled = false;
-        _isPCREnabled = false;
-        _isTrashEnabled = false;
-        _plateModuleMap = new Dictionary<string, ModuleDatas>();
+        // 私有构造函数：禁止外部创建实例
+        private AppGlobalConfig()
+        {
+            _isGripperEnabled = false;
+            _isPCREnabled = false;
+            _isTrashEnabled = true;
+            _plateModuleMap = new Dictionary<string, ModuleDatas>();
         }
 
-    #region 全局属性
-    // 抓手启用状态
-    private bool _isGripperEnabled;
-    public bool IsGripperEnabled
-    {
-        get => _isGripperEnabled;
-        set
+        #region 全局属性
+        // 抓手启用状态
+        private bool _isGripperEnabled;
+        public bool IsGripperEnabled
         {
-            if (_isGripperEnabled != value)
+            get => _isGripperEnabled;
+            set
             {
-                _isGripperEnabled = value;
-                OnPropertyChanged(); 
+                if (_isGripperEnabled != value)
+                {
+                    _isGripperEnabled = value;
+                    OnPropertyChanged();
+                }
             }
         }
-    }
 
-    // PCR启用状态
-    private bool _isPCREnabled;
-    public bool IsPCREnabled
-    {
-        get => _isPCREnabled;
-        set
+        // PCR启用状态
+        private bool _isPCREnabled;
+        public bool IsPCREnabled
         {
-            if (_isPCREnabled != value)
+            get => _isPCREnabled;
+            set
             {
-                _isPCREnabled = value;
-                OnPropertyChanged(); 
+                if (_isPCREnabled != value)
+                {
+                    _isPCREnabled = value;
+                    OnPropertyChanged();
+                }
             }
         }
-    }
         // 垃圾桶启用状态
         private bool _isTrashEnabled;
         public bool IsTrashEnabled
@@ -1084,9 +1175,15 @@ namespace OctoFixFlow
 
         // 设备模块列表
         private Dictionary<string, ModuleDatas> _plateModuleMap;
+        private readonly Dictionary<int, string> _moduleTypePrefixMap = new Dictionary<int, string>
+    {
+        { 5, "shaker_" },
+        { 6, "magnetic_" },
+        { 7, "tempctrl_" }
+    };
         public IReadOnlyDictionary<string, ModuleDatas> PlateModuleMap
         {
-            get => _plateModuleMap; 
+            get => _plateModuleMap;
         }
 
 
@@ -1096,8 +1193,8 @@ namespace OctoFixFlow
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-         }
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
         // 统一添加/修改模块（内部操作私有Dictionary，外部调用即可）
         public void AddOrUpdateModule(string plateId, ModuleDatas module)
         {
@@ -1108,9 +1205,56 @@ namespace OctoFixFlow
 
             OnPropertyChanged(nameof(PlateModuleMap)); // 触发通知，UI同步
         }
+        //判断加热振荡有没有
+        public bool HasHeatingShaking() => PlateModuleMap.Values.Any(m => m.Type == 5);
+
+        //判断磁吸有没有
+        public bool HasMagnetic() => PlateModuleMap.Values.Any(m => m.Type == 6);
+
+        //判断温控有没有
+        public bool HasTemperatureControl() => PlateModuleMap.Values.Any(m => m.Type == 7);
+        /// <summary>
+        /// 遍历 PlateModuleMap，按类型分类排序后重新命名（shaker_序号、magnetic_序号等）
+        /// </summary>
+        public void RenameModulesByType()
+        {
+            // 1. 过滤出需要重命名的模块（排除移液器模块 pipette_1/pipette_2）
+            var targetModules = _plateModuleMap.Values
+                .Where(module => !module.Name.StartsWith("pipette_")) // 排除移液器
+                .Where(module => _moduleTypePrefixMap.ContainsKey(module.Type)) // 只处理目标类型
+                .ToList();
+
+            // 2. 按模块类型分组 → 同类型内排序（按原模块Key的数字升序，可调整排序规则）
+            var groupedModules = targetModules
+                .GroupBy(module => module.Type) // 按 Type 分组
+                .ToDictionary(
+                    group => group.Key,
+                    group => group
+                        .OrderBy(module => int.Parse(_plateModuleMap.First(kv => kv.Value == module).Key)) // 按原模块ID（如"13""14"）升序
+                        .ToList()
+                );
+
+            // 3. 遍历每组，按顺序编号并重新命名
+            foreach (var group in groupedModules)
+            {
+                var moduleType = group.Key;
+                var prefix = _moduleTypePrefixMap[moduleType]; // 获取类型前缀
+                var sortedModules = group.Value;
+
+                // 同类型内按排序结果编号（1、2、3...）
+                for (int i = 0; i < sortedModules.Count; i++)
+                {
+                    var module = sortedModules[i];
+                    var newName = $"{prefix}{i + 1}"; // 命名格式：前缀+序号（如 shaker_1）
+                    module.Name = newName; // 更新模块名称
+                }
+            }
+            //// 4. 触发配置变更通知（如果需要UI实时更新）
+            //OnConfigChanged(); // 若有配置变更事件，可在此触发
+        }
         #endregion
     }
-// 模块数据类
+    // 模块数据类
     public class ModuleDatas
     {
         public string Name { get; set; } // 名称（用于流程步骤）

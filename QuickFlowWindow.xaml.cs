@@ -1,17 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace OctoFixFlow
 {
@@ -28,7 +17,7 @@ namespace OctoFixFlow
         // 父窗口的液体集合
         public ObservableCollection<LiquidSettings> Liquids { get; set; }
 
-        public QuickFlowWindow(MainWidget mainWidget,ObservableCollection<FlowStep> flowSteps, Dictionary<string, ConsumableItem> plateconsumablemap, ObservableCollection<LiquidSettings> liquids)
+        public QuickFlowWindow(MainWidget mainWidget, ObservableCollection<FlowStep> flowSteps, Dictionary<string, ConsumableItem> plateconsumablemap, ObservableCollection<LiquidSettings> liquids)
         {
             InitializeComponent();
             _mainWidget = mainWidget;
@@ -64,7 +53,8 @@ namespace OctoFixFlow
                 if (type == 0 || type == 1)
                 {
                     aspDispItems.Add(displayText);
-                }else if (type == 2)
+                }
+                else if (type == 2)
                 {
                     tiponItems.Add(displayText);
                     tipoffItems.Add(displayText);
@@ -169,7 +159,7 @@ namespace OctoFixFlow
                     ref currentStepIndex,
                     "TipOn",
                     tipPickPlateId,
-                    tipOnWell, 
+                    tipOnWell,
                     aspirateVolume,
                     selectedLiquid,
                                             false,
@@ -188,7 +178,7 @@ namespace OctoFixFlow
                     tipPickPlateId,
                     1, // 默认第一列
                     aspirateVolume,
-                    selectedLiquid, 
+                    selectedLiquid,
                     false,
                         0,
                         0, 0,
@@ -197,10 +187,9 @@ namespace OctoFixFlow
 
             }
 
-            for (int i = 0;i< sampleTimes;i++)
+            for (int i = 0; i < sampleTimes; i++)
             {
-                int currentCol = i + 1; // 孔位列号（从1开始递增）
-                //string wellPosition = $"列：{currentCol}"; // 孔位文本（如"列：1"、"列：2"）
+                int currentCol = i + 1;
 
                 // 7.1 吸液步骤
                 if (isChangeAis)
@@ -271,7 +260,7 @@ namespace OctoFixFlow
                         tipEjectPlateId,
                         ejectCol,
                         aspirateVolume,
-                        selectedLiquid, 
+                        selectedLiquid,
                         false,
                     0,
                     0, 0,
@@ -287,7 +276,7 @@ namespace OctoFixFlow
                         tipPickPlateId,
                         currentCol + 1, // 取头列随批次递增
                         aspirateVolume,
-                        selectedLiquid, 
+                        selectedLiquid,
                         false,
                     0,
                     0, 0,
@@ -307,7 +296,7 @@ namespace OctoFixFlow
                     tipEjectPlateId,
                     finalEjectCol,
                     aspirateVolume,
-                    selectedLiquid, 
+                    selectedLiquid,
                     false,
                     0,
                     0, 0,
@@ -318,7 +307,7 @@ namespace OctoFixFlow
             else
             {
                 // 8. 最终退头步骤（所有批次处理完成后）
-              //  int finalEjectCol = tipEjectPlateId == "1" ? 1 : sampleTimes; // 最后一批对应列
+                //  int finalEjectCol = tipEjectPlateId == "1" ? 1 : sampleTimes; // 最后一批对应列
                 insertIndex = AddStep(
                     ParentFlowSteps,
                     insertIndex,
@@ -330,8 +319,8 @@ namespace OctoFixFlow
                     selectedLiquid,
                     false,
                     0,
-                    0 
-                    ,0,
+                    0
+                    , 0,
                     0
                 );
             }
@@ -399,7 +388,7 @@ namespace OctoFixFlow
         }
         //添加单个步骤到流程
         private int AddStep(ObservableCollection<FlowStep> steps, int insertIndex, ref int stepIndex,
-                           string type, string plateId, int currentCol, int volume, LiquidSettings liquid,bool mixFlag,int mixCount,int mixValue, int RinseValue, int RinseTimes)
+                           string type, string plateId, int currentCol, int volume, LiquidSettings liquid, bool mixFlag, int mixCount, int mixValue, int RinseValue, int RinseTimes)
         {
             steps.Insert(insertIndex++, new FlowStep
             {
@@ -407,7 +396,7 @@ namespace OctoFixFlow
                 //Name = $"{type}步骤{stepIndex - 1}",
                 Type = type,
                 Position = $"P{plateId}", // 板位格式：P1、P2...
-                WellPosition = $"列：{currentCol}", // 孔位：列1、列2...
+                WellPosition = $"{ResourceHelper.Instance.StepDetailColumnPrefix}{currentCol}", // 孔位：列1、列2...
                 Volume = volume,
                 SelectedColumns = currentCol.ToString(),
                 SelectedLiquid = liquid,

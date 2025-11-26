@@ -1,41 +1,28 @@
-﻿using Grpc.Net.Client;
+﻿using CommonModel;
+using DataEngine;
+using Grpc.Core;
+using Grpc.Net.Client;
+using MotorModule;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using PipetteModule;
+using ScriptEngine;
 using Serilog;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Diagnostics;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using static DataEngine.DataEngine;
-using CommonModel;
 using static CommonModel.CommonModel;
+using static DataEngine.DataEngine;
+using static MotorModule.MotorModule;
 using static PipetteModule.PipetteModule;
 using static ScriptEngine.ScriptEngine;
 using static ShiftModule.ShiftrModule;
-using MotorModule;
-using static MotorModule.MotorModule;
-using System.IO;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using DataEngine;
-using PipetteModule;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using System.Xml;
-using ScriptEngine;
-using Grpc.Core;
-using System.Diagnostics;
-using System.Globalization;
-using System.ComponentModel;
-using OctoFixFlow.Resource;
-using HelixToolkit.Wpf;
 namespace OctoFixFlow
 {
     /// <summary>
@@ -98,37 +85,28 @@ namespace OctoFixFlow
             _ = LoadDeviceStatus();
 
             //GRPC
-            //AddLogEntry("任务启动");
             Consumables = new ObservableCollection<ConsumableItem>();
-            _ = LoadConsumablesData(); // 加载耗材数据
+            _ = LoadConsumablesData();
             Liquids = new ObservableCollection<LiquidSettings>();
             _ = LoadLiquidsData();
-            FlowSteps = new ObservableCollection<FlowStep>();// 初始化流程步骤集合
-                                                             // 添加开始步骤
+            FlowSteps = new ObservableCollection<FlowStep>();
+
             FlowSteps.Add(new FlowStep
             {
                 Index = 1,
-                //Name = "开始",
-                //Name = "Start",
                 Type = "start",
                 IsSelected = false,
-                IsSystemStep = true // 标记为系统步骤
+                IsSystemStep = true
             });
-            // 添加结束步骤
             FlowSteps.Add(new FlowStep
             {
                 Index = 2,
-                //Name = "结束",
-                //Name = "End",
                 Type = "end",
                 IsSelected = false,
-                IsSystemStep = true // 标记为系统步骤
+                IsSystemStep = true
             });
             FlowList.ItemsSource = FlowSteps;
             _stepIndex = 3;
-            //LangSwitch.Visibility = Visibility.Collapsed;
-            //settingButton.Visibility = Visibility.Collapsed;
-
         }
         private void InitializeLanguage()
         {
@@ -167,8 +145,6 @@ namespace OctoFixFlow
                 _ScriptClient = new ScriptEngineClient(_channel);
 
                 ShowNotification(_res.GrpcLoadSucc, NotificationControl.NotificationType.Info);
-                // 测试连接
-                //TestConnectionAsync().Wait();
             }
             catch (System.Exception ex)
             {
@@ -186,9 +162,8 @@ namespace OctoFixFlow
                     Directory.CreateDirectory(systemFolder);
                 }
 
-                // 2. 定义IP配置文件路径
                 var ipFilePath = System.IO.Path.Combine(systemFolder, "IP.ini");
-                const string defaultIp = "http://192.168.100.10:8001"; // 默认IP地址
+                const string defaultIp = "http://192.168.100.10:8001";
 
                 if (!File.Exists(ipFilePath))
                 {
@@ -250,33 +225,30 @@ namespace OctoFixFlow
         // 加载耗材数据
         private async Task LoadConsumablesData()
         {
-            // 从数据库获取所有耗材设置（假设已有该方法）
             var allConsSettings = await databaseService.GetAllConsumablesAsync();
             foreach (var setting in allConsSettings)
             {
                 Consumables.Add(new ConsumableItem
                 {
                     Name = setting.name,
-                    Settings = setting // 关联平面图数据
+                    Settings = setting
                 });
             }
         }
         private async Task LoadLiquidsData()
         {
-            // 从数据库获取所有液体设置（假设数据库服务有该方法）
             var allLiquidSettings = await databaseService.GetAllLiquidsAsync();
             foreach (var liquid in allLiquidSettings)
             {
-                Liquids.Add(liquid); // 直接添加液体数据（LiquidSettings已实现INotifyPropertyChanged）
+                Liquids.Add(liquid);
             }
         }
         public async void RefreshConsumablesAndLiquids()
         {
-            // 清空现有耗材数据并重新加载
             Consumables.Clear();
             Liquids.Clear();
 
-            await LoadConsumablesData(); // 复用已有的耗材加载方法
+            await LoadConsumablesData();
             await LoadLiquidsData();
 
             ShowNotification(_res.SettingDataSave, NotificationControl.NotificationType.Info);
@@ -315,13 +287,11 @@ namespace OctoFixFlow
                 if (plateGrid == null) return;
                 var plateId = plateBorder.Tag.ToString();
 
-                // 修复：转换为 FrameworkElement（可访问 Tag）
                 var oldConsumableCanvas = plateGrid.Children.Cast<FrameworkElement>()
                     .FirstOrDefault(child => child.Tag?.ToString() == "TopConsumable");
                 if (oldConsumableCanvas != null)
                     plateGrid.Children.Remove(oldConsumableCanvas);
 
-                // 修复：转换为 FrameworkElement，再筛选 TextBlock
                 var bottomTextBlock = plateGrid.Children.Cast<FrameworkElement>()
                     .OfType<TextBlock>()
                     .FirstOrDefault(t => t.Tag?.ToString() == "BottomLayer");
@@ -330,12 +300,13 @@ namespace OctoFixFlow
 
                 var canvas = new ConsumableCanvas
                 {
-                    Tag = "TopConsumable", // 确保 ConsumableCanvas 继承 FrameworkElement
+                    Tag = "TopConsumable",
                     ConsData = consumable.Settings,
-                    Height = 250,
-                    Width = 250,
+                    Height = 300,
+                    Width = 300,
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
+                    // Background = Brushes.White,
                     Background = Brushes.Transparent,
                     PlateId = plateId
                 };
@@ -345,47 +316,6 @@ namespace OctoFixFlow
                 _plateConsumableMap[plateId] = consumable;
             }
         }
-        //private void PlateSlot_Drop(object sender, DragEventArgs e)
-        //{
-        //    if (sender is Border plateBorder &&
-        //        e.Data.GetData(typeof(ConsumableItem)) is ConsumableItem consumable)
-        //    {
-        //        // 获取板位的Grid容器（用于显示平面图）
-        //        var plateGrid = plateBorder.Child as Grid;
-        //        if (plateGrid == null) return;
-
-        //        // 清空板位原有内容（保留板位编号）
-        //        plateGrid.Children.Clear();
-        //        plateGrid.Children.Add(new TextBlock
-        //        {
-        //            Text = $"P{plateBorder.Tag}", // 显示板位编号（如P1、P2）
-        //            FontSize = 16,
-        //            FontWeight = FontWeights.Bold,
-        //            HorizontalAlignment = HorizontalAlignment.Center,
-        //            VerticalAlignment = VerticalAlignment.Top,
-        //            Margin = new Thickness(0, 5, 0, 0)
-        //        });
-        //        var plateId = plateBorder.Tag.ToString();
-
-        //        // 添加耗材平面图到板位
-        //        var canvas = new ConsumableCanvas
-        //        {
-        //            ConsData = consumable.Settings, // 绑定耗材的平面图数据
-        //            Height = 250, // 板位内平面图高度
-        //            Width = 250,  // 板位内平面图宽度
-        //            HorizontalAlignment = HorizontalAlignment.Center,
-        //            VerticalAlignment = VerticalAlignment.Center,
-        //            Background = Brushes.Transparent,
-        //            PlateId = plateId
-        //        };
-        //        canvas.SelectedColumnsChanged += OnPlateColumnsSelected;
-
-        //        plateGrid.Children.Add(canvas);
-
-        //        // 记录板位与耗材的关联（用于后续操作）
-        //        _plateConsumableMap[plateId] = consumable;
-        //    }
-        //}
         // 新增：处理板位列选择事件，更新孔位输入框
         private void OnPlateColumnsSelected(string plateId, string columnText)
         {
@@ -406,8 +336,8 @@ namespace OctoFixFlow
             var result = new List<int>();
             if (string.IsNullOrEmpty(text)) return result;
 
-            // 移除"列："前缀
-            var content = text.Replace("列：", "");
+            string columnPrefix = ResourceHelper.Instance.StepDetailColumnPrefix;
+            var content = text.Replace(columnPrefix, "");
             // 按分隔符拆分
             var parts = content.Split('；');
             foreach (var part in parts)
@@ -466,12 +396,9 @@ namespace OctoFixFlow
             if (string.IsNullOrEmpty(plateId))
                 return null;
 
-            // 假设你的板位 Border 都放在一个容器内（比如名为 PlateContainer 的 Grid/StackPanel）
-            // 👉 关键：替换为你实际存储板位 Border 的父容器名称（必须在 XAML 中给父容器命名）
             if (this.FindName("PlateContainer") is not Panel plateContainer)
                 return null;
 
-            // 遍历父容器内所有 Border，匹配 Tag == plateId
             foreach (var child in plateContainer.Children)
             {
                 if (child is Border border
@@ -483,11 +410,58 @@ namespace OctoFixFlow
                 }
             }
 
-            // 找不到对应 Border 时返回 null（容错）
             return null;
         }
+        public void UpdateDeviceModule()
+        {
+            //判断垃圾桶
+            if (AppGlobalConfig.Instance.IsTrashEnabled)
+            {
+                Grid.SetRow(PlateBorder12, 0);
+                Grid.SetColumn(PlateBorder12, 2);
+                Grid.SetRowSpan(PlateBorder12, 2);
+            }
+            //判断抓手
+            if (AppGlobalConfig.Instance.IsGripperEnabled)
+                ActionTransferButton.Visibility = Visibility.Visible;
+            else
+                ActionTransferButton.Visibility = Visibility.Collapsed;
+            //判断PCR
+            if (AppGlobalConfig.Instance.IsPCREnabled)
+            {
+                ActionPCRButton.Visibility = Visibility.Visible;
+                Grid.SetRow(PlateBorder10, 0);
+                Grid.SetColumn(PlateBorder10, 0);
+                Grid.SetRowSpan(PlateBorder10, 2);
+            }
+            else
+            {
+                ActionPCRButton.Visibility = Visibility.Collapsed;
+                Grid.SetRow(PlateBorder10, 1);
+                Grid.SetColumn(PlateBorder10, 0);
+                Grid.SetRowSpan(PlateBorder10, 1);
+            }
+            //判断加热振荡
+            if (AppGlobalConfig.Instance.HasHeatingShaking())
+                ActionShakeButton.Visibility = Visibility.Visible;
+            else
+                ActionShakeButton.Visibility = Visibility.Collapsed;
+            //判断磁吸
+            if (AppGlobalConfig.Instance.HasMagnetic())
+                ActionMagneticButton.Visibility = Visibility.Visible;
+            else
+                ActionMagneticButton.Visibility = Visibility.Collapsed;
+            //判断温控
+            if (AppGlobalConfig.Instance.HasTemperatureControl())
+                ActionTemperatureButton.Visibility = Visibility.Visible;
+            else
+                ActionTemperatureButton.Visibility = Visibility.Collapsed;
+        }
+        //更新板位
         public void UpdatePlateDisplay(Border plateBorder, ModuleDatas plateModule)
         {
+            if (plateBorder == null) return;
+
             if (plateBorder.Child is not Grid plateGrid) return;
             var plateId = plateBorder.Tag.ToString();
 
@@ -499,14 +473,14 @@ namespace OctoFixFlow
             var imageUri = new Uri(plateModule.ModuleImage, UriKind.RelativeOrAbsolute);
             var moduleImage = new Image
             {
-                Tag = "BottomLayer",  
+                Tag = "BottomLayer",
                 Source = new BitmapImage(imageUri),
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch,
                 Stretch = Stretch.Uniform,
                 Margin = new Thickness(2)
             };
-            plateGrid.Children.Add(moduleImage);  
+            plateGrid.Children.Add(moduleImage);
         }
 
         // 清除板位内容的方法
@@ -540,10 +514,10 @@ namespace OctoFixFlow
             var step = new FlowStep
             {
                 Index = _stepIndex++,
-                //Name = $"{type} Steps {_stepIndex - 1}",
                 Type = type,
-                Volume = 50, // 默认体积
-                Position = "P1", // 默认位置
+                Volume = 50,
+                Position = "P1",
+                SelectedPipetteName = "pipette_1",
                 IsSelected = false,
                 IsSystemStep = false
             };
@@ -588,18 +562,21 @@ namespace OctoFixFlow
         // 显示步骤详情（修改后）
         private void ShowStepDetail(FlowStep step)
         {
-            //RunInfoView.Visibility = Visibility.Collapsed;
-            //StepDetailView.Visibility = Visibility.Visible;
             // 清空现有详情
             StepDetailPanel.Children.Clear();
             var res = ResourceHelper.Instance;
             string stepTypeText = step.Type switch
             {
-                "Wait" => res.FlowStepWaitContent, // 等待步骤（复用之前的等待文本）
+                "Wait" => res.FlowStepWaitContent,
                 "Aspirate" => res.WindowActionAspirate,
                 "Dispense" => res.WindowActionDispense,
                 "TipOn" => res.WindowActionTipOn,
                 "TipOff" => res.WindowActionTipOff,
+                "Shake" => res.WindowActionShake,
+                "Magnetic" => res.WindowActionMagnetic,
+                "Temp Ctrl" => res.WindowActionTemperature,
+                "PCR" => res.WindowActionPCR,
+                "Transfer" => res.WindowActionTransfer,
                 _ => step.Type // 未知类型默认显示原始值
             };
             // 添加通用详情标题
@@ -655,6 +632,320 @@ namespace OctoFixFlow
                     Foreground = Brushes.Gray,
                     Margin = new Thickness(0, 5, 0, 0)
                 });
+                return;
+            }
+            else if (step.Type == "Shake")//加热振荡
+            {
+                // 振荡位置
+                var actualPlatePositions = AppGlobalConfig.Instance.PlateModuleMap
+                    .Values
+                    .Where(module =>
+                        !string.IsNullOrEmpty(module.PlatePosition) &&
+                        int.TryParse(module.PlatePosition, out _) &&
+                        module.Type == 5)
+                    .Select(module => int.Parse(module.PlatePosition))
+                    .Distinct()
+                    .OrderBy(num => num)
+                    .Select(num => $"P{num}")
+                    .ToList();
+                var posiShakeCombo = new ComboBox
+                {
+                    Style = (Style)FindResource("InputComboBoxStyle"),
+                    ItemsSource = actualPlatePositions,
+                    Width = 140,
+                    Margin = new Thickness(5, 0, 0, 0),
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+
+                var posiShakeBinding = new Binding
+                {
+                    Source = step,
+                    Path = new PropertyPath("Position"),
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                };
+                posiShakeCombo.SetBinding(ComboBox.SelectedItemProperty, posiShakeBinding);
+                // 位置下拉框选择变更时校验耗材类型
+                posiShakeCombo.SelectionChanged += (s, e) =>
+                {
+                    if (posiShakeCombo.SelectedItem is string newPosition)
+                    {
+                        string selectedPlatePosition = newPosition.Replace("P", "");
+                        var matchedModule = AppGlobalConfig.Instance.PlateModuleMap
+        .Values
+        .FirstOrDefault(module =>
+            module.Type == 5 &&
+            module.PlatePosition == selectedPlatePosition);
+                        step.ModuleName = matchedModule.Name;
+                    }
+                };
+                StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailOperationPosition, posiShakeCombo));
+                // 振荡时间输入（秒）
+                var shakeTimeTextBox = new TextBox
+                {
+                    Style = (Style)FindResource("InputTextBoxStyle"),
+                    Width = 140,
+                    Margin = new Thickness(5, 0, 0, 0),
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                shakeTimeTextBox.SetBinding(TextBox.TextProperty, new Binding
+                {
+                    Source = step,
+                    Path = new PropertyPath("WaitTime"),
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                });
+                StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailWaitTime, shakeTimeTextBox));
+                // 振荡转速输入
+                var shakeRPMTextBox = new TextBox
+                {
+                    Style = (Style)FindResource("InputTextBoxStyle"),
+                    Width = 140,
+                    Margin = new Thickness(5, 0, 0, 0),
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                shakeRPMTextBox.SetBinding(TextBox.TextProperty, new Binding
+                {
+                    Source = step,
+                    Path = new PropertyPath("ShakeRPM"),
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                });
+                StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailShakeSpeed, shakeRPMTextBox));
+                // 振荡温度输入
+                var shakeTempTextBox = new TextBox
+                {
+                    Style = (Style)FindResource("InputTextBoxStyle"),
+                    Width = 140,
+                    Margin = new Thickness(5, 0, 0, 0),
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                shakeTempTextBox.SetBinding(TextBox.TextProperty, new Binding
+                {
+                    Source = step,
+                    Path = new PropertyPath("ShakeTemp"),
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                });
+                StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailShakeTemp, shakeTempTextBox));
+
+                // 预热
+                var shakePreHeatCheckBox = new CheckBox
+                {
+                    Content = res.StepDetailShakePreHeat,
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    FontSize = 14,
+                    Margin = new Thickness(5, 0, 0, 0)
+                };
+                shakePreHeatCheckBox.SetBinding(CheckBox.IsCheckedProperty, new Binding
+                {
+                    Source = step,
+                    Path = new PropertyPath("IsPreHeat"),
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                });
+
+                StepDetailPanel.Children.Add(shakePreHeatCheckBox);
+                // 振荡结束前解锁下一动作
+                var shakeUnlockNextCheckBox = new CheckBox
+                {
+                    Content = res.StepDetailShakeUnlockNext,
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    FontSize = 14,
+                    Margin = new Thickness(5, 0, 0, 0)
+                };
+                shakeUnlockNextCheckBox.SetBinding(CheckBox.IsCheckedProperty, new Binding
+                {
+                    Source = step,
+                    Path = new PropertyPath("IsUnlockNext"),
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                });
+
+                StepDetailPanel.Children.Add(shakeUnlockNextCheckBox);
+                return;
+            }
+            else if (step.Type == "Magnetic")//磁吸
+            {
+                // 磁吸位置
+                var actualPlatePositions = AppGlobalConfig.Instance.PlateModuleMap
+                    .Values
+                    .Where(module =>
+                        !string.IsNullOrEmpty(module.PlatePosition) &&
+                        int.TryParse(module.PlatePosition, out _) &&
+                        module.Type == 6)
+                    .Select(module => int.Parse(module.PlatePosition))
+                    .Distinct()
+                    .OrderBy(num => num)
+                    .Select(num => $"P{num}")
+                    .ToList();
+                var posiMagneticCombo = new ComboBox
+                {
+                    Style = (Style)FindResource("InputComboBoxStyle"),
+                    ItemsSource = actualPlatePositions,
+                    Width = 140,
+                    Margin = new Thickness(5, 0, 0, 0),
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+
+                var posiMagneticBinding = new Binding
+                {
+                    Source = step,
+                    Path = new PropertyPath("Position"),
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                };
+                posiMagneticCombo.SetBinding(ComboBox.SelectedItemProperty, posiMagneticBinding);
+                posiMagneticCombo.SelectionChanged += (s, e) =>
+                {
+                    if (posiMagneticCombo.SelectedItem is string newPosition)
+                    {
+                        string selectedPlatePosition = newPosition.Replace("P", "");
+                        var matchedModule = AppGlobalConfig.Instance.PlateModuleMap
+                        .Values
+                        .FirstOrDefault(module =>
+                        module.Type == 6 &&
+                        module.PlatePosition == selectedPlatePosition);
+                        step.ModuleName = matchedModule.Name;
+                    }
+                };
+                StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailOperationPosition, posiMagneticCombo));
+                // 上升
+                var magneticUpCheckBox = new CheckBox
+                {
+                    Content = res.StepDetailMagnetUp,
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    FontSize = 14,
+                    Margin = new Thickness(5, 0, 20, 0)
+                };
+                magneticUpCheckBox.SetBinding(CheckBox.IsCheckedProperty, new Binding
+                {
+                    Source = step,
+                    Path = new PropertyPath("IsMagnetUp"),
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                });
+
+                // 下降
+                var magneticDownCheckBox = new CheckBox
+                {
+                    Content = res.StepDetailMagnetDown,
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    FontSize = 14,
+                    Margin = new Thickness(5, 0, 0, 0)
+                };
+                magneticDownCheckBox.SetBinding(CheckBox.IsCheckedProperty, new Binding
+                {
+                    Source = step,
+                    Path = new PropertyPath("IsMagnetUpOrDown"),
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                });
+                magneticUpCheckBox.Checked += (s, e) =>
+                {
+                    step.IsMagnetUpOrDown = true;
+                };
+                magneticDownCheckBox.Checked += (s, e) =>
+                {
+                    step.IsMagnetUpOrDown = false;
+                };
+                magneticUpCheckBox.Unchecked += (s, e) =>
+                {
+                    if (!magneticDownCheckBox.IsChecked.GetValueOrDefault())
+                    {
+                        step.IsMagnetUpOrDown = true;
+                    }
+                };
+                magneticDownCheckBox.Unchecked += (s, e) =>
+                {
+                    if (!magneticUpCheckBox.IsChecked.GetValueOrDefault())
+                    {
+                        step.IsMagnetUpOrDown = false;
+                    }
+                };
+                if (!step.IsMagnetUpOrDown)
+                {
+                    step.IsMagnetUpOrDown = true;
+                }
+                var magnetDirectionPanel = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    Margin = new Thickness(0, 5, 0, 5)
+                };
+                magnetDirectionPanel.Children.Add(magneticUpCheckBox);
+                magnetDirectionPanel.Children.Add(magneticDownCheckBox);
+                StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailMagnetLiftDrop, magnetDirectionPanel));
+                // 创建磁吸距离输入框并绑定
+                var magnetDisTextBox = new TextBox
+                {
+                    Style = (Style)FindResource("InputTextBoxStyle"),
+                    Width = 200,
+                    Margin = new Thickness(5, 0, 0, 0),
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                magnetDisTextBox.SetBinding(TextBox.TextProperty, new Binding
+                {
+                    Source = step,
+                    Path = new PropertyPath("MagnetDistance"),
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                });
+                StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailMagnetDistance, magnetDisTextBox));
+                return;
+            }
+            else if (step.Type == "Temp Ctrl")//温控
+            {
+
+                return;
+            }
+            else if (step.Type == "PCR")//PCR
+            {
+                return;
+            }
+            else if (step.Type == "Transfer")//抓手
+            {
+                // 起始板位
+                var posFromCombo = new ComboBox
+                {
+                    Style = (Style)FindResource("InputComboBoxStyle"),
+                    ItemsSource = new List<string> { "P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "P11", "P12" },
+                    Width = 140,
+                    Margin = new Thickness(5, 0, 0, 0),
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                var posFromBinding = new Binding
+                {
+                    Source = step,
+                    Path = new PropertyPath("FromPos"),
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                };
+                posFromCombo.SetBinding(ComboBox.SelectedItemProperty, posFromBinding);
+
+                StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailTransferFrom, posFromCombo));
+                // 终止板位
+                var posToCombo = new ComboBox
+                {
+                    Style = (Style)FindResource("InputComboBoxStyle"),
+                    ItemsSource = new List<string> { "P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "P11", "P12" },
+                    Width = 140,
+                    Margin = new Thickness(5, 0, 0, 0),
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                var posToBinding = new Binding
+                {
+                    Source = step,
+                    Path = new PropertyPath("ToPos"),
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                };
+                posToCombo.SetBinding(ComboBox.SelectedItemProperty, posToBinding);
+
+                StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailTransferTo, posToCombo));
                 return;
             }
             // -------------------------- 通用控件（吸液/注液/取头/退头） --------------------------
@@ -759,9 +1050,9 @@ namespace OctoFixFlow
             var wellPositionTextBox = new TextBox
             {
                 Style = (Style)FindResource("InputTextBoxStyle"),
-                Width = 140, // 调整宽度（根据实际需求）
+                Width = 140,
                 Margin = new Thickness(5, 0, 0, 0),
-                VerticalAlignment = VerticalAlignment.Center // 与其他输入控件保持一致
+                VerticalAlignment = VerticalAlignment.Center
             };
             wellPositionTextBox.SetBinding(TextBox.TextProperty, new Binding
             {
@@ -770,6 +1061,7 @@ namespace OctoFixFlow
                 Mode = BindingMode.TwoWay,
                 UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
             });
+            wellPositionTextBox.IsReadOnly = true;
             StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailWellPosition, wellPositionTextBox));
 
             StepDetailPanel.Children.Add(new TextBlock
@@ -777,24 +1069,52 @@ namespace OctoFixFlow
                 Text = res.StepDetailWellSelectionArea, // “孔位选择区：”/“Well Position Selection Area:”
                 FontSize = 14,
                 HorizontalAlignment = HorizontalAlignment.Left,
-                Margin = new Thickness(0, 5, 0, 2) // 与上方控件间距5，与下方耗材名称间距2
+                Margin = new Thickness(0, 5, 0, 2)
             });
 
             // 2. 耗材名称（单独一行，在标题下方）
             consumableNameText = new TextBlock
             {
                 FontSize = 14,
-                Margin = new Thickness(0, 0, 0, 5), // 与下方画布间距5
-                HorizontalAlignment = HorizontalAlignment.Left, // 与标题左对齐
+                Margin = new Thickness(0, 0, 0, 5),
+                HorizontalAlignment = HorizontalAlignment.Left,
                 Foreground = Brushes.DarkSlateGray
             };
             StepDetailPanel.Children.Add(consumableNameText);
 
             StepDetailPanel.Children.Add(wellSelectionCanvas);
 
-            // 体积输入（吸液/注液特有）
+            // 移液器选择、体积输入（吸液/注液特有）
             if (step.Type == "Aspirate" || step.Type == "Dispense")
             {
+                var availablePipettes = AppGlobalConfig.Instance.PlateModuleMap
+                    .Values
+                    .Where(module =>
+                        (module.Name == "pipette_1" || module.Name == "pipette_2")
+                    )
+                    .Select(module => module.Name)
+                    .ToList();
+                var pipetteCombo = new ComboBox
+                {
+                    Style = (Style)FindResource("InputComboBoxStyle"),
+                    ItemsSource = availablePipettes, // 仅显示已配置的移液器
+                    Width = 140,
+                    Margin = new Thickness(5, 0, 0, 0),
+                    VerticalAlignment = VerticalAlignment.Center,
+                    SelectedItem = string.IsNullOrEmpty(step.SelectedPipetteName)
+               ? availablePipettes.FirstOrDefault() // 默认选中第一个
+               : step.SelectedPipetteName
+                };
+                pipetteCombo.SetBinding(ComboBox.SelectedItemProperty, new Binding
+                {
+                    Source = step,
+                    Path = new PropertyPath("SelectedPipetteName"),
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                });
+                StepDetailPanel.Children.Add(CreateDetailRow(
+    res.StepDetailSelectedPipette,
+    pipetteCombo));
                 // 创建体积输入框并绑定
                 var volumeTextBox = new TextBox
                 {
@@ -802,15 +1122,44 @@ namespace OctoFixFlow
                     Width = 200,
                     Margin = new Thickness(5, 0, 0, 0)
                 };
-                // 绑定到step.Volume（双向）
-                volumeTextBox.SetBinding(TextBox.TextProperty, new Binding
+
+                volumeTextBox.SetBinding(TextBox.ToolTipProperty, new Binding
+                {
+                    Source = step,
+                    Path = new PropertyPath("SelectedPipetteMaxVolume"),
+                    Mode = BindingMode.OneWay // 仅需单向绑定
+                });
+
+                // 2. 绑定Volume属性（原有逻辑保留）
+                var volumeBinding = new Binding
                 {
                     Source = step,
                     Path = new PropertyPath("Volume"),
                     Mode = BindingMode.TwoWay,
-                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged // 输入时立即同步
-                });
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                };
+
+                volumeTextBox.SetBinding(TextBox.TextProperty, volumeBinding);
+
                 StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailVolume, volumeTextBox));
+                //// 创建体积输入框并绑定
+                //var volumeTextBox = new TextBox
+                //{
+                //    Style = (Style)FindResource("InputTextBoxStyle"),
+                //    Width = 200,
+                //    Margin = new Thickness(5, 0, 0, 0),
+                //    ToolTip = $"{res.StepDetailMaxVolumeTip}: 0~{step.SelectedPipetteMaxVolume}μL"
+                //};
+                //// 绑定到step.Volume（双向）
+                //volumeTextBox.SetBinding(TextBox.TextProperty, new Binding
+                //{
+                //    Source = step,
+                //    Path = new PropertyPath("Volume"),
+                //    Mode = BindingMode.TwoWay,
+                //    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged // 输入时立即同步
+
+                //});
+                //StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailVolume, volumeTextBox));
                 // #################### 新增：混合项控件 ####################
                 var mixHeaderRow = new StackPanel
                 {
@@ -834,7 +1183,8 @@ namespace OctoFixFlow
                     Content = res.StepDetailEnableMix,
                     HorizontalAlignment = HorizontalAlignment.Left,
                     VerticalAlignment = VerticalAlignment.Center,
-                    Margin = new Thickness(5, 0, 0, 0) // 与标题保持小间距
+                    FontSize = 14,
+                    Margin = new Thickness(5, 0, 0, 0)
                 };
                 mixCheckBox.SetBinding(CheckBox.IsCheckedProperty, new Binding
                 {
@@ -1156,32 +1506,6 @@ namespace OctoFixFlow
 
             return grid;  // 返回Grid容器
         }
-        //private StackPanel CreateParamRow(string label, string propertyName, FlowStep step, double width)
-        //{
-        //    var paramValueText = new TextBlock
-        //    {
-        //        FontSize = 13,
-        //        Margin = new Thickness(5, 2, 0, 2),
-        //        Width = 175 // 固定值宽度
-        //    };
-        //    paramValueText.SetBinding(TextBlock.TextProperty, new Binding
-        //    {
-        //        Source = step,
-        //        Path = new PropertyPath($"SelectedLiquid.{propertyName}"),
-        //        StringFormat = "{0:F2}"
-        //    });
-
-        //    return new StackPanel
-        //    {
-        //        Orientation = Orientation.Horizontal,
-        //        Width = width, // 每个参数项总宽度（标签+值）
-        //        Children =
-        //{
-        //    new TextBlock { Text = label, Width = 175, FontSize = 13 }, // 固定标签宽度
-        //    paramValueText
-        //}
-        //    };
-        //}
         private void UpdatePlateInteractivity(string targetPlateId)
         {
             // 遍历所有可能的板位（1-12）
@@ -1219,53 +1543,50 @@ namespace OctoFixFlow
 
         private void AspirateButton_Click(object sender, RoutedEventArgs e)
         {
-            //AddFlowStep("吸液");
             AddFlowStep("Aspirate");
-
         }
 
         private void DispenseButton_Click(object sender, RoutedEventArgs e)
         {
-            //AddFlowStep("注液");
             AddFlowStep("Dispense");
         }
 
         private void PickTipButton_Click(object sender, RoutedEventArgs e)
         {
-            //AddFlowStep("取头");
             AddFlowStep("TipOn");
-
         }
 
         private void EjectTipButton_Click(object sender, RoutedEventArgs e)
         {
-            //AddFlowStep("退头");
             AddFlowStep("TipOff");
         }
 
         private void WaitButton_Click(object sender, RoutedEventArgs e)
         {
-            //AddFlowStep("等待");
             AddFlowStep("Wait");
         }
         private void ShakeButton_Click(object sender, RoutedEventArgs e)
         {
-
+            AddFlowStep("Shake");
         }
 
         private void MagneticButton_Click(object sender, RoutedEventArgs e)
         {
-
+            AddFlowStep("Magnetic");
         }
 
         private void TemperatureButton_Click(object sender, RoutedEventArgs e)
         {
-
+            AddFlowStep("Temp Ctrl");
         }
 
         private void PCRButton_Click(object sender, RoutedEventArgs e)
         {
-
+            AddFlowStep("PCR");
+        }
+        private void TransferButton_Click(object sender, RoutedEventArgs e)
+        {
+            AddFlowStep("Transfer");
         }
         private void LogoutButton_Click(object sender, RoutedEventArgs e)
         {
@@ -1403,10 +1724,6 @@ namespace OctoFixFlow
             for (int i = 0; i < FlowSteps.Count; i++)
             {
                 FlowSteps[i].Index = i + 1;
-                //if (!FlowSteps[i].IsSystemStep)
-                //{
-                //    FlowSteps[i].Name = $"{FlowSteps[i].Type} Steps {i + 1}";
-                //}
             }
             _stepIndex = FlowSteps.Count + 1;
         }
@@ -1630,6 +1947,55 @@ namespace OctoFixFlow
 
                         step["wait_param"] = waitParams;
                         break;
+                    case "shaker":
+                        var shakerParams = new JObject();
+
+                        string shakerName = flowStep.ModuleName;
+                        int shakerTemp = flowStep.ShakeTemp;
+                        int shakerRPM = flowStep.ShakeRPM;
+                        bool shakerPreHeat = flowStep.IsPreHeat;
+                        bool shakerUnlockNext = flowStep.IsUnlockNext;
+                        int shakerTimeMs = flowStep.WaitTime * 1000;
+                        if (shakerTimeMs <= 0)
+                        {
+                            waitTimeMs = 86400 * 1000; // 24小时默认值
+                        }
+                        shakerParams["shaker"] = shakerName;
+                        shakerParams["temp"] = shakerTemp;
+                        shakerParams["rpm"] = shakerRPM;
+                        shakerParams["ms"] = shakerTimeMs;
+                        shakerParams["is_wait_temp"] = shakerPreHeat;
+                        shakerParams["is_wait_shaker_end"] = shakerUnlockNext;
+
+                        step["shaker_param"] = shakerParams;
+                        break;
+                    case "magnetic":
+                        var magneticParams = new JObject();
+
+                        string magneticName = flowStep.ModuleName;
+                        int magneticAction = flowStep.ShakeTemp;
+                        if (flowStep.IsMagnetUpOrDown)
+                            magneticParams["ms"] = 1;
+                        else
+                            magneticParams["ms"] = 0;
+
+                        int magneticPostion = flowStep.MagnetDistance;
+
+                        magneticParams["magnetic"] = magneticName;
+                        magneticParams["postion"] = magneticPostion;
+
+
+                        step["magnetic_param"] = magneticParams;
+                        break;
+                    case "shift":
+                        var shiftParams = new JObject();
+
+                        shiftParams["shift"] = "shift_1";
+                        shiftParams["from"] = flowStep.FromPos;
+                        shiftParams["to"] = flowStep.ToPos;
+
+                        step["shift_param"] = shiftParams;
+                        break;
                 }
 
                 stepList.Add(step);
@@ -1674,7 +2040,10 @@ namespace OctoFixFlow
             if (string.IsNullOrEmpty(wellPosition)) return 1;
 
             // 示例："列：2~4" → 提取2；"列：6" → 提取6
-            var regex = new System.Text.RegularExpressions.Regex(@"列：\s*(\d+)");
+            string columnPrefix = ResourceHelper.Instance.StepDetailColumnPrefix;
+            string escapedPrefix = System.Text.RegularExpressions.Regex.Escape(columnPrefix);
+
+            var regex = new System.Text.RegularExpressions.Regex(@"{escapedPrefix}\s*(\d+)");
             var match = regex.Match(wellPosition);
             return match.Success ? int.Parse(match.Groups[1].Value) : 1;
         }
@@ -1842,7 +2211,7 @@ namespace OctoFixFlow
         private async void InitButton_Click(object sender, RoutedEventArgs e)
         {
             var switchValues = await GetSwitchValuesAsync();
-             ShowNotification(_res.GrpcInitStart, NotificationControl.NotificationType.Info);
+            ShowNotification(_res.GrpcInitStart, NotificationControl.NotificationType.Info);
 
             DoorFlag = switchValues.GetValueOrDefault("door_lock", -1f);
             if (DoorFlag == 0)
@@ -1896,7 +2265,7 @@ namespace OctoFixFlow
                 }
                 else
                 {
-                     ShowNotification(_res.GrpcStartRunning, NotificationControl.NotificationType.Warn);
+                    ShowNotification(_res.GrpcStartRunning, NotificationControl.NotificationType.Warn);
                 }
 
             }
@@ -2055,9 +2424,10 @@ namespace OctoFixFlow
                             "tipon" => "取头",
                             "tipoff" => "退头",
                             "wait" => "等待",
-                            "shaker" => "震荡",
-                            "magnetic" => "磁分离",
-                            "shift" => "转移",
+                            "shaker" => "振荡",
+                            "magnetic" => "磁吸",
+                            "shift" => "转载",
+                            "pcr" => "热循环",
                             _ => "未知"
                         };
 
@@ -2088,10 +2458,9 @@ namespace OctoFixFlow
                                     // 新增：恢复孔位信息
                                     int col = aspirateParam["col"]?.Value<int>() ?? 1; // 从JSON提取列号
                                     flowStep.SelectedColumns = col.ToString(); // 保存选中列
-                                    flowStep.WellPosition = $"列：{col}"; // 孔位文本（如"列：2"）
+                                    flowStep.WellPosition = $"{ResourceHelper.Instance.StepDetailColumnPrefix}{col}"; // 孔位文本（如"列：2"）
                                 }
                                 break;
-
                             case "dispense":
                                 var dispenseParam = stepItem["dispense_param"] as JObject;
                                 if (dispenseParam != null)
@@ -2107,10 +2476,9 @@ namespace OctoFixFlow
                                     // 新增：恢复孔位信息
                                     int col = dispenseParam["col"]?.Value<int>() ?? 1;
                                     flowStep.SelectedColumns = col.ToString();
-                                    flowStep.WellPosition = $"列：{col}";
+                                    flowStep.WellPosition = $"{ResourceHelper.Instance.StepDetailColumnPrefix}{col}";
                                 }
                                 break;
-
                             case "tipon":
                             case "tipoff":
                                 flowStep.Position = MapPlatePositionBack(stepItem["plate"]?.ToString());
@@ -2120,10 +2488,9 @@ namespace OctoFixFlow
                                 {
                                     int col = tipParam["col"]?.Value<int>() ?? 1;
                                     flowStep.SelectedColumns = col.ToString();
-                                    flowStep.WellPosition = $"列：{col}";
+                                    flowStep.WellPosition = $"{ResourceHelper.Instance.StepDetailColumnPrefix}{col}";
                                 }
                                 break;
-
                             case "wait":
                                 var waitParam = stepItem["wait_param"] as JObject;
                                 if (waitParam != null)
@@ -2133,16 +2500,46 @@ namespace OctoFixFlow
                                     flowStep.WaitContent = waitParam["contents"]?.ToString() ?? "Waiting for the operation";
                                 }
                                 break;
+                            case "shake":
+                                var shakeParam = stepItem["shaker_param"] as JObject;
+                                if (shakeParam != null)
+                                {
+                                    flowStep.ModuleName = shakeParam["shaker"]?.ToString() ?? "";
+                                    flowStep.ShakeTemp = shakeParam["temp"]?.Value<int>() ?? 0;
+                                    flowStep.ShakeRPM = shakeParam["rpm"]?.Value<int>() ?? 0;
+                                    flowStep.WaitTime = (int)(shakeParam["ms"]?.Value<int>() ?? 0 / 1000);
+                                    flowStep.IsPreHeat = shakeParam["is_wait_temp"]?.Value<bool>() ?? false;
+                                    flowStep.IsUnlockNext = shakeParam["is_wait_shaker_end"]?.Value<bool>() ?? false;
+                                }
+                                break;
+                            case "magnetic":
+                                var magneticParam = stepItem["magnetic_param"] as JObject;
+                                if (magneticParam != null)
+                                {
+                                    flowStep.ModuleName = magneticParam["magnetic"]?.ToString() ?? "";
+                                    int magnetUp = magneticParam["ms"]?.Value<int>() ?? 0;
+                                    if (magnetUp == 1)
+                                        flowStep.IsMagnetUpOrDown = true;
+                                    else
+                                        flowStep.IsMagnetUpOrDown = false;
+                                }
+                                break;
+                            case "shift":
+                                var shiftParam = stepItem["shift_param"] as JObject;
+                                if (shiftParam != null)
+                                {
+                                    flowStep.ModuleName = shiftParam["shift"]?.ToString() ?? "";
+                                    flowStep.FromPos = shiftParam["from"]?.ToString() ?? "";
+                                    flowStep.ToPos = shiftParam["to"]?.ToString() ?? "";
+                                }
+                                break;
                         }
-
                         FlowSteps.Add(flowStep);
                     }
-
                     // 添加结束步骤
                     FlowSteps.Add(new FlowStep
                     {
                         Index = _stepIndex++,
-                        //Name = "结束",
                         Type = "end",
                         IsSelected = false,
                         IsSystemStep = true
@@ -2286,12 +2683,7 @@ namespace OctoFixFlow
         //流程停止
         private async void StopButton_Click(object sender, RoutedEventArgs e)
         {
-
-            //RunInfoView.Visibility = Visibility.Collapsed;
-            //StepDetailView.Visibility = Visibility.Visible;
-            //StopMonitoring();   
             await ScriptStopAsync();
-
         }
         /// <summary>
         /// 启动脚本监控（对应C++的Script_monitor方法）
@@ -3443,5 +3835,7 @@ deadline: DateTime.UtcNow.AddSeconds(15));
             ResourceHelper.Instance.SwitchToEnglish();
             ShowNotification("It has been switched to English", NotificationControl.NotificationType.Info);
         }
+
+
     }
 }

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.ComponentModel;
-using System.Windows;
+﻿using System.ComponentModel;
 namespace OctoFixFlow
 {
     public class ResourceHelper : INotifyPropertyChanged
@@ -40,6 +34,8 @@ namespace OctoFixFlow
         public string WindowActionTipOn => IsEnglish ? Resource.Resource_en.WindowActionTipOn : Resource.Resource_zh.WindowActionTipOn;
         public string WindowActionUV => IsEnglish ? Resource.Resource_en.WindowActionUV : Resource.Resource_zh.WindowActionUV;
         public string WindowActionWait => IsEnglish ? Resource.Resource_en.WindowActionWait : Resource.Resource_zh.WindowActionWait;
+        //移载 /Transfer
+        public string WindowActionTransfer => IsEnglish ? Resource.Resource_en.WindowActionTransfer : Resource.Resource_zh.WindowActionTransfer;
         //振荡 /Shake
         public string WindowActionShake => IsEnglish ? Resource.Resource_en.WindowActionShake : Resource.Resource_zh.WindowActionShake;
         //磁吸 /Magnetic
@@ -222,8 +218,6 @@ namespace OctoFixFlow
         public string SettingManualEnableTrash => IsEnglish ? Resource.Resource_en.SettingManualEnableTrash : Resource.Resource_zh.SettingManualEnableTrash;
         //确认  Confirm
         public string SettingConfirm => IsEnglish ? Resource.Resource_en.SettingConfirm : Resource.Resource_zh.SettingConfirm;
-
-
         #endregion
         #region 引导模块
         // 设备与协议引导设置  Device & Protocol Guided Setup
@@ -253,7 +247,7 @@ namespace OctoFixFlow
         // 收纳废弃耗材，保持实验整洁。  Store waste consumables, keep lab tidy.
         public string GuideBtnDeviceAddWasteBinToolTip => IsEnglish ? Resource.Resource_en.GuideBtnDeviceAddWasteBinToolTip : Resource.Resource_zh.GuideBtnDeviceAddWasteBinToolTip;
         // 配置您的工作站模块  Configure Your Workstation Modules
-        public string GuideBtnDeckLayoutTitile => IsEnglish ? Resource.Resource_en.GuideBtnDeckLayoutTitile : Resource.Resource_zh.GuideBtnDeckLayoutTitile ;
+        public string GuideBtnDeckLayoutTitile => IsEnglish ? Resource.Resource_en.GuideBtnDeckLayoutTitile : Resource.Resource_zh.GuideBtnDeckLayoutTitile;
         // 模块列表  Module List
         public string GuideBtnDeckLayoutModuleList => IsEnglish ? Resource.Resource_en.GuideBtnDeckLayoutModuleList : Resource.Resource_zh.GuideBtnDeckLayoutModuleList;
         // 实验方案信息说明  Specify Your Experiment Protocol Info
@@ -291,6 +285,11 @@ namespace OctoFixFlow
         #endregion
 
         #region 步骤详情 - 标签类
+        //列前缀（多语言：中文“列：” / 英文“Column: ”）
+        public string StepDetailColumnPrefix => IsEnglish ? Resource.Resource_en.StepDetailColumnPrefix : Resource.Resource_zh.StepDetailColumnPrefix;
+        // "选中移液器" / "Selected Pipette"
+        public string StepDetailSelectedPipette => IsEnglish ? Resource.Resource_en.StepDetailSelectedPipette : Resource.Resource_zh.StepDetailSelectedPipette;
+
         // 操作位置（“Operation Position:”/“操作位置：”）
         public string StepDetailOperationPosition => IsEnglish ? Resource.Resource_en.StepDetailOperationPosition : Resource.Resource_zh.StepDetailOperationPosition;
         // 孔位选择（“Well Position Selection:”/“孔位选择：”）
@@ -305,12 +304,32 @@ namespace OctoFixFlow
         public string StepDetailInitialVol => IsEnglish ? Resource.Resource_en.StepDetailInitialVol : Resource.Resource_zh.StepDetailInitialVol;
         // 初始延迟（“Initial delay(ms):”/“初始延迟(ms)：”）
         public string StepDetailInitialDelay => IsEnglish ? Resource.Resource_en.StepDetailInitialDelay : Resource.Resource_zh.StepDetailInitialDelay;
-        // 等待时间（“Waiting time (seconds):”/“等待时间(秒)：”）
+        // 时间（“Time (seconds):”/“时间(秒)：”）
         public string StepDetailWaitTime => IsEnglish ? Resource.Resource_en.StepDetailWaitTime : Resource.Resource_zh.StepDetailWaitTime;
         // 等待描述（“Waiting description:”/“等待描述：”）
         public string StepDetailWaitDesc => IsEnglish ? Resource.Resource_en.StepDetailWaitDesc : Resource.Resource_zh.StepDetailWaitDesc;
         // 启用混合（CheckBox内容：“Enable mixing”/“启用混合”）
         public string StepDetailEnableMix => IsEnglish ? Resource.Resource_en.StepDetailEnableMix : Resource.Resource_zh.StepDetailEnableMix;
+        // 转速（“Speed (RPM):”/“转速(RPM)：”）
+        public string StepDetailShakeSpeed => IsEnglish ? Resource.Resource_en.StepDetailShakeSpeed : Resource.Resource_zh.StepDetailShakeSpeed;
+        // 温度（“Temp (℃):”/“温度(℃)：”）
+        public string StepDetailShakeTemp => IsEnglish ? Resource.Resource_en.StepDetailShakeTemp : Resource.Resource_zh.StepDetailShakeTemp;
+        // 是否预热（“启用预热”/“Enable Pre-heat”）
+        public string StepDetailShakePreHeat => IsEnglish ? Resource.Resource_en.StepDetailShakePreHeat : Resource.Resource_zh.StepDetailShakePreHeat;
+        // （“振荡结束前解锁下一步运动”/“Unlock next step before shaking finished”）
+        public string StepDetailShakeUnlockNext => IsEnglish ? Resource.Resource_en.StepDetailShakeUnlockNext : Resource.Resource_zh.StepDetailShakeUnlockNext;
+        // （“磁吸动作”/“Magnet Action”）
+        public string StepDetailMagnetLiftDrop => IsEnglish ? Resource.Resource_en.StepDetailMagnetLiftDrop : Resource.Resource_zh.StepDetailMagnetLiftDrop;
+        // （“上升”/“Up”）
+        public string StepDetailMagnetUp => IsEnglish ? Resource.Resource_en.StepDetailMagnetUp : Resource.Resource_zh.StepDetailMagnetUp;
+        // （“下降”/“Down”）
+        public string StepDetailMagnetDown => IsEnglish ? Resource.Resource_en.StepDetailMagnetDown : Resource.Resource_zh.StepDetailMagnetDown;
+        // （“磁吸距离”/“Magnet Distance”）
+        public string StepDetailMagnetDistance => IsEnglish ? Resource.Resource_en.StepDetailMagnetDistance : Resource.Resource_zh.StepDetailMagnetDistance;
+        // （“起始板位：”/“From Slot:”）
+        public string StepDetailTransferFrom => IsEnglish ? Resource.Resource_en.StepDetailTransferFrom : Resource.Resource_zh.StepDetailTransferFrom;
+        // （“终止板位：”/“To Slot:”）
+        public string StepDetailTransferTo => IsEnglish ? Resource.Resource_en.StepDetailTransferTo : Resource.Resource_zh.StepDetailTransferTo;
         #endregion
 
         #region 步骤详情 - 提示/通知类

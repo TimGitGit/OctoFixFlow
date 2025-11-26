@@ -118,6 +118,7 @@ namespace OctoFixFlow
 
             guideWindow.GuideCompleted += () =>
             {
+                mainWidget.UpdateDeviceModule();
                 mainWidget.IsEnabled = true;
                 var plateModuleMap = AppGlobalConfig.Instance.PlateModuleMap;
 
