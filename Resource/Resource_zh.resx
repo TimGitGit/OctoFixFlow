@@ -288,26 +288,8 @@
   <data name="QuickLiquidSelection" xml:space="preserve">
     <value>液体选择:</value>
   </data>
-  <data name="QuickMixAsp" xml:space="preserve">
-    <value>是否混吸</value>
-  </data>
-  <data name="QuickMixAspTimes" xml:space="preserve">
-    <value>混吸次数:</value>
-  </data>
-  <data name="QuickMixAspVol" xml:space="preserve">
-    <value>混吸容量:</value>
-  </data>
   <data name="QuickOne96Samples" xml:space="preserve">
     <value>请输入1-96之间的样本数量</value>
-  </data>
-  <data name="QuickRinse" xml:space="preserve">
-    <value>是否润洗</value>
-  </data>
-  <data name="QuickRinseDelay" xml:space="preserve">
-    <value>润洗延迟:</value>
-  </data>
-  <data name="QuickRinseVol" xml:space="preserve">
-    <value>润洗容量:</value>
   </data>
   <data name="QuickSampleQty" xml:space="preserve">
     <value>样本数量:</value>
@@ -822,12 +804,6 @@
   <data name="StepDetailEnableMix" xml:space="preserve">
     <value>启用混合</value>
   </data>
-  <data name="StepDetailInitialDelay" xml:space="preserve">
-    <value>初始延迟 (ms)：</value>
-  </data>
-  <data name="StepDetailInitialVol" xml:space="preserve">
-    <value>初始体积 (ul)：</value>
-  </data>
   <data name="StepDetailLiquidParams" xml:space="preserve">
     <value>液体参数：</value>
   </data>
@@ -903,8 +879,20 @@
   <data name="WindowActionDispense" xml:space="preserve">
     <value>注液</value>
   </data>
+  <data name="WindowActionFunctionAll" xml:space="preserve">
+    <value>全部</value>
+  </data>
   <data name="WindowActionFunctionArea" xml:space="preserve">
     <value>动作功能区</value>
+  </data>
+  <data name="WindowActionFunctionBasic" xml:space="preserve">
+    <value>基础</value>
+  </data>
+  <data name="WindowActionFunctionModule" xml:space="preserve">
+    <value>模块</value>
+  </data>
+  <data name="WindowActionFunctionOther" xml:space="preserve">
+    <value>其他</value>
   </data>
   <data name="WindowActionInit" xml:space="preserve">
     <value>初始化</value>

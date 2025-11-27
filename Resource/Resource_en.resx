@@ -288,26 +288,8 @@
   <data name="QuickLiquidSelection" xml:space="preserve">
     <value>Liquid Selection:</value>
   </data>
-  <data name="QuickMixAsp" xml:space="preserve">
-    <value>Mix Asp?:</value>
-  </data>
-  <data name="QuickMixAspTimes" xml:space="preserve">
-    <value>Times:</value>
-  </data>
-  <data name="QuickMixAspVol" xml:space="preserve">
-    <value>Volue:</value>
-  </data>
   <data name="QuickOne96Samples" xml:space="preserve">
     <value>Please enter sample count between 1-96</value>
-  </data>
-  <data name="QuickRinse" xml:space="preserve">
-    <value>Rinse?:</value>
-  </data>
-  <data name="QuickRinseDelay" xml:space="preserve">
-    <value>Delay:</value>
-  </data>
-  <data name="QuickRinseVol" xml:space="preserve">
-    <value>Volue:</value>
   </data>
   <data name="QuickSampleQty" xml:space="preserve">
     <value>Sample Qty:</value>
@@ -826,12 +808,6 @@
   <data name="StepDetailEnableMix" xml:space="preserve">
     <value>Enable Mixing</value>
   </data>
-  <data name="StepDetailInitialDelay" xml:space="preserve">
-    <value>Initial Delay(ms):</value>
-  </data>
-  <data name="StepDetailInitialVol" xml:space="preserve">
-    <value>Initial Volume(ul):</value>
-  </data>
   <data name="StepDetailLiquidParams" xml:space="preserve">
     <value>Liquid parameters:</value>
   </data>
@@ -907,8 +883,20 @@
   <data name="WindowActionDispense" xml:space="preserve">
     <value>Dispense</value>
   </data>
+  <data name="WindowActionFunctionAll" xml:space="preserve">
+    <value>All</value>
+  </data>
   <data name="WindowActionFunctionArea" xml:space="preserve">
     <value>Action Function Area</value>
+  </data>
+  <data name="WindowActionFunctionBasic" xml:space="preserve">
+    <value>Basic</value>
+  </data>
+  <data name="WindowActionFunctionModule" xml:space="preserve">
+    <value>Module</value>
+  </data>
+  <data name="WindowActionFunctionOther" xml:space="preserve">
+    <value>Other</value>
   </data>
   <data name="WindowActionInit" xml:space="preserve">
     <value>Init</value>

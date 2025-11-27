@@ -110,25 +110,6 @@ namespace OctoFixFlow
             string aspiratePos = AspiratePositionComboBox.SelectedItem?.ToString(); // 吸液位置
             string dispensePos = DispensePositionComboBox.SelectedItem?.ToString(); // 注液位置
 
-            bool isDisMixTip = isMixCheckBox.IsChecked ?? false; // 是否注液混吸
-            int disMixValue = int.Parse(DispenseMixValueTextBox.Text); //注液混吸容量
-            int disMixCount = int.Parse(DispenseMixTextBox.Text); //注液混吸次数
-
-            bool isDisRinseTip = isRinseCheckBox.IsChecked ?? false; // 是否注液润洗
-            int disRinseValue = int.Parse(DispenseRinseValueTextBox.Text); //注液润洗容量
-            int disRinseTimes = int.Parse(DispenseRinseTimeTextBox.Text); //注液润洗延时
-            if (!isDisMixTip)
-            {
-                disMixValue = 0;
-                disMixCount = 0;
-
-            }
-            if (!isDisRinseTip)
-            {
-                disRinseValue = 0;
-                disRinseTimes = 0;
-
-            }
             string tipEjectPos = TipEjectPositionComboBox.SelectedItem?.ToString(); // 退头位置
             int aspirateVolume = int.Parse(AspirateVolumeTextBox.Text); // 吸液体积
             bool isChangeTip = ChangeTipCheckBox.IsChecked ?? false; // 是否换头
@@ -161,11 +142,7 @@ namespace OctoFixFlow
                     tipPickPlateId,
                     tipOnWell,
                     aspirateVolume,
-                    selectedLiquid,
-                                            false,
-                        0,
-                        0, 0,
-                    0
+                    selectedLiquid
                 );
             }
             else//
@@ -178,11 +155,7 @@ namespace OctoFixFlow
                     tipPickPlateId,
                     1, // 默认第一列
                     aspirateVolume,
-                    selectedLiquid,
-                    false,
-                        0,
-                        0, 0,
-                    0
+                    selectedLiquid
                 );
 
             }
@@ -202,11 +175,7 @@ namespace OctoFixFlow
                         aspiratePlateId,
                         AisWell,
                         aspirateVolume,
-                        selectedLiquid,
-                         false,
-                        0,
-                        0, 0,
-                    0
+                        selectedLiquid
                     );
 
                 }
@@ -220,11 +189,7 @@ namespace OctoFixFlow
                         aspiratePlateId,
                         currentCol,
                         aspirateVolume,
-                        selectedLiquid,
-                        false,
-                        0,
-                        0, 0,
-                    0
+                        selectedLiquid
                     );
                 }
 
@@ -238,12 +203,7 @@ namespace OctoFixFlow
                     dispensePlateId,
                     currentCol,
                     aspirateVolume,
-                    selectedLiquid,
-                    isDisMixTip,
-                    disMixCount,
-                    disMixValue,
-                    disRinseValue,
-                    disRinseTimes
+                    selectedLiquid
 
                 );
 
@@ -260,11 +220,7 @@ namespace OctoFixFlow
                         tipEjectPlateId,
                         ejectCol,
                         aspirateVolume,
-                        selectedLiquid,
-                        false,
-                    0,
-                    0, 0,
-                    0
+                        selectedLiquid
                     );
 
                     // 新取头步骤：下一批次列（当前列+1）
@@ -276,11 +232,7 @@ namespace OctoFixFlow
                         tipPickPlateId,
                         currentCol + 1, // 取头列随批次递增
                         aspirateVolume,
-                        selectedLiquid,
-                        false,
-                    0,
-                    0, 0,
-                    0
+                        selectedLiquid
                     );
                 }
             }
@@ -296,11 +248,7 @@ namespace OctoFixFlow
                     tipEjectPlateId,
                     finalEjectCol,
                     aspirateVolume,
-                    selectedLiquid,
-                    false,
-                    0,
-                    0, 0,
-                    0
+                    selectedLiquid
 
                 );
             }
@@ -316,12 +264,7 @@ namespace OctoFixFlow
                     tipEjectPlateId,
                     tipOnWell,
                     aspirateVolume,
-                    selectedLiquid,
-                    false,
-                    0,
-                    0
-                    , 0,
-                    0
+                    selectedLiquid
                 );
             }
 
@@ -388,7 +331,7 @@ namespace OctoFixFlow
         }
         //添加单个步骤到流程
         private int AddStep(ObservableCollection<FlowStep> steps, int insertIndex, ref int stepIndex,
-                           string type, string plateId, int currentCol, int volume, LiquidSettings liquid, bool mixFlag, int mixCount, int mixValue, int RinseValue, int RinseTimes)
+                           string type, string plateId, int currentCol, int volume, LiquidSettings liquid)
         {
             steps.Insert(insertIndex++, new FlowStep
             {
@@ -402,11 +345,6 @@ namespace OctoFixFlow
                 SelectedLiquid = liquid,
                 IsSelected = false,
                 IsSystemStep = false,
-                IsMixEnabled = mixFlag,
-                MixCount = mixCount,
-                MixVolume = mixValue,
-                FirstVol = RinseValue,
-                FirstDelay = RinseTimes,
             });
             return insertIndex;
         }

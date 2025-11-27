@@ -574,65 +574,11 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
-        ///   查找类似 Mix Asp?: 的本地化字符串。
-        /// </summary>
-        public static string QuickMixAsp {
-            get {
-                return ResourceManager.GetString("QuickMixAsp", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Times: 的本地化字符串。
-        /// </summary>
-        public static string QuickMixAspTimes {
-            get {
-                return ResourceManager.GetString("QuickMixAspTimes", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Volue: 的本地化字符串。
-        /// </summary>
-        public static string QuickMixAspVol {
-            get {
-                return ResourceManager.GetString("QuickMixAspVol", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   查找类似 Please enter sample count between 1-96 的本地化字符串。
         /// </summary>
         public static string QuickOne96Samples {
             get {
                 return ResourceManager.GetString("QuickOne96Samples", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Rinse?: 的本地化字符串。
-        /// </summary>
-        public static string QuickRinse {
-            get {
-                return ResourceManager.GetString("QuickRinse", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Delay: 的本地化字符串。
-        /// </summary>
-        public static string QuickRinseDelay {
-            get {
-                return ResourceManager.GetString("QuickRinseDelay", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Volue: 的本地化字符串。
-        /// </summary>
-        public static string QuickRinseVol {
-            get {
-                return ResourceManager.GetString("QuickRinseVol", resourceCulture);
             }
         }
         
@@ -2176,24 +2122,6 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
-        ///   查找类似 Initial Delay(ms): 的本地化字符串。
-        /// </summary>
-        public static string StepDetailInitialDelay {
-            get {
-                return ResourceManager.GetString("StepDetailInitialDelay", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Initial Volume(ul): 的本地化字符串。
-        /// </summary>
-        public static string StepDetailInitialVol {
-            get {
-                return ResourceManager.GetString("StepDetailInitialVol", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   查找类似 Liquid parameters: 的本地化字符串。
         /// </summary>
         public static string StepDetailLiquidParams {
@@ -2419,11 +2347,47 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 All 的本地化字符串。
+        /// </summary>
+        public static string WindowActionFunctionAll {
+            get {
+                return ResourceManager.GetString("WindowActionFunctionAll", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Action Function Area 的本地化字符串。
         /// </summary>
         public static string WindowActionFunctionArea {
             get {
                 return ResourceManager.GetString("WindowActionFunctionArea", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Basic 的本地化字符串。
+        /// </summary>
+        public static string WindowActionFunctionBasic {
+            get {
+                return ResourceManager.GetString("WindowActionFunctionBasic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Module 的本地化字符串。
+        /// </summary>
+        public static string WindowActionFunctionModule {
+            get {
+                return ResourceManager.GetString("WindowActionFunctionModule", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Other 的本地化字符串。
+        /// </summary>
+        public static string WindowActionFunctionOther {
+            get {
+                return ResourceManager.GetString("WindowActionFunctionOther", resourceCulture);
             }
         }
         

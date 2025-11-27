@@ -21,6 +21,14 @@ namespace OctoFixFlow
                 }
             }
         }
+        //动作区切换    全部/All
+        public string WindowActionFunctionAll => IsEnglish ? Resource.Resource_en.WindowActionFunctionAll : Resource.Resource_zh.WindowActionFunctionAll;
+        //基础/Basic
+        public string WindowActionFunctionBasic => IsEnglish ? Resource.Resource_en.WindowActionFunctionBasic : Resource.Resource_zh.WindowActionFunctionBasic;
+        //模块/Module
+        public string WindowActionFunctionModule => IsEnglish ? Resource.Resource_en.WindowActionFunctionModule : Resource.Resource_zh.WindowActionFunctionModule;
+        //其他/Other
+        public string WindowActionFunctionOther => IsEnglish ? Resource.Resource_en.WindowActionFunctionOther : Resource.Resource_zh.WindowActionFunctionOther;
         public string WindowActionAspirate => IsEnglish ? Resource.Resource_en.WindowActionAspirate : Resource.Resource_zh.WindowActionAspirate;
         public string WindowActionDispense => IsEnglish ? Resource.Resource_en.WindowActionDispense : Resource.Resource_zh.WindowActionDispense;
         public string WindowActionFunctionArea => IsEnglish ? Resource.Resource_en.WindowActionFunctionArea : Resource.Resource_zh.WindowActionFunctionArea;
@@ -182,12 +190,6 @@ namespace OctoFixFlow
         public string QuickFixed => IsEnglish ? Resource.Resource_en.QuickFixed : Resource.Resource_zh.QuickFixed;
         public string QuickAspPos => IsEnglish ? Resource.Resource_en.QuickAspPos : Resource.Resource_zh.QuickAspPos;
         public string QuickDispPos => IsEnglish ? Resource.Resource_en.QuickDispPos : Resource.Resource_zh.QuickDispPos;
-        public string QuickMixAsp => IsEnglish ? Resource.Resource_en.QuickMixAsp : Resource.Resource_zh.QuickMixAsp;
-        public string QuickMixAspTimes => IsEnglish ? Resource.Resource_en.QuickMixAspTimes : Resource.Resource_zh.QuickMixAspTimes;
-        public string QuickMixAspVol => IsEnglish ? Resource.Resource_en.QuickMixAspVol : Resource.Resource_zh.QuickMixAspVol;
-        public string QuickRinse => IsEnglish ? Resource.Resource_en.QuickRinse : Resource.Resource_zh.QuickRinse;
-        public string QuickRinseVol => IsEnglish ? Resource.Resource_en.QuickRinseVol : Resource.Resource_zh.QuickRinseVol;
-        public string QuickRinseDelay => IsEnglish ? Resource.Resource_en.QuickRinseDelay : Resource.Resource_zh.QuickRinseDelay;
         public string QuickTipChangeSettings => IsEnglish ? Resource.Resource_en.QuickTipChangeSettings : Resource.Resource_zh.QuickTipChangeSettings;
         #region 手动控制-模块添加
         //设备与模块管理  Device and Module Management
@@ -300,10 +302,6 @@ namespace OctoFixFlow
         public string StepDetailMixCount => IsEnglish ? Resource.Resource_en.StepDetailMixCount : Resource.Resource_zh.StepDetailMixCount;
         // 混合体积（“Mixing Volumes(ul):”/“混合体积(ul)：”）
         public string StepDetailMixVolume => IsEnglish ? Resource.Resource_en.StepDetailMixVolume : Resource.Resource_zh.StepDetailMixVolume;
-        // 初始体积（“Initial volume(ul):”/“初始体积(ul)：”）
-        public string StepDetailInitialVol => IsEnglish ? Resource.Resource_en.StepDetailInitialVol : Resource.Resource_zh.StepDetailInitialVol;
-        // 初始延迟（“Initial delay(ms):”/“初始延迟(ms)：”）
-        public string StepDetailInitialDelay => IsEnglish ? Resource.Resource_en.StepDetailInitialDelay : Resource.Resource_zh.StepDetailInitialDelay;
         // 时间（“Time (seconds):”/“时间(秒)：”）
         public string StepDetailWaitTime => IsEnglish ? Resource.Resource_en.StepDetailWaitTime : Resource.Resource_zh.StepDetailWaitTime;
         // 等待描述（“Waiting description:”/“等待描述：”）

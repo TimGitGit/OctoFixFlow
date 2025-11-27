@@ -10,6 +10,7 @@ namespace OctoFixFlow
     {
         //选中的列集合（排序去重）
         private SortedSet<int> _selectedColumns = new SortedSet<int>();
+        //private SortedSet<(int Row, int Col)> _selectedCells = new SortedSet<(int, int)>();
         public bool IsInteractive { get; set; } = false;
 
         //当前关联的板位ID
@@ -408,7 +409,6 @@ namespace OctoFixFlow
             }
 
             ranges.Add(start == end ? $"{start}" : $"{start}~{end}");
-            //return $"{ResourceHelper.Instance.StepDetailColumnPrefix}{string.Join(ResourceHelper.Instance.StepDetailSeparator, ranges)}";
 
             return $"{ResourceHelper.Instance.StepDetailColumnPrefix}{string.Join("；", ranges)}";
         }

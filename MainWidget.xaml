@@ -20,11 +20,6 @@
         <SolidColorBrush x:Key="DarkBackground" Color="#2c3e50" />
         <SolidColorBrush x:Key="LightBackground" Color="#FFFFFF" />
 
-
-
-
-
-
         <!--  动作记录列表样式  -->
         <Style x:Key="ActionRecordItemStyle" TargetType="ListBoxItem">
             <Setter Property="Template">
@@ -206,7 +201,7 @@
             </Grid.ColumnDefinitions>
 
             <!--  左侧功能区  -->
-            <Grid Grid.Column="0" Width="250">
+            <Grid Grid.Column="0">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <!--  动作功能区  -->
@@ -218,54 +213,84 @@
                 <GroupBox
                     Grid.Row="0"
                     Margin="10,10,10,5"
+                    FontSize="16"
+                    FontWeight="Bold"
                     Header="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionFunctionArea}">
                     <ScrollViewer MaxHeight="250" VerticalScrollBarVisibility="Auto">
                         <StackPanel>
-                            <Button
-                                Click="AspirateButton_Click"
-                                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionAspirate}"
-                                Style="{StaticResource ActionButtonStyle}" />
-                            <Button
-                                Click="DispenseButton_Click"
-                                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionDispense}"
-                                Style="{StaticResource ActionButtonStyle}" />
-                            <Button
-                                Click="PickTipButton_Click"
-                                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionTipOn}"
-                                Style="{StaticResource ActionButtonStyle}" />
-                            <Button
-                                Click="EjectTipButton_Click"
-                                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionTipOff}"
-                                Style="{StaticResource ActionButtonStyle}" />
-                            <Button
-                                x:Name="ActionTransferButton"
-                                Click="TransferButton_Click"
-                                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionTransfer}"
-                                Style="{StaticResource ActionButtonStyle}" />
-                            <Button
-                                x:Name="ActionShakeButton"
-                                Click="ShakeButton_Click"
-                                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionShake}"
-                                Style="{StaticResource ActionButtonStyle}" />
-                            <Button
-                                x:Name="ActionMagneticButton"
-                                Click="MagneticButton_Click"
-                                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionMagnetic}"
-                                Style="{StaticResource ActionButtonStyle}" />
-                            <Button
-                                x:Name="ActionTemperatureButton"
-                                Click="TemperatureButton_Click"
-                                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionTemperature}"
-                                Style="{StaticResource ActionButtonStyle}" />
-                            <Button
-                                x:Name="ActionPCRButton"
-                                Click="PCRButton_Click"
-                                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionPCR}"
-                                Style="{StaticResource ActionButtonStyle}" />
-                            <Button
-                                Click="WaitButton_Click"
-                                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionWait}"
-                                Style="{StaticResource ActionButtonStyle}" />
+                            <ComboBox
+                                x:Name="ActionSelectComboBox"
+                                Margin="0,0,0,8"
+                                FontWeight="Normal"
+                                SelectionChanged="ActionSelectComboBox_SelectionChanged"
+                                Style="{StaticResource InputComboBoxStyle}">
+                                <ComboBoxItem Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionFunctionAll}" Tag="All" />
+                                <ComboBoxItem Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionFunctionBasic}" Tag="Basic" />
+                                <ComboBoxItem Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionFunctionModule}" Tag="Module" />
+                                <ComboBoxItem Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionFunctionOther}" Tag="Other" />
+                            </ComboBox>
+                            <UniformGrid Margin="0,0,0,2" Columns="2">
+                                <Button
+                                    x:Name="AspirateButton"
+                                    Width="100"
+                                    Click="AspirateButton_Click"
+                                    Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionAspirate}"
+                                    Style="{StaticResource ActionButtonStyle}" />
+                                <Button
+                                    x:Name="DispenseButton"
+                                    Width="100"
+                                    Click="DispenseButton_Click"
+                                    Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionDispense}"
+                                    Style="{StaticResource ActionButtonStyle}" />
+                                <Button
+                                    x:Name="PickTipButton"
+                                    Width="100"
+                                    Click="PickTipButton_Click"
+                                    Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionTipOn}"
+                                    Style="{StaticResource ActionButtonStyle}" />
+                                <Button
+                                    x:Name="EjectTipButton"
+                                    Width="100"
+                                    Click="EjectTipButton_Click"
+                                    Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionTipOff}"
+                                    Style="{StaticResource ActionButtonStyle}" />
+                                <Button
+                                    x:Name="ActionTransferButton"
+                                    Width="100"
+                                    Click="TransferButton_Click"
+                                    Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionTransfer}"
+                                    Style="{StaticResource ActionButtonStyle}" />
+                                <Button
+                                    x:Name="ActionShakeButton"
+                                    Width="100"
+                                    Click="ShakeButton_Click"
+                                    Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionShake}"
+                                    Style="{StaticResource ActionButtonStyle}" />
+                                <Button
+                                    x:Name="ActionMagneticButton"
+                                    Width="100"
+                                    Click="MagneticButton_Click"
+                                    Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionMagnetic}"
+                                    Style="{StaticResource ActionButtonStyle}" />
+                                <Button
+                                    x:Name="ActionTemperatureButton"
+                                    Width="100"
+                                    Click="TemperatureButton_Click"
+                                    Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionTemperature}"
+                                    Style="{StaticResource ActionButtonStyle}" />
+                                <Button
+                                    x:Name="ActionPCRButton"
+                                    Width="100"
+                                    Click="PCRButton_Click"
+                                    Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionPCR}"
+                                    Style="{StaticResource ActionButtonStyle}" />
+                                <Button
+                                    x:Name="WaitButton"
+                                    Width="100"
+                                    Click="WaitButton_Click"
+                                    Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionWait}"
+                                    Style="{StaticResource ActionButtonStyle}" />
+                            </UniformGrid>
                         </StackPanel>
                     </ScrollViewer>
 
@@ -275,6 +300,8 @@
                 <GroupBox
                     Grid.Row="1"
                     Margin="10,5,10,10"
+                    FontSize="16"
+                    FontWeight="Bold"
                     Header="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowConsumablesWarehouse}">
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
                         <ItemsControl x:Name="ConsumablesList" ItemsSource="{Binding Consumables}">
@@ -319,6 +346,8 @@
                                             <TextBlock
                                                 Margin="0"
                                                 HorizontalAlignment="Center"
+                                                FontSize="12"
+                                                FontWeight="Normal"
                                                 Text="{Binding Name}"
                                                 TextWrapping="Wrap" />
                                             <!--  名称过长时自动换行  -->

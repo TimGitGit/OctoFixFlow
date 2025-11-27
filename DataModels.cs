@@ -640,15 +640,12 @@ namespace OctoFixFlow
         private string _wellPosition;
         private bool _isSelected;
         private string _selectedColumns;
-        private bool _isMixEnabled;
-        private int _mixCount;
-        private float _mixVolume;
+        //private int _mixCount;
+        //private float _mixVolume;
         private LiquidSettings _selectedLiquid;
         public bool _isSystemstep;
         private int _waitTime;
         private string _waitContent;
-        private int _firstVol;//第一次的液体
-        private int _firstDelay;//第一次的延迟
         private string _selectedPipetteName;
         private string _moduleName;
         private int _shakeRPM;
@@ -656,7 +653,6 @@ namespace OctoFixFlow
         private bool _isPreHeat;
         private bool _isUnlockNext = true;
         private bool _isMagnetUpOrDown;
-        //private bool _isMagnetDown;
         private int _magnetDistance;
         private string _fromPos;
         private string _toPos;
@@ -766,21 +762,16 @@ namespace OctoFixFlow
             }
         }
         // 混合相关属性
-        public bool IsMixEnabled
-        {
-            get => _isMixEnabled;
-            set { _isMixEnabled = value; OnPropertyChanged(); }
-        }
-        public int MixCount
-        {
-            get => _mixCount;
-            set { _mixCount = value; OnPropertyChanged(); }
-        }
-        public float MixVolume
-        {
-            get => _mixVolume;
-            set { _mixVolume = value; OnPropertyChanged(); }
-        }
+        //public int MixCount
+        //{
+        //    get => _mixCount;
+        //    set { _mixCount = value; OnPropertyChanged(); }
+        //}
+        //public float MixVolume
+        //{
+        //    get => _mixVolume;
+        //    set { _mixVolume = value; OnPropertyChanged(); }
+        //}
         public bool IsSystemStep
         {
             get => _isSystemstep;
@@ -808,24 +799,7 @@ namespace OctoFixFlow
                 OnPropertyChanged();
             }
         }
-        public int FirstVol
-        {
-            get => _firstVol;
-            set
-            {
-                _firstVol = value;
-                OnPropertyChanged();
-            }
-        }
-        public int FirstDelay
-        {
-            get => _firstDelay;
-            set
-            {
-                _firstDelay = value;
-                OnPropertyChanged();
-            }
-        }
+
         public string SelectedPipetteName
         {
             get => _selectedPipetteName;

@@ -107,6 +107,8 @@ namespace OctoFixFlow
             });
             FlowList.ItemsSource = FlowSteps;
             _stepIndex = 3;
+            ActionSelectComboBox.SelectedIndex = 0;
+
         }
         private void InitializeLanguage()
         {
@@ -505,7 +507,96 @@ namespace OctoFixFlow
             if (_plateConsumableMap.ContainsKey(plateId))
                 _plateConsumableMap.Remove(plateId);
         }
+        //切换动作区
+        private void ActionSelectComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var selectedItem = ActionSelectComboBox.SelectedItem as ComboBoxItem;
+            if (selectedItem == null) return;
+            var selectedCategory = selectedItem.Tag;
+            switch (selectedCategory)
+            {
+                case "All":
+                    SetAllButtonsVisibility(Visibility.Visible);
+                    break;
+                case "Basic"://基础操作：吸液、分液、装枪头、卸枪头、转移、等待
+                    ShowBaseButtons();
+                    break;
+                case "Module"://模块功能：振荡、磁力、温控、PCR
+                    ShowModuleButtons();
+                    break;
+                case "Other"://其他
+                    SetAllButtonsVisibility(Visibility.Collapsed);
+                    break;
+            }
+        }
+        //显示基础按钮，隐藏模块按钮
+        private void ShowBaseButtons()
+        {
+            // 基础按钮显示
+            AspirateButton.Visibility = Visibility.Visible;
+            DispenseButton.Visibility = Visibility.Visible;
+            PickTipButton.Visibility = Visibility.Visible;
+            EjectTipButton.Visibility = Visibility.Visible;
+            if (AppGlobalConfig.Instance.IsGripperEnabled)
+                ActionTransferButton.Visibility = Visibility.Visible;
+            else
+                ActionTransferButton.Visibility = Visibility.Collapsed;
+            WaitButton.Visibility = Visibility.Visible;
 
+            // 模块按钮隐藏
+            ActionShakeButton.Visibility = Visibility.Collapsed;
+            ActionMagneticButton.Visibility = Visibility.Collapsed;
+            ActionTemperatureButton.Visibility = Visibility.Collapsed;
+            ActionPCRButton.Visibility = Visibility.Collapsed;
+        }
+        // 显示模块按钮，隐藏基础按钮
+        private void ShowModuleButtons()
+        {
+            // 模块按钮显示
+            if (AppGlobalConfig.Instance.HasHeatingShaking())
+                ActionShakeButton.Visibility = Visibility.Visible;
+            else
+                ActionShakeButton.Visibility = Visibility.Collapsed;
+            if (AppGlobalConfig.Instance.HasMagnetic())
+                ActionMagneticButton.Visibility = Visibility.Visible;
+            else
+                ActionMagneticButton.Visibility = Visibility.Collapsed;
+            if (AppGlobalConfig.Instance.HasTemperatureControl())
+                ActionTemperatureButton.Visibility = Visibility.Visible;
+            else
+                ActionTemperatureButton.Visibility = Visibility.Collapsed;
+            if (AppGlobalConfig.Instance.IsPCREnabled)
+                ActionPCRButton.Visibility = Visibility.Visible;
+            else
+                ActionPCRButton.Visibility = Visibility.Collapsed;
+
+            // 基础按钮隐藏
+            AspirateButton.Visibility = Visibility.Collapsed;
+            DispenseButton.Visibility = Visibility.Collapsed;
+            PickTipButton.Visibility = Visibility.Collapsed;
+            EjectTipButton.Visibility = Visibility.Collapsed;
+            ActionTransferButton.Visibility = Visibility.Collapsed;
+            WaitButton.Visibility = Visibility.Collapsed;
+        }
+
+        // 批量设置所有按钮可见性
+        private void SetAllButtonsVisibility(Visibility visibility)
+        {
+            AspirateButton.Visibility = visibility;
+            DispenseButton.Visibility = visibility;
+            PickTipButton.Visibility = visibility;
+            EjectTipButton.Visibility = visibility;
+            ActionTransferButton.Visibility = visibility;
+            ActionShakeButton.Visibility = visibility;
+            ActionMagneticButton.Visibility = visibility;
+            ActionTemperatureButton.Visibility = visibility;
+            ActionPCRButton.Visibility = visibility;
+            WaitButton.Visibility = visibility;
+            if (visibility == Visibility.Visible)
+            {
+                UpdateDeviceModule();
+            }
+        }
         // 点击动作功能区按钮时添加流程步骤
         private void AddFlowStep(string type)
         {
@@ -1142,141 +1233,6 @@ namespace OctoFixFlow
                 volumeTextBox.SetBinding(TextBox.TextProperty, volumeBinding);
 
                 StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailVolume, volumeTextBox));
-                //// 创建体积输入框并绑定
-                //var volumeTextBox = new TextBox
-                //{
-                //    Style = (Style)FindResource("InputTextBoxStyle"),
-                //    Width = 200,
-                //    Margin = new Thickness(5, 0, 0, 0),
-                //    ToolTip = $"{res.StepDetailMaxVolumeTip}: 0~{step.SelectedPipetteMaxVolume}μL"
-                //};
-                //// 绑定到step.Volume（双向）
-                //volumeTextBox.SetBinding(TextBox.TextProperty, new Binding
-                //{
-                //    Source = step,
-                //    Path = new PropertyPath("Volume"),
-                //    Mode = BindingMode.TwoWay,
-                //    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged // 输入时立即同步
-
-                //});
-                //StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailVolume, volumeTextBox));
-                // #################### 新增：混合项控件 ####################
-                var mixHeaderRow = new StackPanel
-                {
-                    Orientation = Orientation.Horizontal,
-                    Margin = new Thickness(0, 10, 0, 5), // 与上方控件保持间距
-                    VerticalAlignment = VerticalAlignment.Center
-                };
-
-                // 混合设置标题
-                mixHeaderRow.Children.Add(new TextBlock
-                {
-                    Text = res.StepDetailMixedSettings,
-                    FontWeight = FontWeights.SemiBold,
-                    Width = 140, // 与其他标签宽度一致
-                    FontSize = 14
-                });
-
-                // 混合Checkbox（直接放在标题右侧）
-                var mixCheckBox = new CheckBox
-                {
-                    Content = res.StepDetailEnableMix,
-                    HorizontalAlignment = HorizontalAlignment.Left,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    FontSize = 14,
-                    Margin = new Thickness(5, 0, 0, 0)
-                };
-                mixCheckBox.SetBinding(CheckBox.IsCheckedProperty, new Binding
-                {
-                    Source = step,
-                    Path = new PropertyPath("IsMixEnabled"),
-                    Mode = BindingMode.TwoWay,
-                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-                });
-
-                mixHeaderRow.Children.Add(mixCheckBox);
-                StepDetailPanel.Children.Add(mixHeaderRow);
-                // 2. 混合次数
-                var mixCountTextBox = new TextBox
-                {
-                    Style = (Style)FindResource("InputTextBoxStyle"),
-                    Width = 200,
-                    Margin = new Thickness(5, 0, 0, 0),
-                    VerticalAlignment = VerticalAlignment.Center
-                };
-                mixCountTextBox.SetBinding(TextBox.TextProperty, new Binding
-                {
-                    Source = step,
-                    Path = new PropertyPath("MixCount"),
-                    Mode = BindingMode.TwoWay,
-                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-                });
-                // 绑定启用状态到Checkbox
-                mixCountTextBox.SetBinding(TextBox.IsEnabledProperty, new Binding
-                {
-                    Source = step,
-                    Path = new PropertyPath("IsMixEnabled")
-                });
-                StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailMixCount, mixCountTextBox));
-
-                // 3. 混合体积
-                var mixVolumeTextBox = new TextBox
-                {
-                    Style = (Style)FindResource("InputTextBoxStyle"),
-                    Width = 200,
-                    Margin = new Thickness(5, 0, 0, 0),
-                    VerticalAlignment = VerticalAlignment.Center
-                };
-                mixVolumeTextBox.SetBinding(TextBox.TextProperty, new Binding
-                {
-                    Source = step,
-                    Path = new PropertyPath("MixVolume"),
-                    Mode = BindingMode.TwoWay,
-                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-                });
-                // 绑定启用状态到Checkbox
-                mixVolumeTextBox.SetBinding(TextBox.IsEnabledProperty, new Binding
-                {
-                    Source = step,
-                    Path = new PropertyPath("IsMixEnabled")
-                });
-                StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailMixVolume, mixVolumeTextBox));
-
-                if (step.Type == "Dispense")
-                {
-                    // 创建第一次体积输入框并绑定
-                    var FirstvolumeTextBox = new TextBox
-                    {
-                        Style = (Style)FindResource("InputTextBoxStyle"),
-                        Width = 200,
-                        Margin = new Thickness(5, 0, 0, 0)
-                    };
-                    // 绑定到step.FirstVol（双向）
-                    FirstvolumeTextBox.SetBinding(TextBox.TextProperty, new Binding
-                    {
-                        Source = step,
-                        Path = new PropertyPath("FirstVol"),
-                        Mode = BindingMode.TwoWay,
-                        UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged // 输入时立即同步
-                    });
-                    StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailInitialVol, FirstvolumeTextBox));
-                    // 创建第一次延时输入框并绑定
-                    var FirstdelayTextBox = new TextBox
-                    {
-                        Style = (Style)FindResource("InputTextBoxStyle"),
-                        Width = 200,
-                        Margin = new Thickness(5, 0, 0, 0)
-                    };
-                    // 绑定到step.FirstDelay（双向）
-                    FirstdelayTextBox.SetBinding(TextBox.TextProperty, new Binding
-                    {
-                        Source = step,
-                        Path = new PropertyPath("FirstDelay"),
-                        Mode = BindingMode.TwoWay,
-                        UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged // 输入时立即同步
-                    });
-                    StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailInitialDelay, FirstdelayTextBox));
-                }
                 // #################### 新增：液体参数选择与显示 ####################
                 var liquidHeaderRow = new StackPanel
                 {
@@ -1860,8 +1816,6 @@ namespace OctoFixFlow
                         aspirateParams["volume"] = flowStep.Volume;
                         aspirateParams["liquid_dete"] = "off";
                         aspirateParams["liquid_follow"] = "true";
-                        aspirateParams["mix_volume"] = flowStep.MixVolume;
-                        aspirateParams["mix_count"] = flowStep.MixCount;
                         step["aspirate_param"] = aspirateParams;
 
                         // 累加吸液体积（对应C++的emptyVolume +=）
@@ -1897,14 +1851,12 @@ namespace OctoFixFlow
                         //    emptyVolume -= flowStep.Volume;
                         //}
                         dispenseParams["liquid_dete"] = "off";
-                        dispenseParams["first_vol"] = flowStep.FirstVol;//第一次润洗的体积
-                        dispenseParams["first_delay"] = flowStep.FirstDelay;//第一次润洗后的延时
+
 
                         //dispenseParams["is_liquid_follow"] = "false";//边排液边上升
                         //dispenseParams["follow_psition"] = 10;//边排液边上升
                         //dispenseParams["follow_speed"] = 1;//边排液边上升
-                        dispenseParams["mix_volume"] = flowStep.MixVolume;
-                        dispenseParams["mix_count"] = flowStep.MixCount;
+
                         dispenseParams["empty_the_gun"] = 0;
                         //dispenseParams["empty_the_gun"] = flowStep.IsEmptyGun ? 1 : 0;
                         step["dispense_param"] = dispenseParams;
@@ -2452,9 +2404,6 @@ namespace OctoFixFlow
                                 {
                                     flowStep.Volume = aspirateParam["volume"]?.Value<int>() ?? 50;
                                     flowStep.Position = MapPlatePositionBack(stepItem["plate"]?.ToString());
-                                    flowStep.MixCount = aspirateParam["mix_count"]?.Value<int>() ?? 0;
-                                    flowStep.MixVolume = aspirateParam["mix_volume"]?.Value<float>() ?? 0;
-                                    flowStep.IsMixEnabled = flowStep.MixCount > 0;
                                     // 新增：恢复孔位信息
                                     int col = aspirateParam["col"]?.Value<int>() ?? 1; // 从JSON提取列号
                                     flowStep.SelectedColumns = col.ToString(); // 保存选中列
@@ -2467,11 +2416,6 @@ namespace OctoFixFlow
                                 {
                                     flowStep.Volume = dispenseParam["volume"]?.Value<int>() ?? 50;
                                     flowStep.Position = MapPlatePositionBack(stepItem["plate"]?.ToString());
-                                    flowStep.MixCount = dispenseParam["mix_count"]?.Value<int>() ?? 0;
-                                    flowStep.MixVolume = dispenseParam["mix_volume"]?.Value<float>() ?? 0;
-                                    flowStep.IsMixEnabled = flowStep.MixCount > 0;
-                                    flowStep.FirstVol = dispenseParam["first_vol"]?.Value<int>() ?? 0;
-                                    flowStep.FirstDelay = dispenseParam["first_delay"]?.Value<int>() ?? 0;
 
                                     // 新增：恢复孔位信息
                                     int col = dispenseParam["col"]?.Value<int>() ?? 1;
@@ -3835,7 +3779,5 @@ deadline: DateTime.UtcNow.AddSeconds(15));
             ResourceHelper.Instance.SwitchToEnglish();
             ShowNotification("It has been switched to English", NotificationControl.NotificationType.Info);
         }
-
-
     }
 }

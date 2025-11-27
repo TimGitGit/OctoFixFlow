@@ -52,9 +52,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
+
         </Grid.RowDefinitions>
 
         <!--  1. 样本数量  -->
@@ -191,97 +189,8 @@
                 VerticalAlignment="Center"
                 Text="μL" />
         </Grid>
-        <!--  4. 注液混吸  -->
-        <Grid Grid.Row="5" Margin="0,5,0,10">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="120" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            <CheckBox
-                x:Name="isMixCheckBox"
-                Grid.Column="0"
-                Margin="0,5"
-                VerticalAlignment="Center"
-                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=QuickMixAsp}"
-                IsChecked="True" />
-            <TextBlock
-                Grid.Column="1"
-                VerticalAlignment="Center"
-                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=QuickMixAspTimes}" />
-            <TextBox
-                x:Name="DispenseMixTextBox"
-                Grid.Column="2"
-                Style="{StaticResource InputTextBoxStyle}"
-                Text="3" />
-            <TextBlock
-                Grid.Column="3"
-                VerticalAlignment="Center"
-                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=QuickMixAspVol}" />
-            <TextBox
-                x:Name="DispenseMixValueTextBox"
-                Grid.Column="4"
-                Style="{StaticResource InputTextBoxStyle}"
-                Text="50" />
-            <TextBlock
-                Grid.Column="5"
-                Margin="5,0,0,0"
-                VerticalAlignment="Center"
-                Text="μL" />
-        </Grid>
-        <!--  4. 注液润洗  -->
-        <Grid Grid.Row="6" Margin="0,5,0,10">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="120" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-
-            </Grid.ColumnDefinitions>
-            <CheckBox
-                x:Name="isRinseCheckBox"
-                Grid.Column="0"
-                Margin="0,5"
-                VerticalAlignment="Center"
-                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=QuickRinse}"
-                IsChecked="True" />
-            <TextBlock
-                Grid.Column="1"
-                VerticalAlignment="Center"
-                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=QuickRinseVol}" />
-            <TextBox
-                x:Name="DispenseRinseValueTextBox"
-                Grid.Column="2"
-                Style="{StaticResource InputTextBoxStyle}"
-                Text="5" />
-            <TextBlock
-                Grid.Column="3"
-                Margin="5,0,0,0"
-                VerticalAlignment="Center"
-                Text="μL" />
-            <TextBlock
-                Grid.Column="4"
-                VerticalAlignment="Center"
-                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=QuickRinseDelay}" />
-            <TextBox
-                x:Name="DispenseRinseTimeTextBox"
-                Grid.Column="5"
-                Style="{StaticResource InputTextBoxStyle}"
-                Text="1000" />
-            <TextBlock
-                Grid.Column="6"
-                Margin="5,0,0,0"
-                VerticalAlignment="Center"
-                Text="ms" />
-        </Grid>
         <!--  5. 换头和退头设置  -->
-        <Grid Grid.Row="7" Margin="0,5,0,10">
+        <Grid Grid.Row="5" Margin="0,5,0,10">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="120" />
                 <ColumnDefinition Width="100" />
@@ -310,7 +219,7 @@
         </Grid>
 
         <!--  6. 液体选择  -->
-        <Grid Grid.Row="8" Margin="0,5,0,10">
+        <Grid Grid.Row="6" Margin="0,5,0,10">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="120" />
                 <ColumnDefinition Width="*" />
@@ -329,7 +238,7 @@
 
         <!--  按钮区域  -->
         <StackPanel
-            Grid.Row="9"
+            Grid.Row="7"
             Margin="0,15,0,0"
             HorizontalAlignment="Center"
             Orientation="Horizontal">
