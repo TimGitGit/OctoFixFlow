@@ -609,6 +609,9 @@
   <data name="SettingLiquidRemove" xml:space="preserve">
     <value>Remove</value>
   </data>
+  <data name="SettingManualArrowKeys" xml:space="preserve">
+    <value>ArrowKeys</value>
+  </data>
   <data name="SettingManualAspirate" xml:space="preserve">
     <value>Aspirate</value>
   </data>
@@ -618,6 +621,9 @@
   <data name="SettingManualBacklash" xml:space="preserve">
     <value>Backlash</value>
   </data>
+  <data name="SettingManualBigSize" xml:space="preserve">
+    <value>Big</value>
+  </data>
   <data name="SettingManualCalibrationGear" xml:space="preserve">
     <value>Calibration Gear:</value>
   </data>
@@ -626,6 +632,9 @@
   </data>
   <data name="SettingManualControlCenter" xml:space="preserve">
     <value>Manual Control Center</value>
+  </data>
+  <data name="SettingManualCoordinateDirectionControl" xml:space="preserve">
+    <value>Direction Control</value>
   </data>
   <data name="SettingManualCoordinateFineAdjustment" xml:space="preserve">
     <value>Coord Fine Adj (mm):</value>
@@ -665,6 +674,15 @@
   </data>
   <data name="SettingManualGripper" xml:space="preserve">
     <value>Gripper</value>
+  </data>
+  <data name="SettingManualGripperClose" xml:space="preserve">
+    <value>Close the gripper</value>
+  </data>
+  <data name="SettingManualGripperControl" xml:space="preserve">
+    <value>Gripper control</value>
+  </data>
+  <data name="SettingManualGripperOpen" xml:space="preserve">
+    <value>Open the gripper</value>
   </data>
   <data name="SettingManualHeatingShaking" xml:space="preserve">
     <value>Heater-Shaker Module</value>
@@ -706,6 +724,9 @@
   <data name="SettingManualResetZ" xml:space="preserve">
     <value>Reset Z</value>
   </data>
+  <data name="SettingManualSArrowKeys" xml:space="preserve">
+    <value>Shift + ArrowKeys</value>
+  </data>
   <data name="SettingManualSaveCoordinates" xml:space="preserve">
     <value>Save Coords</value>
   </data>
@@ -718,11 +739,17 @@
   <data name="SettingManualSingleChannel" xml:space="preserve">
     <value>Single Channel</value>
   </data>
+  <data name="SettingManualSmallSize" xml:space="preserve">
+    <value>Small</value>
+  </data>
   <data name="SettingManualSpeed" xml:space="preserve">
     <value>Speed (μl/s):</value>
   </data>
   <data name="SettingManualTemperatureControl" xml:space="preserve">
     <value>Temperature Module</value>
+  </data>
+  <data name="SettingManualTinySize" xml:space="preserve">
+    <value>Tiny</value>
   </data>
   <data name="SettingManualTitile" xml:space="preserve">
     <value>Manual Control</value>
@@ -730,23 +757,20 @@
   <data name="SettingManualVolume" xml:space="preserve">
     <value>Volume (μl):</value>
   </data>
+  <data name="SettingManualXAndY" xml:space="preserve">
+    <value>X-and Y-axis</value>
+  </data>
   <data name="SettingManualXCoordinate" xml:space="preserve">
     <value>X Coordinate:</value>
-  </data>
-  <data name="SettingManualXDirection" xml:space="preserve">
-    <value>X Direction</value>
   </data>
   <data name="SettingManualYCoordinate" xml:space="preserve">
     <value>Y Coordinate:</value>
   </data>
-  <data name="SettingManualYDirection" xml:space="preserve">
-    <value>Y Direction</value>
+  <data name="SettingManualZAxis" xml:space="preserve">
+    <value>Z-axis</value>
   </data>
   <data name="SettingManualZCoordinate" xml:space="preserve">
     <value>Z Coordinate:</value>
-  </data>
-  <data name="SettingManualZDirection" xml:space="preserve">
-    <value>Z Direction</value>
   </data>
   <data name="SettingPipeTitile" xml:space="preserve">
     <value>Pipetting Parameters</value>
@@ -829,11 +853,17 @@
   <data name="StepDetailMixedSettings" xml:space="preserve">
     <value>Mixed settings:</value>
   </data>
+  <data name="StepDetailMixFinalCheck" xml:space="preserve">
+    <value>Last Mix Parameter</value>
+  </data>
   <data name="StepDetailMixVolume" xml:space="preserve">
     <value>Mixing Volume(ul):</value>
   </data>
   <data name="StepDetailOperationPosition" xml:space="preserve">
     <value>Operation Position:</value>
+  </data>
+  <data name="StepDetailRowPrefix" xml:space="preserve">
+    <value>Row:</value>
   </data>
   <data name="StepDetailSelectedPipette" xml:space="preserve">
     <value>Selected Pipette:</value>
@@ -911,6 +941,9 @@
   <data name="WindowActionMagnetic" xml:space="preserve">
     <value>Magnetic</value>
   </data>
+  <data name="WindowActionMix" xml:space="preserve">
+    <value>Mix</value>
+  </data>
   <data name="WindowActionPause" xml:space="preserve">
     <value>Pause</value>
   </data>
@@ -955,6 +988,9 @@
   <data name="WindowLoginCancel" xml:space="preserve">
     <value>Cancel</value>
     <comment>退出</comment>
+  </data>
+  <data name="WindowLoginCheck" xml:space="preserve">
+    <value>Auto load preconfigured devices in the instrument</value>
   </data>
   <data name="WindowLoginOK" xml:space="preserve">
     <value>Login</value>

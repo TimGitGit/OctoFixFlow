@@ -141,7 +141,7 @@
                     <ControlTemplate TargetType="ToggleButton">
                         <Border
                             x:Name="border"
-                            Width="70"
+                            Width="40"
                             Height="40"
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
@@ -155,7 +155,6 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <!--  选中状态样式（红色背景）  -->
-
                             <!--  鼠标悬停样式  -->
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="border" Property="Background" Value="#FFF3E0" />
@@ -177,17 +176,101 @@
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Foreground" Value="#333333" />
         </Style>
-       
+
+        <!--  跳跃尺寸的单选按钮样式  -->
+        <Style x:Key="JumpSizeRadioStyle" TargetType="RadioButton">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <!--  选中时显示蓝色边框+浅色背景  -->
+                        <Border
+                            x:Name="radioBorder"
+                            Height="40"
+                            Padding="10,6"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="5"
+                            SnapsToDevicePixels="True">
+                            <StackPanel HorizontalAlignment="Center" Orientation="Vertical">
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    FontSize="12"
+                                    Text="{TemplateBinding Content}" />
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    FontSize="10"
+                                    Foreground="#666666"
+                                    Text="{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}" />
+                            </StackPanel>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="radioBorder" Property="Background" Value="#FFF3E0" />
+                                <Setter TargetName="radioBorder" Property="BorderBrush" Value="#FF5722" />
+                                <Setter Property="Foreground" Value="#FF5722" />
+
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <!--  默认样式  -->
+            <Setter Property="Background" Value="#FCFCFC" />
+            <Setter Property="BorderBrush" Value="#E0E0E0" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Foreground" Value="#333333" />
+        </Style>
+        <Style x:Key="JumpSizeNoTipRadioStyle" TargetType="RadioButton">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <!--  选中时显示蓝色边框+浅色背景  -->
+                        <Border
+                            x:Name="radioBorder"
+                            Height="40"
+                            Padding="10,6"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="5"
+                            SnapsToDevicePixels="True">
+                            <StackPanel
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Orientation="Vertical">
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    FontSize="12"
+                                    Text="{TemplateBinding Content}" />
+                            </StackPanel>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="radioBorder" Property="Background" Value="#FFF3E0" />
+                                <Setter TargetName="radioBorder" Property="BorderBrush" Value="#FF5722" />
+                                <Setter Property="Foreground" Value="#FF5722" />
+
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <!--  默认样式  -->
+            <Setter Property="Background" Value="#FCFCFC" />
+            <Setter Property="BorderBrush" Value="#E0E0E0" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Foreground" Value="#333333" />
+        </Style>
     </UserControl.Resources>
     <Grid Background="White">
         <Grid.RowDefinitions>
             <RowDefinition Height="50" />
             <RowDefinition Height="50" />
-            <!--  标题行  -->
             <RowDefinition Height="*" />
-            <!--  内容行  -->
             <RowDefinition Height="55" />
-            <!--  按钮行  -->
         </Grid.RowDefinitions>
         <!--  标题栏  -->
         <Border Grid.Row="0">
@@ -1441,6 +1524,7 @@
                                                     Margin="5,0,0,0"
                                                     Background="Transparent"
                                                     BorderThickness="0"
+                                                    Click="PipetteSettingOneBtn_Click"
                                                     Cursor="Hand">
                                                     <Path
                                                         Data="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"
@@ -1476,6 +1560,7 @@
                                                     Margin="5,0,0,0"
                                                     Background="Transparent"
                                                     BorderThickness="0"
+                                                    Click="PipetteSettingTwoBtn_Click"
                                                     Cursor="Hand">
                                                     <Path
                                                         Data="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"
@@ -1511,6 +1596,7 @@
                                                 x:Name="btnEditGripper"
                                                 Width="30"
                                                 Height="30"
+                                                Click="GripperSettingBtn_Click"
                                                 Margin="10,0,0,0"
                                                 Background="Transparent"
                                                 BorderThickness="0"
@@ -1522,29 +1608,6 @@
                                             </Button>
                                         </StackPanel>
 
-                                        <StackPanel Margin="0,0,0,10" Orientation="Horizontal">
-                                            <TextBlock
-                                                VerticalAlignment="Center"
-                                                FontSize="14"
-                                                Foreground="#666666"
-                                                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualEnableGripper}" />
-                                            <Button
-                                                x:Name="btnToggleGripper"
-                                                Width="30"
-                                                Height="30"
-                                                Margin="5,0,0,0"
-                                                Click="EnableGripper_Click"
-                                                Style="{StaticResource ActionButtonStyle}">
-                                                <Button.Content>
-                                                    <Image>
-                                                        <Image.Source>
-                                                            <BitmapImage UriSource="/OctoFixFlow;component/images/gou.png" />
-                                                        </Image.Source>
-                                                    </Image>
-                                                </Button.Content>
-                                            </Button>
-
-                                        </StackPanel>
                                         <StackPanel
                                             Height="30"
                                             Margin="0,0,0,10"
@@ -1568,30 +1631,6 @@
                                                     Fill="{StaticResource PrimaryColor}"
                                                     Stretch="Uniform" />
                                             </Button>
-                                        </StackPanel>
-
-                                        <StackPanel Margin="0,0,0,10" Orientation="Horizontal">
-                                            <TextBlock
-                                                VerticalAlignment="Center"
-                                                FontSize="14"
-                                                Foreground="#666666"
-                                                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualEnablePCR}" />
-                                            <Button
-                                                x:Name="btnTogglePCR"
-                                                Width="30"
-                                                Height="30"
-                                                Margin="5,0,0,0"
-                                                Click="EnablePCR_Click"
-                                                Style="{StaticResource ActionButtonStyle}">
-                                                <Button.Content>
-                                                    <Image>
-                                                        <Image.Source>
-                                                            <BitmapImage UriSource="/OctoFixFlow;component/images/gou.png" />
-                                                        </Image.Source>
-                                                    </Image>
-                                                </Button.Content>
-                                            </Button>
-
                                         </StackPanel>
                                     </StackPanel>
                                     <!--  加热振荡控制  -->
@@ -1617,7 +1656,7 @@
                                                 Style="{StaticResource ActionButtonStyle}" />
                                         </StackPanel>
                                         <ScrollViewer
-                                            Height="120"
+                                            Height="80"
                                             Margin="0,0,0,10"
                                             HorizontalScrollBarVisibility="Disabled"
                                             VerticalScrollBarVisibility="Auto">
@@ -1647,7 +1686,7 @@
                                                 Style="{StaticResource ActionButtonStyle}" />
                                         </StackPanel>
                                         <ScrollViewer
-                                            Height="120"
+                                            Height="80"
                                             Margin="0,0,0,10"
                                             HorizontalScrollBarVisibility="Disabled"
                                             VerticalScrollBarVisibility="Auto">
@@ -1677,7 +1716,7 @@
                                                 Style="{StaticResource ActionButtonStyle}" />
                                         </StackPanel>
                                         <ScrollViewer
-                                            Height="120"
+                                            Height="80"
                                             Margin="0,0,0,10"
                                             HorizontalScrollBarVisibility="Disabled"
                                             VerticalScrollBarVisibility="Auto">
@@ -1847,510 +1886,188 @@
                                     Margin="0,10,0,5"
                                     HorizontalAlignment="Left"
                                     Orientation="Horizontal">
-                                    <Button
-                                        x:Name="btnMoveToPlate"
-                                        Click="MoveToPlate_Click"
-                                        Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualMovetoPlatePosition}"
-                                        Style="{StaticResource ActionButtonStyle}" />
-                                    <Button
-                                        x:Name="btnDownToPlate"
-                                        Margin="10,0,0,0"
-                                        Click="DownToPlate_Click"
-                                        Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualMoveZaxis}"
-                                        Style="{StaticResource ActionButtonStyle}" />
-                                    <Button
-                                        x:Name="btnSavePlatePos"
-                                        Margin="10,0,0,0"
-                                        Click="SavePlatePos_Click"
-                                        Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualSaveCoordinates}"
-                                        Style="{StaticResource ActionButtonStyle}" />
-                                    <Button
-                                        x:Name="btnResetX"
-                                        Margin="10,0,0,0"
-                                        Click="btnResetX_Click"
-                                        Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualResetX}"
-                                        Style="{StaticResource ActionButtonStyle}" />
-                                    <Button
-                                        x:Name="btnResetY"
-                                        Margin="10,0,0,0"
-                                        Click="btnResetY_Click"
-                                        Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualResetY}"
-                                        Style="{StaticResource ActionButtonStyle}" />
-                                    <Button
-                                        x:Name="btnResetZ"
-                                        Margin="10,0,0,0"
-                                        Click="btnResetZ_Click"
-                                        Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualResetZ}"
-                                        Style="{StaticResource ActionButtonStyle}" />
-                                </StackPanel>
-
-                                <!--  4. 微调功能  -->
-                                <TextBlock
-                                    Margin="0,20,0,8"
-                                    FontSize="14"
-                                    Foreground="#666666"
-                                    Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualCoordinateFineAdjustment}" />
-                                <Grid Margin="0,0,0,10" VerticalAlignment="Center">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="150" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
-
-                                    <!--  微调数值输入  -->
-                                    <TextBox
-                                        x:Name="txtFineAdjust"
-                                        Width="120"
-                                        HorizontalAlignment="Left"
-                                        Style="{StaticResource InputTextBoxStyle}"
-                                        Text="1.00" />
-
-                                    <!--  方向控制按钮  -->
-                                    <StackPanel
-                                        Grid.Column="1"
-                                        Margin="0,-20,0,0"
-                                        HorizontalAlignment="Left"
-                                        VerticalAlignment="Center"
-                                        Orientation="Horizontal">
-                                        <!--  X方向  -->
-                                        <StackPanel Margin="0,0,20,0">
-                                            <TextBlock
-                                                Margin="0,0,0,5"
-                                                HorizontalAlignment="Center"
-                                                FontSize="12"
-                                                Foreground="#666666"
-                                                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualXDirection}" />
-                                            <StackPanel Orientation="Horizontal">
-                                                <ToggleButton
-                                                    Click="FineXClose_Click"
-                                                    Content="←"
-                                                    Style="{StaticResource FlowButtonStyle}"
-                                                    Tag="X-" />
-                                                <ToggleButton
-                                                    Click="FineXAdd_Click"
-                                                    Content="→"
-                                                    Style="{StaticResource FlowButtonStyle}"
-                                                    Tag="X+" />
-                                            </StackPanel>
+                                    <StackPanel Margin="0,0,20,0">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button
+                                                x:Name="btnMoveToPlate"
+                                                Click="MoveToPlate_Click"
+                                                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualMovetoPlatePosition}"
+                                                Style="{StaticResource ActionButtonStyle}" />
+                                            <Button
+                                                x:Name="btnDownToPlate"
+                                                Margin="10,0,0,0"
+                                                Click="DownToPlate_Click"
+                                                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualMoveZaxis}"
+                                                Style="{StaticResource ActionButtonStyle}" />
+                                            <Button
+                                                x:Name="btnSavePlatePos"
+                                                Margin="10,0,0,0"
+                                                Click="SavePlatePos_Click"
+                                                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualSaveCoordinates}"
+                                                Style="{StaticResource ActionButtonStyle}" />
                                         </StackPanel>
-
-                                        <!--  Y方向  -->
-                                        <StackPanel Margin="0,0,20,0">
-                                            <TextBlock
-                                                Margin="0,0,0,5"
-                                                HorizontalAlignment="Center"
-                                                FontSize="12"
-                                                Foreground="#666666"
-                                                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualYDirection}" />
-                                            <StackPanel Orientation="Horizontal">
-                                                <ToggleButton
-                                                    Click="FineYAdd_Click"
-                                                    Content="↑"
-                                                    Style="{StaticResource FlowButtonStyle}"
-                                                    Tag="Y+" />
-                                                <ToggleButton
-                                                    Click="FineYClose_Click"
-                                                    Content="↓"
-                                                    Style="{StaticResource FlowButtonStyle}"
-                                                    Tag="Y-" />
-                                            </StackPanel>
-                                        </StackPanel>
-
-                                        <!--  Z方向  -->
-                                        <StackPanel>
-                                            <TextBlock
-                                                Margin="0,0,0,5"
-                                                HorizontalAlignment="Center"
-                                                FontSize="12"
-                                                Foreground="#666666"
-                                                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualZDirection}" />
-                                            <StackPanel Orientation="Horizontal">
-                                                <ToggleButton
-                                                    Click="FineZAdd_Click"
-                                                    Content="↑"
-                                                    Style="{StaticResource FlowButtonStyle}"
-                                                    Tag="Z+" />
-                                                <ToggleButton
-                                                    Click="FineZClose_Click"
-                                                    Content="↓"
-                                                    Style="{StaticResource FlowButtonStyle}"
-                                                    Tag="Z-" />
-                                            </StackPanel>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button
+                                                x:Name="btnResetX"
+                                                Click="btnResetX_Click"
+                                                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualResetX}"
+                                                Style="{StaticResource ActionButtonStyle}" />
+                                            <Button
+                                                x:Name="btnResetY"
+                                                Margin="10,0,0,0"
+                                                Click="btnResetY_Click"
+                                                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualResetY}"
+                                                Style="{StaticResource ActionButtonStyle}" />
+                                            <Button
+                                                x:Name="btnResetZ"
+                                                Margin="10,0,0,0"
+                                                Click="btnResetZ_Click"
+                                                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualResetZ}"
+                                                Style="{StaticResource ActionButtonStyle}" />
                                         </StackPanel>
                                     </StackPanel>
-                                </Grid>
-                            </StackPanel>
-                        </Border>
-                        <!--  移液器控制  -->
-                        <Border
-                            Margin="0,0,0,20"
-                            Background="White"
-                            BorderBrush="#E0E0E0"
-                            BorderThickness="1"
-                            CornerRadius="5">
-                            <StackPanel Margin="15">
-                                <TextBlock
-                                    Margin="0,0,0,15"
-                                    FontSize="16"
-                                    FontWeight="Medium"
-                                    Foreground="{StaticResource PrimaryColor}"
-                                    Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualPipetteControl}" />
+                                    <StackPanel Orientation="Horizontal">
+                                        <!--  左侧：跳跃尺寸区域  -->
+                                        <StackPanel>
+                                            <Border
+                                                Background="White"
+                                                BorderBrush="#E0E0E0"
+                                                BorderThickness="1"
+                                                CornerRadius="5">
+                                                <StackPanel Margin="12" VerticalAlignment="Center">
+                                                    <TextBlock
+                                                        Margin="0,0,0,8"
+                                                        FontSize="14"
+                                                        Foreground="#666666"
+                                                        Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualCoordinateFineAdjustment}" />
+                                                    <!--  单选按钮组（互斥选择）  -->
+                                                    <WrapPanel HorizontalAlignment="Left">
+                                                        <RadioButton
+                                                            Width="70"
+                                                            Margin="2,0"
+                                                            Click="JumpSizeRadio_Click"
+                                                            Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualTinySize}"
+                                                            GroupName="JumpSize"
+                                                            IsChecked="True"
+                                                            Style="{StaticResource JumpSizeRadioStyle}"
+                                                            Tag="0.1 mm" />
+                                                        <RadioButton
+                                                            Width="70"
+                                                            Margin="2,0"
+                                                            Click="JumpSizeRadio_Click"
+                                                            Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualSmallSize}"
+                                                            GroupName="JumpSize"
+                                                            Style="{StaticResource JumpSizeRadioStyle}"
+                                                            Tag="1 mm" />
+                                                        <RadioButton
+                                                            Width="70"
+                                                            Margin="2,0"
+                                                            Click="JumpSizeRadio_Click"
+                                                            Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualBigSize}"
+                                                            GroupName="JumpSize"
+                                                            Style="{StaticResource JumpSizeRadioStyle}"
+                                                            Tag="10 mm" />
+                                                    </WrapPanel>
+                                                </StackPanel>
+                                            </Border>
+                                        </StackPanel>
 
-                                <!--  1. 吸液参数  -->
-                                <TextBlock
-                                    Margin="0,0,0,8"
-                                    FontSize="14"
-                                    Foreground="#666666"
-                                    Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualAspirationParams}" />
-                                <Grid Margin="0,0,0,15">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="100" />
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="20" />
-                                        <ColumnDefinition Width="100" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
+                                        <!--  右侧：方向控制区域  -->
+                                        <Border
+                                            Margin="10,0,0,0"
+                                            Background="White"
+                                            BorderBrush="#E0E0E0"
+                                            BorderThickness="1"
+                                            CornerRadius="5">
 
-                                    <TextBlock
-                                        VerticalAlignment="Center"
-                                        FontSize="13"
-                                        Foreground="#666666"
-                                        Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualVolume}" />
-                                    <TextBox
-                                        x:Name="txtAspirateVol"
-                                        Grid.Column="1"
-                                        Style="{StaticResource InputTextBoxStyle}"
-                                        Text="50" />
+                                            <StackPanel
+                                                Margin="12"
+                                                VerticalAlignment="Center"
+                                                Orientation="Horizontal">
+                                                <StackPanel>
+                                                    <TextBlock
+                                                        Margin="0,0,0,8"
+                                                        FontSize="14"
+                                                        Foreground="#666666"
+                                                        Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualCoordinateDirectionControl}" />
+                                                    <!--  单选按钮组（互斥选择）  -->
+                                                    <StackPanel HorizontalAlignment="Left">
+                                                        <RadioButton
+                                                            x:Name="jumpXYButton"
+                                                            Width="110"
+                                                            Margin="0,2"
+                                                            Click="JumpDirectionXY_Click"
+                                                            Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualXAndY}"
+                                                            GroupName="JumpXYZ"
+                                                            IsChecked="True"
+                                                            Style="{StaticResource JumpSizeNoTipRadioStyle}" />
+                                                        <RadioButton
+                                                            x:Name="jumpZButton"
+                                                            Width="110"
+                                                            Margin="0,2"
+                                                            Click="JumpDirectionZ_Click"
+                                                            Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualZAxis}"
+                                                            GroupName="JumpXYZ"
+                                                            Style="{StaticResource JumpSizeNoTipRadioStyle}" />
+                                                    </StackPanel>
+                                                </StackPanel>
+                                                <StackPanel Margin="10,26,0,0">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="*" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <Grid Grid.Column="0">
+                                                            <ToggleButton
+                                                                x:Name="JumpLeftButton"
+                                                                Grid.Row="2"
+                                                                Grid.Column="0"
+                                                                Margin="0,0,5,0"
+                                                                Click="JumpLeftButton_Click"
+                                                                Content="←"
+                                                                Style="{StaticResource FlowButtonStyle}"
+                                                                Tag="left" />
+                                                        </Grid>
+                                                        <Grid Grid.Column="1">
+                                                            <StackPanel>
+                                                                <ToggleButton
+                                                                    x:Name="JumpUpButton"
+                                                                    Margin="0,0,0,2.5"
+                                                                    Click="JumpUpButton_Click"
+                                                                    Content="↑"
+                                                                    Style="{StaticResource FlowButtonStyle}"
+                                                                    Tag="up" />
+                                                                <ToggleButton
+                                                                    x:Name="JumpDownButton"
+                                                                    Margin="0,2.5,0,0"
+                                                                    Click="JumpDownButton_Click"
+                                                                    Content="↓"
+                                                                    Style="{StaticResource FlowButtonStyle}"
+                                                                    Tag="down" />
+                                                            </StackPanel>
+                                                        </Grid>
+                                                        <Grid Grid.Column="2">
+                                                            <ToggleButton
+                                                                x:Name="JumpRightButton"
+                                                                Grid.Row="2"
+                                                                Grid.Column="0"
+                                                                Margin="5,0,0,0"
+                                                                Click="JumpRightButton_Click"
+                                                                Content="→"
+                                                                Style="{StaticResource FlowButtonStyle}"
+                                                                Tag="right" />
+                                                        </Grid>
 
-                                    <TextBlock
-                                        Grid.Column="3"
-                                        VerticalAlignment="Center"
-                                        FontSize="13"
-                                        Foreground="#666666"
-                                        Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualSpeed}" />
-                                    <TextBox
-                                        x:Name="txtAspirateSpeed"
-                                        Grid.Column="4"
-                                        Style="{StaticResource InputTextBoxStyle}"
-                                        Text="100" />
-                                </Grid>
-                                <Button
-                                    x:Name="btnAspirate"
-                                    Margin="0,0,10,15"
-                                    HorizontalAlignment="Left"
-                                    Click="Aspirate_Click"
-                                    Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualAspirate}"
-                                    Style="{StaticResource ActionButtonStyle}" />
+                                                    </Grid>
+                                                </StackPanel>
 
-                                <!--  2. 注液参数  -->
-                                <TextBlock
-                                    Margin="0,0,0,8"
-                                    FontSize="14"
-                                    Foreground="#666666"
-                                    Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualDispensingParams}" />
-                                <Grid Margin="0,0,0,15">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="100" />
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="20" />
-                                        <ColumnDefinition Width="100" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
+                                            </StackPanel>
+                                        </Border>
+                                    </StackPanel>
 
-                                    <TextBlock
-                                        VerticalAlignment="Center"
-                                        FontSize="13"
-                                        Foreground="#666666"
-                                        Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualVolume}" />
-                                    <TextBox
-                                        x:Name="txtDispenseVol"
-                                        Grid.Column="1"
-                                        Style="{StaticResource InputTextBoxStyle}"
-                                        Text="50" />
-
-                                    <TextBlock
-                                        Grid.Column="3"
-                                        VerticalAlignment="Center"
-                                        FontSize="13"
-                                        Foreground="#666666"
-                                        Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualSpeed}" />
-                                    <TextBox
-                                        x:Name="txtDispenseSpeed"
-                                        Grid.Column="4"
-                                        Style="{StaticResource InputTextBoxStyle}"
-                                        Text="100" />
-                                </Grid>
-                                <Button
-                                    x:Name="btnDispense"
-                                    Margin="0,0,10,15"
-                                    HorizontalAlignment="Left"
-                                    Click="Dispense_Click"
-                                    Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualDispense}"
-                                    Style="{StaticResource ActionButtonStyle}" />
-
-                                <!--  3. 基础功能按钮  -->
-                                <StackPanel
-                                    Margin="0,0,0,15"
-                                    HorizontalAlignment="Left"
-                                    Orientation="Horizontal">
-                                    <Button
-                                        x:Name="btnEjectTip"
-                                        Margin="0,0,10,0"
-                                        Click="EjectTip_Click"
-                                        Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualEjectTip}"
-                                        Style="{StaticResource ActionButtonStyle}" />
-                                    <Button
-                                        x:Name="btnResetPipette"
-                                        Margin="0,0,10,0"
-                                        Click="ResetPipette_Click"
-                                        Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualReset}"
-                                        Style="{StaticResource ActionButtonStyle}" />
 
                                 </StackPanel>
-                                <!--  4. 定标挡位设置  -->
-                                <TextBlock
-                                    Margin="0,15,0,8"
-                                    FontSize="14"
-                                    Foreground="#666666"
-                                    Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualCalibrationGear}" />
-
-                                <!--  定标操作按钮  -->
-                                <StackPanel
-                                    Margin="0,0,0,15"
-                                    HorizontalAlignment="Left"
-                                    Orientation="Horizontal">
-                                    <Button
-                                        x:Name="btnGetCalibration"
-                                        Margin="0,0,10,0"
-                                        Click="GetCalibration_Click"
-                                        Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualGetCalibration}"
-                                        Style="{StaticResource ActionButtonStyle}" />
-                                    <Button
-                                        x:Name="btnSetCalibration"
-                                        Click="SetCalibration_Click"
-                                        Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualSetCalibration}"
-                                        Style="{StaticResource ActionButtonStyle}" />
-                                </StackPanel>
-
-                                <!--  14个定标挡位的Label和Input组合  -->
-                                <ScrollViewer
-                                    Height="200"
-                                    Margin="0,0,0,10"
-                                    HorizontalScrollBarVisibility="Auto"
-                                    VerticalScrollBarVisibility="Auto">
-                                    <!--  核心：设置 Columns="7" 强制每行显示7个元素  -->
-                                    <UniformGrid Margin="0,0,10,0" Columns="7">
-                                        <!--  回程差  -->
-                                        <StackPanel Width="120" Margin="0,0,20,10">
-                                            <TextBlock
-                                                Margin="0,0,0,5"
-                                                FontSize="13"
-                                                Foreground="#666666"
-                                                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualBacklash}" />
-                                            <TextBox
-                                                x:Name="txtCalib0"
-                                                Width="100"
-                                                Margin="-20,0,0,0"
-                                                Style="{StaticResource InputTextBoxStyle}"
-                                                Text="0.00" />
-                                        </StackPanel>
-
-                                        <!--  10挡  -->
-                                        <StackPanel Width="120" Margin="0,0,20,10">
-                                            <TextBlock
-                                                Margin="0,0,0,5"
-                                                FontSize="13"
-                                                Foreground="#666666"
-                                                Text="10" />
-                                            <TextBox
-                                                x:Name="txtCalib10"
-                                                Width="100"
-                                                Margin="-20,0,0,0"
-                                                Style="{StaticResource InputTextBoxStyle}"
-                                                Text="0.00" />
-                                        </StackPanel>
-
-                                        <!--  20挡  -->
-                                        <StackPanel Width="120" Margin="0,0,20,10">
-                                            <TextBlock
-                                                Margin="0,0,0,5"
-                                                FontSize="13"
-                                                Foreground="#666666"
-                                                Text="20" />
-                                            <TextBox
-                                                x:Name="txtCalib20"
-                                                Width="100"
-                                                Margin="-20,0,0,0"
-                                                Style="{StaticResource InputTextBoxStyle}"
-                                                Text="0.00" />
-                                        </StackPanel>
-
-                                        <!--  50挡  -->
-                                        <StackPanel Width="120" Margin="0,0,20,10">
-                                            <TextBlock
-                                                Margin="0,0,0,5"
-                                                FontSize="13"
-                                                Foreground="#666666"
-                                                Text="50" />
-                                            <TextBox
-                                                x:Name="txtCalib50"
-                                                Width="100"
-                                                Margin="-20,0,0,0"
-                                                Style="{StaticResource InputTextBoxStyle}"
-                                                Text="0.00" />
-                                        </StackPanel>
-
-                                        <!--  100挡  -->
-                                        <StackPanel Width="120" Margin="0,0,20,10">
-                                            <TextBlock
-                                                Margin="0,0,0,5"
-                                                FontSize="13"
-                                                Foreground="#666666"
-                                                Text="100" />
-                                            <TextBox
-                                                x:Name="txtCalib100"
-                                                Width="100"
-                                                Margin="-20,0,0,0"
-                                                Style="{StaticResource InputTextBoxStyle}"
-                                                Text="0.00" />
-                                        </StackPanel>
-
-                                        <!--  200挡  -->
-                                        <StackPanel Width="120" Margin="0,0,20,10">
-                                            <TextBlock
-                                                Margin="0,0,0,5"
-                                                FontSize="13"
-                                                Foreground="#666666"
-                                                Text="200" />
-                                            <TextBox
-                                                x:Name="txtCalib200"
-                                                Width="100"
-                                                Margin="-20,0,0,0"
-                                                Style="{StaticResource InputTextBoxStyle}"
-                                                Text="0.00" />
-                                        </StackPanel>
-
-                                        <!--  300挡（第1行第7个）  -->
-                                        <StackPanel Width="120" Margin="0,0,20,10">
-                                            <TextBlock
-                                                Margin="0,0,0,5"
-                                                FontSize="13"
-                                                Foreground="#666666"
-                                                Text="300" />
-                                            <TextBox
-                                                x:Name="txtCalib300"
-                                                Width="100"
-                                                Margin="-20,0,0,0"
-                                                Style="{StaticResource InputTextBoxStyle}"
-                                                Text="0.00" />
-                                        </StackPanel>
-
-                                        <!--  400挡（第2行第1个）  -->
-                                        <StackPanel Width="120" Margin="0,0,20,10">
-                                            <TextBlock
-                                                Margin="0,0,0,5"
-                                                FontSize="13"
-                                                Foreground="#666666"
-                                                Text="400" />
-                                            <TextBox
-                                                x:Name="txtCalib400"
-                                                Width="100"
-                                                Margin="-20,0,0,0"
-                                                Style="{StaticResource InputTextBoxStyle}"
-                                                Text="0.00" />
-                                        </StackPanel>
-
-                                        <!--  500挡  -->
-                                        <StackPanel Width="120" Margin="0,0,20,10">
-                                            <TextBlock
-                                                Margin="0,0,0,5"
-                                                FontSize="13"
-                                                Foreground="#666666"
-                                                Text="500" />
-                                            <TextBox
-                                                x:Name="txtCalib500"
-                                                Width="100"
-                                                Margin="-20,0,0,0"
-                                                Style="{StaticResource InputTextBoxStyle}"
-                                                Text="0.00" />
-                                        </StackPanel>
-
-                                        <!--  600挡  -->
-                                        <StackPanel Width="120" Margin="0,0,20,10">
-                                            <TextBlock
-                                                Margin="0,0,0,5"
-                                                FontSize="13"
-                                                Foreground="#666666"
-                                                Text="600" />
-                                            <TextBox
-                                                x:Name="txtCalib600"
-                                                Width="100"
-                                                Margin="-20,0,0,0"
-                                                Style="{StaticResource InputTextBoxStyle}"
-                                                Text="0.00" />
-                                        </StackPanel>
-
-                                        <!--  700挡  -->
-                                        <StackPanel Width="120" Margin="0,0,20,10">
-                                            <TextBlock
-                                                Margin="0,0,0,5"
-                                                FontSize="13"
-                                                Foreground="#666666"
-                                                Text="700" />
-                                            <TextBox
-                                                x:Name="txtCalib700"
-                                                Width="100"
-                                                Margin="-20,0,0,0"
-                                                Style="{StaticResource InputTextBoxStyle}"
-                                                Text="0.00" />
-                                        </StackPanel>
-
-                                        <!--  800挡  -->
-                                        <StackPanel Width="120" Margin="0,0,20,10">
-                                            <TextBlock
-                                                Margin="0,0,0,5"
-                                                FontSize="13"
-                                                Foreground="#666666"
-                                                Text="800" />
-                                            <TextBox
-                                                x:Name="txtCalib800"
-                                                Width="100"
-                                                Margin="-20,0,0,0"
-                                                Style="{StaticResource InputTextBoxStyle}"
-                                                Text="0.00" />
-                                        </StackPanel>
-
-                                        <!--  900挡  -->
-                                        <StackPanel Width="120" Margin="0,0,20,10">
-                                            <TextBlock
-                                                Margin="0,0,0,5"
-                                                FontSize="13"
-                                                Foreground="#666666"
-                                                Text="900" />
-                                            <TextBox
-                                                x:Name="txtCalib900"
-                                                Width="100"
-                                                Margin="-20,0,0,0"
-                                                Style="{StaticResource InputTextBoxStyle}"
-                                                Text="0.00" />
-                                        </StackPanel>
-
-                                        <!--  1000挡（第2行第7个）  -->
-                                        <StackPanel Width="120" Margin="0,0,20,10">
-                                            <TextBlock
-                                                Margin="0,0,0,5"
-                                                FontSize="13"
-                                                Foreground="#666666"
-                                                Text="1000" />
-                                            <TextBox
-                                                x:Name="txtCalib1000"
-                                                Width="100"
-                                                Margin="-20,0,0,0"
-                                                Style="{StaticResource InputTextBoxStyle}"
-                                                Text="0.00" />
-                                        </StackPanel>
-                                    </UniformGrid>
-                                </ScrollViewer>
-
                             </StackPanel>
                         </Border>
                     </StackPanel>
@@ -2367,4 +2084,5 @@
             Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualClose}"
             Style="{StaticResource ActionButtonStyle}" />
     </Grid>
+
 </UserControl>

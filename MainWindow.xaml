@@ -234,7 +234,17 @@
                         Tag="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowLoginPassTitle}" />
                 </StackPanel>
 
-
+                <StackPanel
+                    Grid.Row="3"
+                    Margin="0,0,0,15"
+                    HorizontalAlignment="Stretch">
+                    <CheckBox
+                        x:Name="chkAutoLoadDevice"
+                        FontSize="14"
+                        Foreground="#666666">
+                        <TextBlock Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowLoginCheck}" TextWrapping="Wrap" />
+                    </CheckBox>
+                </StackPanel>
 
                 <!--  并排按钮（登录/退出）  -->
                 <StackPanel

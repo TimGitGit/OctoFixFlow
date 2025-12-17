@@ -6,11 +6,20 @@ using System.Windows.Media;
 
 namespace OctoFixFlow
 {
+    public enum CanvasSelectionMode
+    {
+        SingleCell,    // 单通道：选单个单元格
+        EntireColumn   // 八通道：选整列
+    }
     public class ConsumableCanvas : Canvas
     {
         //选中的列集合（排序去重）
-        private SortedSet<int> _selectedColumns = new SortedSet<int>();
-        //private SortedSet<(int Row, int Col)> _selectedCells = new SortedSet<(int, int)>();
+        //private SortedSet<int> _selectedColumns = new SortedSet<int>();
+        private SortedSet<(int Row, int Col)> _selectedCells = new SortedSet<(int, int)>();
+        // 画布选择模式（单通道选单元格/八通道选整列）
+
+        public CanvasSelectionMode CurrentSelectionMode { get; set; } = CanvasSelectionMode.SingleCell;
+
         public bool IsInteractive { get; set; } = false;
 
         //当前关联的板位ID
@@ -58,14 +67,11 @@ namespace OctoFixFlow
         {
             base.OnRender(dc);
 
-            //var backgroundRect = new Rect(0, 0, ActualWidth, ActualHeight);
-            //dc.DrawRectangle(Brushes.White, null, backgroundRect);
-
             if (ConsData == null)
                 return;
 
             var borderPen = new Pen(Brushes.Black, 2);
-            var selectedColumnPen = new Pen(Brushes.Red, 1.5);
+            var selectedCellPen = new Pen(Brushes.Red, 1.5);
             var holePen = new Pen(Brushes.DarkGray, 1);
 
             double scaleX = ActualWidth / (ConsData.labL + 20);
@@ -81,97 +87,10 @@ namespace OctoFixFlow
             dc.DrawGeometry(null, borderPen, outlineGeometry);
 
             //绘制孔
-            DrawAllHoles(dc, holePen, selectedColumnPen, scale, offsetX, offsetY);
+            DrawAllHoles(dc, holePen, selectedCellPen, scale, offsetX, offsetY);
 
         }
 
-        //private void DrawConsumableOutline(DrawingContext dc, Pen pen, double scale, double offsetX, double offsetY)
-        //{
-        //    double width = ConsData.labL * scale;
-        //    double height = ConsData.labW * scale;
-        //    double notchSize = 10 * scale; // 缺口大小
-
-        //    var outline = new PathGeometry();
-        //    var figure = new PathFigure();
-
-        //    // 计算起点（考虑缺口）
-        //    Point startPoint = new Point(offsetX, offsetY);
-
-        //    if (ConsData.NW == 1) // 左上角有缺口
-        //    {
-        //        startPoint = new Point(offsetX, offsetY + notchSize);
-        //    }
-
-        //    figure.StartPoint = startPoint;
-
-        //    // 上边线（考虑左右缺口）
-        //    if (ConsData.NW == 1) // 左上角缺口
-        //    {
-        //        figure.Segments.Add(new LineSegment(new Point(offsetX + notchSize, offsetY), true));
-        //    }
-
-        //    if (ConsData.NE == 1) // 右上角缺口
-        //    {
-        //        figure.Segments.Add(new LineSegment(new Point(offsetX + width - notchSize, offsetY), true));
-        //        figure.Segments.Add(new LineSegment(new Point(offsetX + width, offsetY + notchSize), true));
-        //    }
-        //    else
-        //    {
-        //        figure.Segments.Add(new LineSegment(new Point(offsetX + width, offsetY), true));
-        //    }
-
-        //    // 右边线（考虑上下缺口）
-        //    if (ConsData.NE == 1) // 右上角缺口
-        //    {
-        //        figure.Segments.Add(new LineSegment(new Point(offsetX + width, offsetY + notchSize), true));
-        //    }
-
-        //    if (ConsData.SE == 1) // 右下角缺口
-        //    {
-        //        figure.Segments.Add(new LineSegment(new Point(offsetX + width, offsetY + height - notchSize), true));
-        //        figure.Segments.Add(new LineSegment(new Point(offsetX + width - notchSize, offsetY + height), true));
-        //    }
-        //    else
-        //    {
-        //        figure.Segments.Add(new LineSegment(new Point(offsetX + width, offsetY + height), true));
-        //    }
-
-        //    // 下边线（考虑左右缺口）
-        //    if (ConsData.SE == 1) // 右下角缺口
-        //    {
-        //        figure.Segments.Add(new LineSegment(new Point(offsetX + width - notchSize, offsetY + height), true));
-        //    }
-
-        //    if (ConsData.SW == 1) // 左下角缺口
-        //    {
-        //        figure.Segments.Add(new LineSegment(new Point(offsetX + notchSize, offsetY + height), true));
-        //        figure.Segments.Add(new LineSegment(new Point(offsetX, offsetY + height - notchSize), true));
-        //    }
-        //    else
-        //    {
-        //        figure.Segments.Add(new LineSegment(new Point(offsetX, offsetY + height), true));
-        //    }
-
-        //    // 左边线（考虑上下缺口）
-        //    if (ConsData.SW == 1) // 左下角缺口
-        //    {
-        //        figure.Segments.Add(new LineSegment(new Point(offsetX, offsetY + height - notchSize), true));
-        //    }
-
-        //    if (ConsData.NW == 1) // 左上角缺口
-        //    {
-        //        figure.Segments.Add(new LineSegment(new Point(offsetX, offsetY + notchSize), true));
-        //    }
-        //    else
-        //    {
-        //        figure.Segments.Add(new LineSegment(new Point(offsetX, offsetY), true));
-        //    }
-
-        //    figure.IsClosed = true;
-        //    outline.Figures.Add(figure);
-
-        //    dc.DrawGeometry(null, pen, outline);
-        //}
         private PathGeometry DrawConsumableOutline(double scale, double offsetX, double offsetY)
         {
             double width = ConsData.labL * scale;
@@ -257,7 +176,6 @@ namespace OctoFixFlow
             figure.IsClosed = true;
             outline.Figures.Add(figure);
 
-            //dc.DrawGeometry(null, pen, outline);
             return outline;
         }
 
@@ -288,9 +206,11 @@ namespace OctoFixFlow
                         double centerY = offsetY + m_gap * scale + row * rowSpacing;
 
                         // 选中列的画笔
-                        bool isColumnSelected = _selectedColumns.Contains(col + 1);
-                        Brush currentFillBrush = isColumnSelected ? selectedFillBrush : normalFillBrush;
-                        Pen currentPen = isColumnSelected ? selectedPen : normalPen;
+                        //bool isColumnSelected = _selectedColumns.Contains(col + 1);
+                        bool isCellSelected = _selectedCells.Contains((row + 1, col + 1));
+
+                        Brush currentFillBrush = isCellSelected ? selectedFillBrush : normalFillBrush;
+                        Pen currentPen = isCellSelected ? selectedPen : normalPen;
                         // 绘制圆孔
                         dc.DrawEllipse(currentFillBrush, currentPen, new Point(centerX, centerY), tipRadius, tipRadius);
 
@@ -310,9 +230,10 @@ namespace OctoFixFlow
                         double centerX = offsetX + m_a1Distance * scale + col * colSpacing;
                         double centerY = offsetY + m_gap * scale + row * rowSpacing;
                         // 判断选中状态，切换填充和画笔
-                        bool isColumnSelected = _selectedColumns.Contains(col + 1);
-                        Brush currentFillBrush = isColumnSelected ? selectedFillBrush : normalFillBrush;
-                        Pen currentPen = isColumnSelected ? selectedPen : normalPen;
+                        //bool isColumnSelected = _selectedColumns.Contains(col + 1);
+                        bool isCellSelected = _selectedCells.Contains((row + 1, col + 1));
+                        Brush currentFillBrush = isCellSelected ? selectedFillBrush : normalFillBrush;
+                        Pen currentPen = isCellSelected ? selectedPen : normalPen;
                         dc.DrawEllipse(currentFillBrush, currentPen, new Point(centerX, centerY), radius, radius);
                     }
                 }
@@ -333,9 +254,10 @@ namespace OctoFixFlow
                         double left = centerX - rectWidth / 2;
                         double top = centerY - rectHeight / 2;
 
-                        bool isColumnSelected = _selectedColumns.Contains(col + 1);
-                        Brush currentFillBrush = isColumnSelected ? selectedFillBrush : normalFillBrush;
-                        Pen currentPen = isColumnSelected ? selectedPen : normalPen;
+                        //bool isColumnSelected = _selectedColumns.Contains(col + 1);
+                        bool isCellSelected = _selectedCells.Contains((row + 1, col + 1));
+                        Brush currentFillBrush = isCellSelected ? selectedFillBrush : normalFillBrush;
+                        Pen currentPen = isCellSelected ? selectedPen : normalPen;
 
                         // 绘制矩形孔
                         dc.DrawRectangle(currentFillBrush, currentPen, new Rect(left, top, rectWidth, rectHeight));
@@ -363,23 +285,42 @@ namespace OctoFixFlow
             double offsetY = (ActualHeight - ConsData.labW * scale) / 2;
 
             // 计算有效点击区域（与绘制时的列间距完全对应）
-            double startX = offsetX + ConsData.distanceRowY * scale; // 对应m_a1Distance的X起点
+            double colStartX = offsetX + ConsData.distanceRowY * scale; // 对应m_a1Distance的X起点
             double colSpacing = ConsData.distanceColumn * scale; // 与绘制时的列间距一致
-            double endX = startX + ConsData.numColumns * colSpacing;
+            double colEndX = colStartX + ConsData.numColumns * colSpacing;
+
+            double rowStartY = offsetY + ConsData.distanceColumnX * scale; // 行起点Y（对应原有m_gap）
+            double rowSpacing = ConsData.distanceRow * scale;             // 行间距
+            double rowEndY = rowStartY + ConsData.numRows * rowSpacing;
 
             // 检查点击是否在有效列区域内
             //if (mousePos.X >= startX - colSpacing * 0.1 && mousePos.X <= endX + colSpacing * 0.1)
             //{
             // 计算选中的列（核心修正：使用Math.Round避免浮点数精度问题）
-            double rawColumn = (mousePos.X - startX) / colSpacing;
-            int column = (int)Math.Round(rawColumn) + 1; // 四舍五入减少误差
-                                                         // 强制限制列号在有效范围内（1 ~ 最大列数）
-            column = Math.Clamp(column, 1, ConsData.numColumns);
-
+            //double rawColumn = (mousePos.X - startX) / colSpacing;
+            //int column = (int)Math.Round(rawColumn) + 1; // 四舍五入减少误差
+            //                                             // 强制限制列号在有效范围内（1 ~ 最大列数）
+            //column = Math.Clamp(column, 1, ConsData.numColumns);
+            double rawCol = (mousePos.X - colStartX) / colSpacing;
+            int col = Math.Clamp((int)Math.Round(rawCol) + 1, 1, ConsData.numColumns);
+            double rawRow = (mousePos.Y - rowStartY) / rowSpacing;
+            int row = Math.Clamp((int)Math.Round(rawRow) + 1, 1, ConsData.numRows);
             // 单选逻辑：先清空所有选中列，再添加当前列
-            _selectedColumns.Clear();
-            _selectedColumns.Add(column);
-
+            _selectedCells.Clear();
+            //_selectedCells.Add((row, col));
+            if (CurrentSelectionMode == CanvasSelectionMode.EntireColumn)
+            {
+                // 八通道：选中整列（当前列的所有行）
+                for (int r = 1; r <= ConsData.numRows; r++)
+                {
+                    _selectedCells.Add((r, col));
+                }
+            }
+            else
+            {
+                // 单通道：选中单个单元格
+                _selectedCells.Add((row, col));
+            }
             InvalidateVisual(); // 刷新绘制
             SelectedColumnsChanged?.Invoke(PlateId, FormatSelectedColumns());
             //}
@@ -387,46 +328,100 @@ namespace OctoFixFlow
 
         private string FormatSelectedColumns()
         {
-            if (_selectedColumns.Count == 0)
+            if (_selectedCells.Count == 0)
                 return "";
 
-            var columns = _selectedColumns.ToList();
-            var ranges = new List<string>();
-            int start = columns[0];
-            int end = columns[0];
+            var cells = _selectedCells.ToList();
+            if (!cells.Any())
+                return "";
+            var rows = cells.Select(c => c.Row).Distinct().OrderBy(r => r).ToList();
+            var cols = cells.Select(c => c.Col).Distinct().OrderBy(c => c).ToList();
 
-            for (int i = 1; i < columns.Count; i++)
+            string rowText = FormatRange(rows);
+            string colText = FormatRange(cols);
+
+            return $"{ResourceHelper.Instance.StepDetailRowPrefix}{rowText} {ResourceHelper.Instance.StepDetailColumnPrefix}{colText}";
+
+            //var ranges = new List<string>();
+            //int start = columns[0];
+            //int end = columns[0];
+
+            //for (int i = 1; i < columns.Count; i++)
+            //{
+            //    if (columns[i] == end + 1)
+            //    {
+            //        end = columns[i];
+            //    }
+            //    else
+            //    {
+            //        ranges.Add(start == end ? $"{start}" : $"{start}~{end}");
+            //        start = end = columns[i];
+            //    }
+            //}
+
+            //ranges.Add(start == end ? $"{start}" : $"{start}~{end}");
+
+            //return $"{ResourceHelper.Instance.StepDetailColumnPrefix}{string.Join("；", ranges)}";
+        }
+        // 将数字列表格式化为“X”或“X~Y”范围字符串
+        private string FormatRange(List<int> numbers)
+        {
+            if (numbers.Count == 0)
+                return "";
+            if (numbers.Count == 1)
+                return numbers[0].ToString();
+
+            var ranges = new List<string>();
+            int start = numbers[0];
+            int end = numbers[0];
+
+            for (int i = 1; i < numbers.Count; i++)
             {
-                if (columns[i] == end + 1)
+                if (numbers[i] == end + 1)
                 {
-                    end = columns[i];
+                    end = numbers[i];
                 }
                 else
                 {
                     ranges.Add(start == end ? $"{start}" : $"{start}~{end}");
-                    start = end = columns[i];
+                    start = end = numbers[i];
                 }
             }
-
             ranges.Add(start == end ? $"{start}" : $"{start}~{end}");
 
-            return $"{ResourceHelper.Instance.StepDetailColumnPrefix}{string.Join("；", ranges)}";
+            return string.Join("；", ranges);
         }
-
         //清空选中状态
         public void ClearSelection()
         {
-            _selectedColumns.Clear();
+            _selectedCells.Clear();
             InvalidateVisual();
         }
         //根据列集合更新选中状态
-        public void SetSelectedColumns(IEnumerable<int> columns)
+        //public void SetSelectedColumns(IEnumerable<int> columns)
+        //{
+        //    _selectedColumns.Clear();
+        //    if (columns != null)
+        //    {
+        //        foreach (var col in columns)
+        //            _selectedColumns.Add(col);
+        //    }
+        //    InvalidateVisual();
+        //}
+        public void SetSelectedCells(IEnumerable<(int Row, int Col)> cells)
         {
-            _selectedColumns.Clear();
-            if (columns != null)
+            _selectedCells.Clear();
+            if (cells != null)
             {
-                foreach (var col in columns)
-                    _selectedColumns.Add(col);
+                foreach (var cell in cells)
+                {
+                    // 校验行列号有效性
+                    if (cell.Row >= 1 && cell.Row <= ConsData?.numRows &&
+                        cell.Col >= 1 && cell.Col <= ConsData?.numColumns)
+                    {
+                        _selectedCells.Add(cell);
+                    }
+                }
             }
             InvalidateVisual();
         }

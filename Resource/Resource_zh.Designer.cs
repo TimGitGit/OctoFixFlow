@@ -1537,6 +1537,15 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 方向键 的本地化字符串。
+        /// </summary>
+        public static string SettingManualArrowKeys {
+            get {
+                return ResourceManager.GetString("SettingManualArrowKeys", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 吸液 的本地化字符串。
         /// </summary>
         public static string SettingManualAspirate {
@@ -1564,6 +1573,15 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 大 的本地化字符串。
+        /// </summary>
+        public static string SettingManualBigSize {
+            get {
+                return ResourceManager.GetString("SettingManualBigSize", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 定标挡位： 的本地化字符串。
         /// </summary>
         public static string SettingManualCalibrationGear {
@@ -1587,6 +1605,15 @@ namespace OctoFixFlow.Resource {
         public static string SettingManualControlCenter {
             get {
                 return ResourceManager.GetString("SettingManualControlCenter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 方向控制 的本地化字符串。
+        /// </summary>
+        public static string SettingManualCoordinateDirectionControl {
+            get {
+                return ResourceManager.GetString("SettingManualCoordinateDirectionControl", resourceCulture);
             }
         }
         
@@ -1695,6 +1722,33 @@ namespace OctoFixFlow.Resource {
         public static string SettingManualGripper {
             get {
                 return ResourceManager.GetString("SettingManualGripper", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 关闭抓手 的本地化字符串。
+        /// </summary>
+        public static string SettingManualGripperClose {
+            get {
+                return ResourceManager.GetString("SettingManualGripperClose", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 抓手控制 的本地化字符串。
+        /// </summary>
+        public static string SettingManualGripperControl {
+            get {
+                return ResourceManager.GetString("SettingManualGripperControl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 打开抓手 的本地化字符串。
+        /// </summary>
+        public static string SettingManualGripperOpen {
+            get {
+                return ResourceManager.GetString("SettingManualGripperOpen", resourceCulture);
             }
         }
         
@@ -1816,6 +1870,15 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 Shift+方向键 的本地化字符串。
+        /// </summary>
+        public static string SettingManualSArrowKeys {
+            get {
+                return ResourceManager.GetString("SettingManualSArrowKeys", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 保存坐标 的本地化字符串。
         /// </summary>
         public static string SettingManualSaveCoordinates {
@@ -1852,6 +1915,15 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 小 的本地化字符串。
+        /// </summary>
+        public static string SettingManualSmallSize {
+            get {
+                return ResourceManager.GetString("SettingManualSmallSize", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 速度 (μl/s)： 的本地化字符串。
         /// </summary>
         public static string SettingManualSpeed {
@@ -1866,6 +1938,15 @@ namespace OctoFixFlow.Resource {
         public static string SettingManualTemperatureControl {
             get {
                 return ResourceManager.GetString("SettingManualTemperatureControl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 微小 的本地化字符串。
+        /// </summary>
+        public static string SettingManualTinySize {
+            get {
+                return ResourceManager.GetString("SettingManualTinySize", resourceCulture);
             }
         }
         
@@ -1888,20 +1969,20 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 X和Y轴 的本地化字符串。
+        /// </summary>
+        public static string SettingManualXAndY {
+            get {
+                return ResourceManager.GetString("SettingManualXAndY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 X坐标： 的本地化字符串。
         /// </summary>
         public static string SettingManualXCoordinate {
             get {
                 return ResourceManager.GetString("SettingManualXCoordinate", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 X方向 的本地化字符串。
-        /// </summary>
-        public static string SettingManualXDirection {
-            get {
-                return ResourceManager.GetString("SettingManualXDirection", resourceCulture);
             }
         }
         
@@ -1915,11 +1996,11 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
-        ///   查找类似 Y方向 的本地化字符串。
+        ///   查找类似 Z轴 的本地化字符串。
         /// </summary>
-        public static string SettingManualYDirection {
+        public static string SettingManualZAxis {
             get {
-                return ResourceManager.GetString("SettingManualYDirection", resourceCulture);
+                return ResourceManager.GetString("SettingManualZAxis", resourceCulture);
             }
         }
         
@@ -1929,15 +2010,6 @@ namespace OctoFixFlow.Resource {
         public static string SettingManualZCoordinate {
             get {
                 return ResourceManager.GetString("SettingManualZCoordinate", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Z方向 的本地化字符串。
-        /// </summary>
-        public static string SettingManualZDirection {
-            get {
-                return ResourceManager.GetString("SettingManualZDirection", resourceCulture);
             }
         }
         
@@ -2185,6 +2257,15 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 最后一轮混吸参数 的本地化字符串。
+        /// </summary>
+        public static string StepDetailMixFinalCheck {
+            get {
+                return ResourceManager.GetString("StepDetailMixFinalCheck", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 混合体积 (ul)： 的本地化字符串。
         /// </summary>
         public static string StepDetailMixVolume {
@@ -2199,6 +2280,15 @@ namespace OctoFixFlow.Resource {
         public static string StepDetailOperationPosition {
             get {
                 return ResourceManager.GetString("StepDetailOperationPosition", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 行： 的本地化字符串。
+        /// </summary>
+        public static string StepDetailRowPrefix {
+            get {
+                return ResourceManager.GetString("StepDetailRowPrefix", resourceCulture);
             }
         }
         
@@ -2428,6 +2518,15 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 混合 的本地化字符串。
+        /// </summary>
+        public static string WindowActionMix {
+            get {
+                return ResourceManager.GetString("WindowActionMix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 暂停 的本地化字符串。
         /// </summary>
         public static string WindowActionPause {
@@ -2550,6 +2649,15 @@ namespace OctoFixFlow.Resource {
         public static string WindowLoginCancel {
             get {
                 return ResourceManager.GetString("WindowLoginCancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 自动加载仪器已配置设备 的本地化字符串。
+        /// </summary>
+        public static string WindowLoginCheck {
+            get {
+                return ResourceManager.GetString("WindowLoginCheck", resourceCulture);
             }
         }
         

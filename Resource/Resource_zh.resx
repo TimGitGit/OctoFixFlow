@@ -609,6 +609,9 @@
   <data name="SettingLiquidRemove" xml:space="preserve">
     <value>删除</value>
   </data>
+  <data name="SettingManualArrowKeys" xml:space="preserve">
+    <value>方向键</value>
+  </data>
   <data name="SettingManualAspirate" xml:space="preserve">
     <value>吸液</value>
   </data>
@@ -618,6 +621,9 @@
   <data name="SettingManualBacklash" xml:space="preserve">
     <value>回程差</value>
   </data>
+  <data name="SettingManualBigSize" xml:space="preserve">
+    <value>大</value>
+  </data>
   <data name="SettingManualCalibrationGear" xml:space="preserve">
     <value>定标挡位：</value>
   </data>
@@ -626,6 +632,9 @@
   </data>
   <data name="SettingManualControlCenter" xml:space="preserve">
     <value>手动控制中心</value>
+  </data>
+  <data name="SettingManualCoordinateDirectionControl" xml:space="preserve">
+    <value>方向控制</value>
   </data>
   <data name="SettingManualCoordinateFineAdjustment" xml:space="preserve">
     <value>坐标微调 (mm)：</value>
@@ -662,6 +671,15 @@
   </data>
   <data name="SettingManualGripper" xml:space="preserve">
     <value>抓手</value>
+  </data>
+  <data name="SettingManualGripperClose" xml:space="preserve">
+    <value>关闭抓手</value>
+  </data>
+  <data name="SettingManualGripperControl" xml:space="preserve">
+    <value>抓手控制</value>
+  </data>
+  <data name="SettingManualGripperOpen" xml:space="preserve">
+    <value>打开抓手</value>
   </data>
   <data name="SettingManualHeatingShaking" xml:space="preserve">
     <value>加热振荡模块</value>
@@ -702,6 +720,9 @@
   <data name="SettingManualResetZ" xml:space="preserve">
     <value>复位Z</value>
   </data>
+  <data name="SettingManualSArrowKeys" xml:space="preserve">
+    <value>Shift+方向键</value>
+  </data>
   <data name="SettingManualSaveCoordinates" xml:space="preserve">
     <value>保存坐标</value>
   </data>
@@ -714,11 +735,17 @@
   <data name="SettingManualSingleChannel" xml:space="preserve">
     <value>单通道</value>
   </data>
+  <data name="SettingManualSmallSize" xml:space="preserve">
+    <value>小</value>
+  </data>
   <data name="SettingManualSpeed" xml:space="preserve">
     <value>速度 (μl/s)：</value>
   </data>
   <data name="SettingManualTemperatureControl" xml:space="preserve">
     <value>温控模块</value>
+  </data>
+  <data name="SettingManualTinySize" xml:space="preserve">
+    <value>微小</value>
   </data>
   <data name="SettingManualTitile" xml:space="preserve">
     <value>手动控制</value>
@@ -726,23 +753,20 @@
   <data name="SettingManualVolume" xml:space="preserve">
     <value>容量 (μl)：</value>
   </data>
+  <data name="SettingManualXAndY" xml:space="preserve">
+    <value>X和Y轴</value>
+  </data>
   <data name="SettingManualXCoordinate" xml:space="preserve">
     <value>X坐标：</value>
-  </data>
-  <data name="SettingManualXDirection" xml:space="preserve">
-    <value>X方向</value>
   </data>
   <data name="SettingManualYCoordinate" xml:space="preserve">
     <value>Y坐标：</value>
   </data>
-  <data name="SettingManualYDirection" xml:space="preserve">
-    <value>Y方向</value>
+  <data name="SettingManualZAxis" xml:space="preserve">
+    <value>Z轴</value>
   </data>
   <data name="SettingManualZCoordinate" xml:space="preserve">
     <value>Z坐标：</value>
-  </data>
-  <data name="SettingManualZDirection" xml:space="preserve">
-    <value>Z方向</value>
   </data>
   <data name="SettingPipeTitile" xml:space="preserve">
     <value>移液参数</value>
@@ -825,11 +849,17 @@
   <data name="StepDetailMixedSettings" xml:space="preserve">
     <value>混合设置：</value>
   </data>
+  <data name="StepDetailMixFinalCheck" xml:space="preserve">
+    <value>最后一轮混吸参数</value>
+  </data>
   <data name="StepDetailMixVolume" xml:space="preserve">
     <value>混合体积 (ul)：</value>
   </data>
   <data name="StepDetailOperationPosition" xml:space="preserve">
     <value>操作位置：</value>
+  </data>
+  <data name="StepDetailRowPrefix" xml:space="preserve">
+    <value>行：</value>
   </data>
   <data name="StepDetailSelectedPipette" xml:space="preserve">
     <value>选中移液器:</value>
@@ -906,6 +936,9 @@
   <data name="WindowActionMagnetic" xml:space="preserve">
     <value>磁吸</value>
   </data>
+  <data name="WindowActionMix" xml:space="preserve">
+    <value>混合</value>
+  </data>
   <data name="WindowActionPause" xml:space="preserve">
     <value>暂停</value>
   </data>
@@ -947,6 +980,9 @@
   </data>
   <data name="WindowLoginCancel" xml:space="preserve">
     <value>退出</value>
+  </data>
+  <data name="WindowLoginCheck" xml:space="preserve">
+    <value>自动加载仪器已配置设备</value>
   </data>
   <data name="WindowLoginOK" xml:space="preserve">
     <value>登录</value>

@@ -1,17 +1,9 @@
 ﻿using HelixToolkit.Wpf;
 using Serilog;
-using System.IO;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using System.Windows.Media.Media3D;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace OctoFixFlow
 {
@@ -42,7 +34,6 @@ namespace OctoFixFlow
                     return;
                 }
 
-                // 使用StLReader替代ModelImporter（支持直接读取流）
                 var reader = new StLReader();
                 using (resourceInfo.Stream)
                 {
@@ -100,7 +91,8 @@ namespace OctoFixFlow
             mWidget.Show();
             //mWidget.InitializeCameraAsync();
             ShowNotification($"{_res.MainWindowDetailLoginIN}: {login_Name.Text}", NotificationControl.NotificationType.Info);
-            ShowGuideWindow(mWidget);
+            bool isAutoLoad = chkAutoLoadDevice.IsChecked ?? false;
+            ShowGuideWindow(mWidget, isAutoLoad);
         }
         //退出按钮
         private void ExitButton_Click(object sender, RoutedEventArgs e)
@@ -108,11 +100,11 @@ namespace OctoFixFlow
             Application.Current.Shutdown();
         }
         // 显示引导窗口的方法
-        private void ShowGuideWindow(MainWidget mainWidget)
+        private void ShowGuideWindow(MainWidget mainWidget, bool isAutoLoad)
         {
             mainWidget.IsEnabled = false;
 
-            GuideWindow guideWindow = new GuideWindow();
+            GuideWindow guideWindow = new GuideWindow(isAutoLoad);
             guideWindow.Owner = mainWidget;
             guideWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
 

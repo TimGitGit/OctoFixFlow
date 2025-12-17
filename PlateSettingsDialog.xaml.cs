@@ -1,23 +1,12 @@
-﻿using HelixToolkit.Wpf;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
+﻿using System.ComponentModel;
 using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using System.Xml;
 
 namespace OctoFixFlow
@@ -29,6 +18,7 @@ namespace OctoFixFlow
     {
         private readonly MainWidget _mainWidget;
         private DatabaseService databaseService;
+        private SettingPopupControl TopSettingPopup;
         // 字段+属性，用于绑定UI
         private ConsSettings _consNew;
         public ConsSettings consNew
@@ -67,6 +57,7 @@ namespace OctoFixFlow
         private List<ModuleDatas> _magneticModules = new List<ModuleDatas>(); // 磁吸模块列表
         private int _tempCount = 0; // 温控模块计数器
         private List<ModuleDatas> _tempModules = new List<ModuleDatas>(); // 温控模块列表
+        private float _currentJumpSize = 0.1f;
         public PlateSettingsDialog(MainWidget mainWidget)
         {
             InitializeComponent();
@@ -77,7 +68,16 @@ namespace OctoFixFlow
             liquidNew.PropertyChanged += LiquidNew_PropertyChanged;
             this.DataContext = this;
             consNew.PropertyChanged += ConsNew_PropertyChanged;
+            TopSettingPopup = new SettingPopupControl(_mainWidget);
+            Grid.SetRow(TopSettingPopup, 0);
+            Grid.SetRowSpan(TopSettingPopup, 4);
+            Panel.SetZIndex(TopSettingPopup, 100);
+            TopSettingPopup.Visibility = Visibility.Collapsed;
 
+            if (this.Content is Grid rootGrid)
+            {
+                rootGrid.Children.Add(TopSettingPopup);
+            }
             this.Loaded += async (s, e) =>
             {
                 await loadSqlData();
@@ -86,7 +86,8 @@ namespace OctoFixFlow
         private async Task loadSqlData()
         {
             List<string> consList = await databaseService.GetAllConsumableNamesAsync();
-            foreach (string cons in consList) {
+            foreach (string cons in consList)
+            {
                 ListBoxItem newItem = new ListBoxItem
                 {
                     Content = cons,
@@ -106,7 +107,7 @@ namespace OctoFixFlow
                 liquidumableList.Items.Add(newItem); // 假设液体ListBox名称为liquidumableList
             }
         }
-                //更新耗材
+        //更新耗材
         private async void ConsNew_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if (string.IsNullOrEmpty(consNew.name))
@@ -115,7 +116,7 @@ namespace OctoFixFlow
             // 调用数据库更新方法（使用之前实现的 UpdateConsumableAsync）
             if (consNew.name != oldConsName)
             {
-                bool isUpdated = await databaseService.UpdateConsumableNameAsync(oldConsName,consNew.name);
+                bool isUpdated = await databaseService.UpdateConsumableNameAsync(oldConsName, consNew.name);
                 if (!isUpdated)
                 {
                     _mainWidget.ShowNotification("名称重复", NotificationControl.NotificationType.Warn);
@@ -204,7 +205,7 @@ namespace OctoFixFlow
             {
                 string itemName = selectedItem.Content.ToString();
                 oldConsName = itemName;
-                ConsSettings consSQL= await databaseService.GetConsumableByNameAsync(itemName);
+                ConsSettings consSQL = await databaseService.GetConsumableByNameAsync(itemName);
                 updateCons(consSQL);
             }
         }
@@ -817,9 +818,10 @@ namespace OctoFixFlow
                 _mainWidget.ShowNotification("板位信息获取", NotificationControl.NotificationType.Info);
                 if (plateId == "3")
                 {
-                LoadPlateCoordinates("magnetic_1");
+                    LoadPlateCoordinates("magnetic_1");
 
-                }else if (plateId == "9")
+                }
+                else if (plateId == "9")
                 {
                     LoadPlateCoordinates("shaker_1");
                 }
@@ -848,7 +850,7 @@ namespace OctoFixFlow
         // 加载板位坐标
         private async void LoadPlateCoordinates(string plateId)
         {
-            var coordinates =  await _mainWidget.GetSQLDataAsync(plateId);
+            var coordinates = await _mainWidget.GetSQLDataAsync(plateId);
             if (coordinates.Errcode == 0)
             {
                 txtPlateX.Text = coordinates.X.ToString("F2");
@@ -896,8 +898,8 @@ namespace OctoFixFlow
     };
 
                 // 单次调用 gRPC 接口，同时发送 X 和 Y 电机的动作
-               var result =  await _mainWidget.MotorActionAsync(allMotorActions);
-                if(result == 0)
+                var result = await _mainWidget.MotorActionAsync(allMotorActions);
+                if (result == 0)
                     _mainWidget.ShowNotification("设备移动成功", NotificationControl.NotificationType.Info);
             }
             else
@@ -921,7 +923,7 @@ namespace OctoFixFlow
                     Acc = 100.0f,
                     Dcc = 100.0f
                 });
-               var result =  await _mainWidget.MotorActionAsync(motorActions);
+                var result = await _mainWidget.MotorActionAsync(motorActions);
                 if (result == 0)
                     _mainWidget.ShowNotification("设备移动成功", NotificationControl.NotificationType.Info);
             }
@@ -964,7 +966,7 @@ namespace OctoFixFlow
             {
                 // 保存坐标到存储（数据库或配置文件）
                 //_plateCoordinateMap[selectedPlate] = (x, y, z);
-               var coordinates =  await _mainWidget.SetSQLDataAsync(nowPlate,x,y,z);
+                var coordinates = await _mainWidget.SetSQLDataAsync(nowPlate, x, y, z);
                 if (coordinates.Errcode == 0)
                 {
 
@@ -994,7 +996,7 @@ namespace OctoFixFlow
                 Acc = 500.0f,
                 Dcc = 500.0f
             });
-           var result =  await _mainWidget.MotorActionAsync(motorActions);
+            var result = await _mainWidget.MotorActionAsync(motorActions);
             if (result == 0)
                 _mainWidget.ShowNotification("设备复位成功", NotificationControl.NotificationType.Info);
         }
@@ -1035,18 +1037,46 @@ namespace OctoFixFlow
                 _mainWidget.ShowNotification("设备复位成功", NotificationControl.NotificationType.Info);
         }
         // 微调按钮点击事件
-        //X减少
-        private async void FineXClose_Click(object sender, RoutedEventArgs e)
+        private void JumpSizeRadio_Click(object sender, RoutedEventArgs e)
         {
-            if (float.TryParse(txtFineAdjust.Text, out float adjustValue) &&
-               float.TryParse(txtPlateX.Text, out float currentX))
+            if (sender is not RadioButton radioBtn || !radioBtn.IsChecked.GetValueOrDefault())
+                return;
+
+            if (string.IsNullOrEmpty(radioBtn.Tag?.ToString()))
+                return;
+
+            var tagText = radioBtn.Tag.ToString().Trim();
+            var numberPart = new string(tagText.TakeWhile(c => char.IsDigit(c) || c == '.').ToArray());
+
+            if (float.TryParse(numberPart, out float jumpSize))
+            {
+                _currentJumpSize = jumpSize;
+
+            }
+        }
+        //XY方向
+        private void JumpDirectionXY_Click(object sender, RoutedEventArgs e)
+        {
+            JumpLeftButton.IsEnabled = true;
+            JumpRightButton.IsEnabled = true;
+        }
+        //Z方向
+        private void JumpDirectionZ_Click(object sender, RoutedEventArgs e)
+        {
+            JumpLeftButton.IsEnabled = false;
+            JumpRightButton.IsEnabled = false;
+        }
+        //左(X减少)
+        private async void JumpLeftButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (float.TryParse(txtPlateX.Text, out float currentX))
             {
                 var motorActions = new List<MotorActionParams>();
                 motorActions.Add(new MotorActionParams
                 {
                     MotorId = 0,
                     ActionType = 1,
-                    Target = adjustValue * -1,
+                    Target = _currentJumpSize * -1,
                     Speed = 300.0f,
                     Acc = 300.0f,
                     Dcc = 300.0f
@@ -1054,9 +1084,9 @@ namespace OctoFixFlow
                 var coordinates = await _mainWidget.MotorActionAsync(motorActions);
                 if (coordinates == 0)
                 {
-                    float newX = currentX - adjustValue;
-                    txtPlateX.Text = newX.ToString("F2"); 
-                   _mainWidget.ShowNotification("设备移动成功", NotificationControl.NotificationType.Info);
+                    float newX = currentX - _currentJumpSize;
+                    txtPlateX.Text = newX.ToString("F2");
+                    _mainWidget.ShowNotification("设备移动成功", NotificationControl.NotificationType.Info);
                 }
                 else
                 {
@@ -1068,18 +1098,150 @@ namespace OctoFixFlow
                 _mainWidget.ShowNotification("坐标格式错误，保存失败", NotificationControl.NotificationType.Error);
             }
         }
-
-        private async void FineXAdd_Click(object sender, RoutedEventArgs e)
+        //上
+        private async void JumpUpButton_Click(object sender, RoutedEventArgs e)
         {
-            if (float.TryParse(txtFineAdjust.Text, out float adjustValue) &&
-               float.TryParse(txtPlateX.Text, out float currentX))
+            if (jumpXYButton.IsChecked == true)//Y
+            {
+                if (float.TryParse(txtPlateY.Text, out float currentY))
+                {
+                    var motorActions = new List<MotorActionParams>();
+                    motorActions.Add(new MotorActionParams
+                    {
+                        MotorId = 1,
+                        ActionType = 1,
+                        Target = _currentJumpSize * -1,
+                        Speed = 300.0f,
+                        Acc = 300.0f,
+                        Dcc = 300.0f
+                    });
+                    var coordinates = await _mainWidget.MotorActionAsync(motorActions);
+                    if (coordinates == 0)
+                    {
+                        float newY = currentY - _currentJumpSize;
+                        txtPlateY.Text = newY.ToString("F2");
+                        _mainWidget.ShowNotification("设备移动成功", NotificationControl.NotificationType.Info);
+                    }
+                    else
+                    {
+                        _mainWidget.ShowNotification("设备移动失败", NotificationControl.NotificationType.Warn);
+                    }
+                }
+                else
+                {
+                    _mainWidget.ShowNotification("坐标格式错误，保存失败", NotificationControl.NotificationType.Error);
+                }
+            }
+            else if (jumpZButton.IsChecked == true) //Z
+            {
+                if (float.TryParse(txtPlateZ.Text, out float currentZ))
+                {
+                    var motorActions = new List<MotorActionParams>();
+                    motorActions.Add(new MotorActionParams
+                    {
+                        MotorId = 2,
+                        ActionType = 1,
+                        Target = _currentJumpSize * -1,
+                        Speed = 120.0f,
+                        Acc = 300.0f,
+                        Dcc = 300.0f
+                    });
+                    var coordinates = await _mainWidget.MotorActionAsync(motorActions);
+                    if (coordinates == 0)
+                    {
+                        float newZ = currentZ - _currentJumpSize;
+                        txtPlateZ.Text = newZ.ToString("F2");
+                        _mainWidget.ShowNotification("设备移动成功", NotificationControl.NotificationType.Info);
+                    }
+                    else
+                    {
+                        _mainWidget.ShowNotification("设备移动失败", NotificationControl.NotificationType.Warn);
+                    }
+                }
+                else
+                {
+                    _mainWidget.ShowNotification("坐标格式错误，保存失败", NotificationControl.NotificationType.Error);
+                }
+            }
+
+        }
+        //下
+        private async void JumpDownButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (jumpXYButton.IsChecked == true)//Y
+            {
+                if (float.TryParse(txtPlateY.Text, out float currentY))
+                {
+                    var motorActions = new List<MotorActionParams>();
+                    motorActions.Add(new MotorActionParams
+                    {
+                        MotorId = 1,
+                        ActionType = 1,
+                        Target = _currentJumpSize,
+                        Speed = 300.0f,
+                        Acc = 300.0f,
+                        Dcc = 300.0f
+                    });
+                    var coordinates = await _mainWidget.MotorActionAsync(motorActions);
+                    if (coordinates == 0)
+                    {
+                        float newY = currentY + _currentJumpSize;
+                        txtPlateY.Text = newY.ToString("F2");
+                        _mainWidget.ShowNotification("设备移动成功", NotificationControl.NotificationType.Info);
+                    }
+                    else
+                    {
+                        _mainWidget.ShowNotification("设备移动失败", NotificationControl.NotificationType.Warn);
+                    }
+                }
+                else
+                {
+                    _mainWidget.ShowNotification("坐标格式错误，保存失败", NotificationControl.NotificationType.Error);
+                }
+            }
+            else if (jumpZButton.IsChecked == true)//Z
+            {
+                if (float.TryParse(txtPlateZ.Text, out float currentZ))
+                {
+                    var motorActions = new List<MotorActionParams>();
+                    motorActions.Add(new MotorActionParams
+                    {
+                        MotorId = 2,
+                        ActionType = 1,
+                        Target = _currentJumpSize,
+                        Speed = 120.0f,
+                        Acc = 300.0f,
+                        Dcc = 300.0f
+                    });
+                    var coordinates = await _mainWidget.MotorActionAsync(motorActions);
+                    if (coordinates == 0)
+                    {
+                        float newZ = currentZ + _currentJumpSize;
+                        txtPlateZ.Text = newZ.ToString("F2");
+                        _mainWidget.ShowNotification("设备移动成功", NotificationControl.NotificationType.Info);
+                    }
+                    else
+                    {
+                        _mainWidget.ShowNotification("设备移动失败", NotificationControl.NotificationType.Warn);
+                    }
+                }
+                else
+                {
+                    _mainWidget.ShowNotification("坐标格式错误，保存失败", NotificationControl.NotificationType.Error);
+                }
+            }
+        }
+        //右
+        private async void JumpRightButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (float.TryParse(txtPlateX.Text, out float currentX))
             {
                 var motorActions = new List<MotorActionParams>();
                 motorActions.Add(new MotorActionParams
                 {
                     MotorId = 0,
                     ActionType = 1,
-                    Target = adjustValue,
+                    Target = _currentJumpSize,
                     Speed = 300.0f,
                     Acc = 300.0f,
                     Dcc = 300.0f
@@ -1087,7 +1249,7 @@ namespace OctoFixFlow
                 var coordinates = await _mainWidget.MotorActionAsync(motorActions);
                 if (coordinates == 0)
                 {
-                    float newX = currentX + adjustValue;
+                    float newX = currentX + _currentJumpSize;
                     txtPlateX.Text = newX.ToString("F2");
                     _mainWidget.ShowNotification("设备移动成功", NotificationControl.NotificationType.Info);
                 }
@@ -1102,293 +1264,6 @@ namespace OctoFixFlow
             }
         }
 
-        private async void FineYAdd_Click(object sender, RoutedEventArgs e)
-        {
-            if (float.TryParse(txtFineAdjust.Text, out float adjustValue) &&
-               float.TryParse(txtPlateY.Text, out float currentY))
-            {
-                var motorActions = new List<MotorActionParams>();
-                motorActions.Add(new MotorActionParams
-                {
-                    MotorId = 1,
-                    ActionType = 1,
-                    Target = adjustValue * -1,
-                    Speed = 300.0f,
-                    Acc = 300.0f,
-                    Dcc = 300.0f
-                });
-                var coordinates = await _mainWidget.MotorActionAsync(motorActions);
-                if (coordinates == 0)
-                {
-                    float newY = currentY - adjustValue;
-                    txtPlateY.Text = newY.ToString("F2");
-                    _mainWidget.ShowNotification("设备移动成功", NotificationControl.NotificationType.Info);
-                }
-                else
-                {
-                    _mainWidget.ShowNotification("设备移动失败", NotificationControl.NotificationType.Warn);
-                }
-            }
-            else
-            {
-                _mainWidget.ShowNotification("坐标格式错误，保存失败", NotificationControl.NotificationType.Error);
-            }
-        }
-
-        private async void FineYClose_Click(object sender, RoutedEventArgs e)
-        {
-            if (float.TryParse(txtFineAdjust.Text, out float adjustValue) &&
-               float.TryParse(txtPlateY.Text, out float currentY))
-            {
-                var motorActions = new List<MotorActionParams>();
-                motorActions.Add(new MotorActionParams
-                {
-                    MotorId = 1,
-                    ActionType = 1,
-                    Target = adjustValue,
-                    Speed = 300.0f,
-                    Acc = 300.0f,
-                    Dcc = 300.0f
-                });
-                var coordinates = await _mainWidget.MotorActionAsync(motorActions);
-                if (coordinates == 0)
-                {
-                    float newY = currentY + adjustValue;
-                    txtPlateY.Text = newY.ToString("F2");
-                    _mainWidget.ShowNotification("设备移动成功", NotificationControl.NotificationType.Info);
-                }
-                else
-                {
-                    _mainWidget.ShowNotification("设备移动失败", NotificationControl.NotificationType.Warn);
-                }
-            }
-            else
-            {
-                _mainWidget.ShowNotification("坐标格式错误，保存失败", NotificationControl.NotificationType.Error);
-            }
-        }
-
-        private async void FineZAdd_Click(object sender, RoutedEventArgs e)
-        {
-            if (float.TryParse(txtFineAdjust.Text, out float adjustValue) &&
-               float.TryParse(txtPlateZ.Text, out float currentZ))
-            {
-                var motorActions = new List<MotorActionParams>();
-                motorActions.Add(new MotorActionParams
-                {
-                    MotorId = 2,
-                    ActionType = 1,
-                    Target = adjustValue * -1,
-                    Speed = 120.0f,
-                    Acc = 300.0f,
-                    Dcc = 300.0f
-                });
-                var coordinates = await _mainWidget.MotorActionAsync(motorActions);
-                if (coordinates == 0)
-                {
-                    float newZ = currentZ - adjustValue;
-                    txtPlateZ.Text = newZ.ToString("F2");
-                    _mainWidget.ShowNotification("设备移动成功", NotificationControl.NotificationType.Info);
-                }
-                else
-                {
-                    _mainWidget.ShowNotification("设备移动失败", NotificationControl.NotificationType.Warn);
-                }
-            }
-            else
-            {
-                _mainWidget.ShowNotification("坐标格式错误，保存失败", NotificationControl.NotificationType.Error);
-            }
-        }
-
-        private async void FineZClose_Click(object sender, RoutedEventArgs e)
-        {
-            if (float.TryParse(txtFineAdjust.Text, out float adjustValue) &&
-               float.TryParse(txtPlateZ.Text, out float currentZ))
-            {
-                var motorActions = new List<MotorActionParams>();
-                motorActions.Add(new MotorActionParams
-                {
-                    MotorId = 2,
-                    ActionType = 1,
-                    Target = adjustValue,
-                    Speed = 120.0f,
-                    Acc = 300.0f,
-                    Dcc = 300.0f
-                });
-                var coordinates = await _mainWidget.MotorActionAsync(motorActions);
-                if (coordinates == 0)
-                {
-                    float newZ = currentZ + adjustValue;
-                    txtPlateZ.Text = newZ.ToString("F2");
-                    _mainWidget.ShowNotification("设备移动成功", NotificationControl.NotificationType.Info);
-                }
-                else
-                {
-                    _mainWidget.ShowNotification("设备移动失败", NotificationControl.NotificationType.Warn);
-                }
-            }
-            else
-            {
-                _mainWidget.ShowNotification("坐标格式错误，保存失败", NotificationControl.NotificationType.Error);
-            }
-        }
-        // 移液器控制：吸液
-        private async void Aspirate_Click(object sender, RoutedEventArgs e)
-        {
-            if (int.TryParse(txtAspirateVol.Text, out int vol) &&
-                int.TryParse(txtAspirateSpeed.Text, out int speed))
-            {
-                _mainWidget.ShowNotification($"执行吸液：{vol}μl，速度：{speed}μl/s", NotificationControl.NotificationType.Info);
-                // _pipetteClient.Aspirate(vol, speed); // 示例GRPC调用
-                var coordinates = await _mainWidget.AspiratePipeAsync(vol, speed);
-                if(coordinates == 0)
-                    _mainWidget.ShowNotification("吸液成功", NotificationControl.NotificationType.Info);
-
-            }
-            else
-            {
-                _mainWidget.ShowNotification("吸液参数格式错误", NotificationControl.NotificationType.Error);
-            }
-        }
-
-        // 移液器控制：注液
-        private async void Dispense_Click(object sender, RoutedEventArgs e)
-        {
-            if (int.TryParse(txtDispenseVol.Text, out int vol) &&
-                int.TryParse(txtDispenseSpeed.Text, out int speed))
-            {
-                _mainWidget.ShowNotification($"执行注液：{vol}μl，速度：{speed}μl/s", NotificationControl.NotificationType.Info);
-                var coordinates = await _mainWidget.DispensePipeAsync(vol, speed);
-                if (coordinates == 0)
-                    _mainWidget.ShowNotification("注液成功", NotificationControl.NotificationType.Info);
-            }
-            else
-            {
-                _mainWidget.ShowNotification("注液参数格式错误", NotificationControl.NotificationType.Error);
-            }
-        }
-
-        // 移液器控制：退头
-        private async void EjectTip_Click(object sender, RoutedEventArgs e)
-        {
-            _mainWidget.ShowNotification("执行退头操作", NotificationControl.NotificationType.Info);
-            var coordinates = await _mainWidget.BreakPipeAsync();
-            if (coordinates == 0)
-                _mainWidget.ShowNotification("退头成功", NotificationControl.NotificationType.Info);
-        }
-
-        // 移液器控制：复位
-        private async void ResetPipette_Click(object sender, RoutedEventArgs e)
-        {
-            _mainWidget.ShowNotification("移液器复位中", NotificationControl.NotificationType.Info);
-            var coordinates = await _mainWidget.ResetPipeAsync();
-            if (coordinates == 0)
-                _mainWidget.ShowNotification("复位成功", NotificationControl.NotificationType.Info);
-        }
-        // 移液器控制：定标
-        private void CalibratePipette_Click(object sender, RoutedEventArgs e)
-        {
-            _mainWidget.ShowNotification("开始移液器定标", NotificationControl.NotificationType.Info);
-            // _pipetteClient.StartCalibration(); // 示例GRPC调用
-        }
-
-        //获得定标
-        private async void GetCalibration_Click(object sender, RoutedEventArgs e)
-        {
-            var calibrationParams = await _mainWidget.GetPipeCalibrationAsync("pipette_1");
-
-            if (calibrationParams != null)
-            {
-                // 将获取到的定标参数更新到 UI 控件
-                Dispatcher.Invoke(() =>
-                {
-                    // 回程差（txtCalib0）
-                    txtCalib0.Text = calibrationParams.BackDiff.ToString("F2");
-                    // 10挡（txtCalib10）
-                    txtCalib10.Text = calibrationParams.K10.ToString("F2");
-                    // 20挡（txtCalib20）
-                    txtCalib20.Text = calibrationParams.K20.ToString("F2");
-                    // 50挡（txtCalib50）
-                    txtCalib50.Text = calibrationParams.K50.ToString("F2");
-                    // 100挡（txtCalib100）
-                    txtCalib100.Text = calibrationParams.K100.ToString("F2");
-                    // 200挡（txtCalib200）
-                    txtCalib200.Text = calibrationParams.K200.ToString("F2");
-                    // 300挡（txtCalib300）
-                    txtCalib300.Text = calibrationParams.K300.ToString("F2");
-                    // 400挡（txtCalib400）
-                    txtCalib400.Text = calibrationParams.K400.ToString("F2");
-                    // 500挡（txtCalib500）
-                    txtCalib500.Text = calibrationParams.K500.ToString("F2");
-                    // 600挡（txtCalib600）
-                    txtCalib600.Text = calibrationParams.K600.ToString("F2");
-                    // 700挡（txtCalib700）
-                    txtCalib700.Text = calibrationParams.K700.ToString("F2");
-                    // 800挡（txtCalib800）
-                    txtCalib800.Text = calibrationParams.K800.ToString("F2");
-                    // 900挡（txtCalib900）
-                    txtCalib900.Text = calibrationParams.K900.ToString("F2");
-                    // 1000挡（txtCalib1000）
-                    txtCalib1000.Text = calibrationParams.K1000.ToString("F2");
-
-                     _mainWidget.ShowNotification("定标参数获取成功", NotificationControl.NotificationType.Info);
-                });
-            }
-            }
-        //设置定标
-        private async void SetCalibration_Click(object sender, RoutedEventArgs e)
-        {
-            if (TryParseCalibrationParams(out var calibrationParams))
-            {
-                // 调用设置定标方法
-                var result = await _mainWidget.SetPipeCalibrationAsync(calibrationParams);
-                if (result == 0)
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        _mainWidget.ShowNotification("定标参数已保存", NotificationControl.NotificationType.Info);
-                    });
-                }
-            }
-        }
-        private bool TryParseCalibrationParams(out PipeCalibrationParams @params)
-        {
-            @params = null;
-            try
-            {
-                // 解析每个 TextBox 的值（保留两位小数）
-                @params = new PipeCalibrationParams
-                {
-                    PipeName = "pipette_1", // 管道名称固定
-                    BackDiff = float.Parse(txtCalib0.Text),       // 回程差
-                    K10 = float.Parse(txtCalib10.Text),           // 10挡
-                    K20 = float.Parse(txtCalib20.Text),           // 20挡
-                    K50 = float.Parse(txtCalib50.Text),           // 50挡
-                    K100 = float.Parse(txtCalib100.Text),         // 100挡
-                    K200 = float.Parse(txtCalib200.Text),         // 200挡
-                    K300 = float.Parse(txtCalib300.Text),         // 300挡
-                    K400 = float.Parse(txtCalib400.Text),         // 400挡
-                    K500 = float.Parse(txtCalib500.Text),         // 500挡
-                    K600 = float.Parse(txtCalib600.Text),         // 600挡
-                    K700 = float.Parse(txtCalib700.Text),         // 700挡
-                    K800 = float.Parse(txtCalib800.Text),         // 800挡
-                    K900 = float.Parse(txtCalib900.Text),         // 900挡
-                    K1000 = float.Parse(txtCalib1000.Text)        // 1000挡
-                };
-                return true;
-            }
-            catch (FormatException)
-            {
-                _mainWidget.ShowNotification("定标参数格式错误，请输入有效的数字", NotificationControl.NotificationType.Error);
-                return false;
-            }
-            catch (Exception ex)
-            {
-                _mainWidget.ShowNotification($"解析定标参数失败: {ex.Message}", NotificationControl.NotificationType.Error);
-                return false;
-            }
-        }
         #region 手动控制-模块添加
         //添加移液器
         private void AddPipette_Click(object sender, RoutedEventArgs e)
@@ -1403,40 +1278,19 @@ namespace OctoFixFlow
             btnAddPipette.Visibility = Visibility.Visible;
             pipetteContainer2.Visibility = Visibility.Collapsed;
         }
-        //是否启动抓手
-        private void EnableGripper_Click(object sender, RoutedEventArgs e)
+        private void PipetteSettingOneBtn_Click(object sender, RoutedEventArgs e)
         {
-            AppGlobalConfig.Instance.IsGripperEnabled = !AppGlobalConfig.Instance.IsGripperEnabled;
-
-            if (AppGlobalConfig.Instance.IsGripperEnabled)
-            {
-                btnToggleGripper.Content = new Image
-                {
-                    Source = new BitmapImage(new Uri("/OctoFixFlow;component/images/gou.png", UriKind.Relative))
-                };
-            }
-            else
-            {
-                btnToggleGripper.Content = "❌";
-            }
+            TopSettingPopup.Show(0, "pipette_1");
         }
-        //是否启动PCR
-        private void EnablePCR_Click(object sender, RoutedEventArgs e)
+        private void PipetteSettingTwoBtn_Click(object sender, RoutedEventArgs e)
         {
-            AppGlobalConfig.Instance.IsPCREnabled = !AppGlobalConfig.Instance.IsPCREnabled;
-
-            if (AppGlobalConfig.Instance.IsPCREnabled)
-            {
-                btnTogglePCR.Content = new Image
-                {
-                    Source = new BitmapImage(new Uri("/OctoFixFlow;component/images/gou.png", UriKind.Relative))
-                };
-            }
-            else
-            {
-                btnTogglePCR.Content = "❌";
-            }
+            TopSettingPopup.Show(0, "pipette_2");
         }
+        private void GripperSettingBtn_Click(object sender, RoutedEventArgs e)
+        {
+            TopSettingPopup.Show(3, "shift_1");
+        }
+
         //添加加热振荡模块
         private void AddHeatingOscill_Click(object sender, RoutedEventArgs e)
         {
@@ -1457,7 +1311,7 @@ namespace OctoFixFlow
                 VerticalAlignment = VerticalAlignment.Center,
                 FontSize = 14,
                 Foreground = (SolidColorBrush)(new BrushConverter().ConvertFrom("#666666")),
-                Width = 66 
+                Width = 66
             };
             rowPanel.Children.Add(nameText);
 
@@ -1472,8 +1326,8 @@ namespace OctoFixFlow
             {
                 plateCombo.Items.Add(new ComboBoxItem { Content = $"P{i}" });
             }
-            plateCombo.SelectedIndex = 0; 
-                                          
+            plateCombo.SelectedIndex = 0;
+
             plateCombo.SelectionChanged += (s, e) =>
             {
                 newModule.PlatePosition = (plateCombo.SelectedItem as ComboBoxItem)?.Content.ToString();

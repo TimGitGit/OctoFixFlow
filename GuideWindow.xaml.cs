@@ -1,19 +1,8 @@
-﻿using HelixToolkit.Wpf;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using static OctoFixFlow.PlateSettingsDialog;
 
 namespace OctoFixFlow
 {
@@ -22,43 +11,90 @@ namespace OctoFixFlow
     /// </summary>
     public partial class GuideWindow : Window
     {
-        // 定义委托，用于通知引导完成
         public delegate void GuideCompletedEventHandler();
         public event GuideCompletedEventHandler GuideCompleted;
-        // 记录当前鼠标所在的板位
         private Border _currentHoveredPlate = null;
 
-        // PCR图片路径（根据你的实际路径调整）
         private const string PCR_IMAGE_PATH = "/OctoFixFlow;component/images/PCR.png";
-        // 设备模块列表
-        public GuideWindow()
+        public GuideWindow(bool isAutoLoad)
         {
             InitializeComponent();
             InitPlateModuleMap();
-            Debug.Write("212");
+            if (isAutoLoad)
+            {
+                AutoLoadConfiguredDevices();
+            }
+        }
+        private void AutoLoadConfiguredDevices()
+        {
+            try
+            {
+                //// 1. 自动显示第一个移液器容器，并启用相关模块容器（抓手/PCR）
+                //pipetteContainer.Visibility = Visibility.Visible;
+                //gripperContainer.Visibility = Visibility.Visible;
+                //pcrContainer.Visibility = Visibility.Visible;
+
+                //// 2. 启用后续步骤按钮
+                //GuideDeckLayoutTitle.IsEnabled = true;
+                //GuideExperimentProtocolTitle.IsEnabled = true;
+                //GuideConfirmButton.IsEnabled = true;
+
+                //// 3. 自动加载移液器1默认配置（单通道200μL，可根据实际配置调整）
+                //cmbPipette1.SelectedIndex = 0; // 单通道
+                //cmbPipetteVolume.SelectedIndex = 0; // 200μL
+
+                //// 4. 自动启用抓手（可选：根据实际配置调整）
+                //AppGlobalConfig.Instance.IsGripperEnabled = true;
+                //btnToggleGripper.Content = new Image
+                //{
+                //    Source = new BitmapImage(new Uri("/OctoFixFlow;component/images/gou.png", UriKind.Relative))
+                //};
+
+                //// 5. 自动启用PCR模块（可选：根据实际配置调整）
+                //AppGlobalConfig.Instance.IsPCREnabled = true;
+                //EnablePCR_Click(null, null); // 复用原有PCR启用逻辑
+
+                //// 6. 自动填充实验协议默认信息（可选）
+                //guideProtocolNameTextBox.Text = "默认实验协议";
+                //guideProtocolDescriptionTextBox.Text = "自动加载的仪器默认配置";
+                //guideProtocolAuthorTextBox.Text = "系统自动配置";
+
+                //// 可扩展：从配置文件/仪器读取已保存的设备配置，覆盖上述默认值
+                //// 示例：var savedConfig = AppGlobalConfig.Instance.LoadSavedDeviceConfig();
+                ////       cmbPipette1.SelectedIndex = savedConfig.Pipette1Type;
+                ////       cmbPipetteVolume.SelectedIndex = savedConfig.Pipette1Volume;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"自动加载设备配置失败：{ex.Message}", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
         private void InitPlateModuleMap()
         {
             var newModule = new ModuleDatas
             {
-                Name ="Waste bin",
-                Type = 8 ,
+                Name = "Waste bin",
+                Type = 8,
                 PlatePosition = "12",
                 PipetteVolume = 0,
-                ModuleImage =  "/OctoFixFlow;component/images/Trash.png"
+                ModuleImage = "/OctoFixFlow;component/images/Trash.png"
             };
             AppGlobalConfig.Instance.AddOrUpdateModule("12", newModule);
         }
 
         private void GuideConfirmButton_Click(object sender, RoutedEventArgs e)
         {
+            AppGlobalConfig.Instance.GuideProtocolName = guideProtocolNameTextBox.Text;
+            AppGlobalConfig.Instance.GuideProtocolDescription = guideProtocolDescriptionTextBox.Text;
+            AppGlobalConfig.Instance.GuideProtocolAuthor = guideProtocolAuthorTextBox.Text;
+
             AppGlobalConfig.Instance.RenameModulesByType();
             //判断一下移液器
             //移液器1
             int pipetteType1 = 0;
             if (cmbPipette1.SelectedIndex == 1)
             {
-                pipetteType1 = 1; 
+                pipetteType1 = 1;
             }
             int pipetteVolume1 = 200;
             if (cmbPipetteVolume.SelectedIndex == 1)
@@ -209,7 +245,7 @@ namespace OctoFixFlow
                 var pcrModule = new ModuleDatas
                 {
                     Name = "PCR",
-                    Type = 4, 
+                    Type = 4,
                     PlatePosition = plateId,
                     PipetteVolume = 0,
                     ModuleImage = "/OctoFixFlow;component/images/PCR.png"
@@ -270,7 +306,7 @@ namespace OctoFixFlow
         #region 板位设置
         private void ModuleItem_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            if(sender is not Border moduleBorder) return;
+            if (sender is not Border moduleBorder) return;
 
             // 解析模块Type（直接从Tag获取，对应ModuleDatas.Type）
             if (!int.TryParse(moduleBorder.Tag.ToString(), out int moduleType))
@@ -302,7 +338,7 @@ namespace OctoFixFlow
                 return;
 
             // 获取板位编号（P1-P11，跳过P12）
-            string platePosition = plateBorder.Tag.ToString(); 
+            string platePosition = plateBorder.Tag.ToString();
             if (platePosition == "12") return;
 
             // 解析拖拽数据
@@ -330,7 +366,7 @@ namespace OctoFixFlow
         private void PlateSlot_MouseEnter(object sender, MouseEventArgs e)
         {
             _currentHoveredPlate = sender as Border;
-            _currentHoveredPlate.Focus(); 
+            _currentHoveredPlate.Focus();
         }
 
         private void PlateSlot_MouseLeave(object sender, MouseEventArgs e)
@@ -347,7 +383,7 @@ namespace OctoFixFlow
                 if (plateId == "12") return;
                 if (plateId == "10" && AppGlobalConfig.Instance.IsPCREnabled)
                 {
-                    e.Handled = true; 
+                    e.Handled = true;
                     return;
                 }
                 ClearPlateContent(plateId);
@@ -362,7 +398,7 @@ namespace OctoFixFlow
                 AppGlobalConfig.Instance.AddOrUpdateModule(plateId, newModule);
 
 
-                e.Handled = true; 
+                e.Handled = true;
             }
         }
         /// <summary>
@@ -379,7 +415,7 @@ namespace OctoFixFlow
                 Source = new ImageSourceConverter().ConvertFromString(imagePath) as ImageSource,
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch,
-                Stretch = Stretch.Uniform, 
+                Stretch = Stretch.Uniform,
                 Margin = new Thickness(2)
             };
 

@@ -747,6 +747,7 @@
                                     Foreground="{StaticResource PrimaryColor}"
                                     Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=GuideBtnExperimentProtocolInfoName}" />
                                 <TextBox
+                                    x:Name="guideProtocolNameTextBox"
                                     Height="30"
                                     Style="{StaticResource InputTextBoxStyle}"
                                     TextWrapping="NoWrap" />
@@ -757,6 +758,7 @@
                                     Foreground="{StaticResource PrimaryColor}"
                                     Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=GuideBtnExperimentProtocolInfoDescription}" />
                                 <TextBox
+                                    x:Name="guideProtocolDescriptionTextBox"
                                     MinHeight="100"
                                     AcceptsReturn="True"
                                     Style="{StaticResource InputTextBoxStyle}"
@@ -768,6 +770,7 @@
                                     Foreground="{StaticResource PrimaryColor}"
                                     Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=GuideBtnExperimentProtocolInfoAuthor}" />
                                 <TextBox
+                                    x:Name="guideProtocolAuthorTextBox"
                                     Height="30"
                                     Style="{StaticResource InputTextBoxStyle}"
                                     TextWrapping="NoWrap" />

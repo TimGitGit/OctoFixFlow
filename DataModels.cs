@@ -632,16 +632,31 @@ namespace OctoFixFlow
     // 流程步骤模型
     public class FlowStep : INotifyPropertyChanged
     {
+        // 加热振荡模块转速
+        private const int MIN_SHAKE_RPM = 100;
+        private const int MAX_SHAKE_RPM = 2500;
+        // 加热振荡模块温度
+        private const int MIN_SHAKE_TEMP = 4;
+        private const int MAX_SHAKE_TEMP = 105;
+        //磁吸模块距离
+        private const int MIN_MAGNET_DISTANCE = 0;
+        private const int MAX_MAGNET_DISTANCE = 20;
+
         private int _index;
         private string _name;
         private string _type;
         private int _volume;
         private string _position;
+        private string _consName;
         private string _wellPosition;
         private bool _isSelected;
         private string _selectedColumns;
-        //private int _mixCount;
-        //private float _mixVolume;
+        private string _selectedCells;
+        private int _mixCount;
+        private float _mixVolume;
+        private bool _isFinalMix;
+        private float _mixFinalAisSpeed;
+        private float _mixFinalDisSpeed;
         private LiquidSettings _selectedLiquid;
         public bool _isSystemstep;
         private int _waitTime;
@@ -652,8 +667,10 @@ namespace OctoFixFlow
         private int _shakeTemp;
         private bool _isPreHeat;
         private bool _isUnlockNext = true;
-        private bool _isMagnetUpOrDown;
+        private bool _isMagnetUp = true;
+        private bool _isMagnetDown = false;
         private int _magnetDistance;
+        private int _tempCtrlTemp;
         private string _fromPos;
         private string _toPos;
 
@@ -696,6 +713,7 @@ namespace OctoFixFlow
                     "Temp Ctrl" => ResourceHelper.Instance.WindowActionTemperature,
                     "PCR" => ResourceHelper.Instance.WindowActionPCR,
                     "Transfer" => ResourceHelper.Instance.WindowActionTransfer,
+                    "Mix" => ResourceHelper.Instance.WindowActionMix,
                     _ => _type // 未知类型时显示原始Type值（避免空值）
                 };
 
@@ -734,6 +752,15 @@ namespace OctoFixFlow
                 OnPropertyChanged();
             }
         }
+        public string ConsName
+        {
+            get => _consName;
+            set
+            {
+                _consName = value;
+                OnPropertyChanged();
+            }
+        }
         public string WellPosition
         {
             get => _wellPosition;
@@ -761,17 +788,41 @@ namespace OctoFixFlow
                 OnPropertyChanged();
             }
         }
+        public string SelectedCells
+        {
+            get => _selectedCells;
+            set
+            {
+                _selectedCells = value;
+                OnPropertyChanged();
+            }
+        }
         // 混合相关属性
-        //public int MixCount
-        //{
-        //    get => _mixCount;
-        //    set { _mixCount = value; OnPropertyChanged(); }
-        //}
-        //public float MixVolume
-        //{
-        //    get => _mixVolume;
-        //    set { _mixVolume = value; OnPropertyChanged(); }
-        //}
+        public int MixCount
+        {
+            get => _mixCount;
+            set { _mixCount = value; OnPropertyChanged(); }
+        }
+        public float MixVolume
+        {
+            get => _mixVolume;
+            set { _mixVolume = value; OnPropertyChanged(); }
+        }
+        public bool IsFinalMix
+        {
+            get => _isFinalMix;
+            set { _isFinalMix = value; OnPropertyChanged(); }
+        }
+        public float MixFinalAisSpeed
+        {
+            get => _mixFinalAisSpeed;
+            set { _mixFinalAisSpeed = value; OnPropertyChanged(); }
+        }
+        public float MixFinalDisSpeed
+        {
+            get => _mixFinalDisSpeed;
+            set { _mixFinalDisSpeed = value; OnPropertyChanged(); }
+        }
         public bool IsSystemStep
         {
             get => _isSystemstep;
@@ -836,8 +887,12 @@ namespace OctoFixFlow
             get => _shakeRPM;
             set
             {
-                _shakeRPM = value;
-                OnPropertyChanged();
+                int correctedValue = Math.Clamp(value, MIN_SHAKE_RPM, MAX_SHAKE_RPM);
+                if (_shakeRPM != correctedValue)
+                {
+                    _shakeRPM = correctedValue;
+                    OnPropertyChanged();
+                }
             }
         }
         public int ShakeTemp
@@ -845,8 +900,25 @@ namespace OctoFixFlow
             get => _shakeTemp;
             set
             {
-                _shakeTemp = value;
-                OnPropertyChanged();
+                int correctedValue = Math.Clamp(value, MIN_SHAKE_TEMP, MAX_SHAKE_TEMP);
+                if (_shakeTemp != correctedValue)
+                {
+                    _shakeTemp = correctedValue;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        public int TempCtrlTemp
+        {
+            get => _tempCtrlTemp;
+            set
+            {
+                int correctedValue = Math.Clamp(value, MIN_SHAKE_TEMP, MAX_SHAKE_TEMP);
+                if (_tempCtrlTemp != correctedValue)
+                {
+                    _tempCtrlTemp = correctedValue;
+                    OnPropertyChanged();
+                }
             }
         }
         public bool IsPreHeat
@@ -859,16 +931,28 @@ namespace OctoFixFlow
             get => _isUnlockNext;
             set { _isUnlockNext = value; OnPropertyChanged(); }
         }
-        public bool IsMagnetUpOrDown
+        public bool IsMagnetUp
         {
-            get => _isMagnetUpOrDown;
-            set { _isMagnetUpOrDown = value; OnPropertyChanged(); }
+            get => _isMagnetUp;
+            set { _isMagnetUp = value; OnPropertyChanged(); }
         }
-
+        public bool IsMagnetDown
+        {
+            get => _isMagnetDown;
+            set { _isMagnetDown = value; OnPropertyChanged(); }
+        }
         public int MagnetDistance
         {
             get => _magnetDistance;
-            set { _magnetDistance = value; OnPropertyChanged(); }
+            set
+            {
+                int correctedValue = Math.Clamp(value, MIN_MAGNET_DISTANCE, MAX_MAGNET_DISTANCE);
+                if (_magnetDistance != correctedValue)
+                {
+                    _magnetDistance = correctedValue;
+                    OnPropertyChanged();
+                }
+            }
         }
         public string FromPos
         {
@@ -1096,6 +1180,10 @@ namespace OctoFixFlow
         // 私有构造函数：禁止外部创建实例
         private AppGlobalConfig()
         {
+            _guideProtocolName = "";
+            _guideProtocolDescription = "";
+            _guideProtocolAuthor = "";
+
             _isGripperEnabled = false;
             _isPCREnabled = false;
             _isTrashEnabled = true;
@@ -1103,6 +1191,48 @@ namespace OctoFixFlow
         }
 
         #region 全局属性
+        //项目名称
+        private string _guideProtocolName;
+        public string GuideProtocolName
+        {
+            get => _guideProtocolName;
+            set
+            {
+                if (_guideProtocolName != value)
+                {
+                    _guideProtocolName = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        //项目描述
+        private string _guideProtocolDescription;
+        public string GuideProtocolDescription
+        {
+            get => _guideProtocolDescription;
+            set
+            {
+                if (_guideProtocolDescription != value)
+                {
+                    _guideProtocolDescription = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        //项目作者
+        private string _guideProtocolAuthor;
+        public string GuideProtocolAuthor
+        {
+            get => _guideProtocolAuthor;
+            set
+            {
+                if (_guideProtocolAuthor != value)
+                {
+                    _guideProtocolAuthor = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
         // 抓手启用状态
         private bool _isGripperEnabled;
         public bool IsGripperEnabled

@@ -1,12 +1,20 @@
-﻿using System.ComponentModel;
+﻿using OctoFixFlow.Properties;
+using System.ComponentModel;
+
 namespace OctoFixFlow
 {
     public class ResourceHelper : INotifyPropertyChanged
     {
-        private static readonly ResourceHelper _instance = new ResourceHelper();
-        public static ResourceHelper Instance => _instance;
+        //private static readonly ResourceHelper _instance = new ResourceHelper();
+        //public static ResourceHelper Instance => _instance;
+        private static readonly Lazy<ResourceHelper> _lazyInstance = new Lazy<ResourceHelper>(() => new ResourceHelper());
+        public static ResourceHelper Instance => _lazyInstance.Value;
 
-        private bool _isEnglish = true;
+        private bool _isEnglish;
+        private ResourceHelper()
+        {
+            _isEnglish = Settings.Default.IsEnglish;
+        }
 
         public bool IsEnglish
         {
@@ -18,6 +26,8 @@ namespace OctoFixFlow
                     _isEnglish = value;
                     OnPropertyChanged(nameof(IsEnglish));
                     OnPropertyChanged("");// 通知所有属性更新
+                    Settings.Default.IsEnglish = value;
+                    Settings.Default.Save();
                 }
             }
         }
@@ -44,6 +54,8 @@ namespace OctoFixFlow
         public string WindowActionWait => IsEnglish ? Resource.Resource_en.WindowActionWait : Resource.Resource_zh.WindowActionWait;
         //移载 /Transfer
         public string WindowActionTransfer => IsEnglish ? Resource.Resource_en.WindowActionTransfer : Resource.Resource_zh.WindowActionTransfer;
+        //混合 /Mix
+        public string WindowActionMix => IsEnglish ? Resource.Resource_en.WindowActionMix : Resource.Resource_zh.WindowActionMix;
         //振荡 /Shake
         public string WindowActionShake => IsEnglish ? Resource.Resource_en.WindowActionShake : Resource.Resource_zh.WindowActionShake;
         //磁吸 /Magnetic
@@ -56,6 +68,9 @@ namespace OctoFixFlow
         public string WindowConsumablesWarehouse => IsEnglish ? Resource.Resource_en.WindowConsumablesWarehouse : Resource.Resource_zh.WindowConsumablesWarehouse;
         public string WindowLoginCancel => IsEnglish ? Resource.Resource_en.WindowLoginCancel : Resource.Resource_zh.WindowLoginCancel;
         public string WindowLoginOK => IsEnglish ? Resource.Resource_en.WindowLoginOK : Resource.Resource_zh.WindowLoginOK;
+        //自动加载仪器已配置设备/Auto load preconfigured devices in the instrument
+        public string WindowLoginCheck => IsEnglish ? Resource.Resource_en.WindowLoginCheck : Resource.Resource_zh.WindowLoginCheck;
+
         public string WindowLoginPass => IsEnglish ? Resource.Resource_en.WindowLoginPass : Resource.Resource_zh.WindowLoginPass;
         public string WindowLoginPassTitle => IsEnglish ? Resource.Resource_en.WindowLoginPassTitle : Resource.Resource_zh.WindowLoginPassTitle;
         public string WindowLoginUser => IsEnglish ? Resource.Resource_en.WindowLoginUser : Resource.Resource_zh.WindowLoginUser;
@@ -167,9 +182,22 @@ namespace OctoFixFlow
         public string SettingManualResetY => IsEnglish ? Resource.Resource_en.SettingManualResetY : Resource.Resource_zh.SettingManualResetY;
         public string SettingManualResetZ => IsEnglish ? Resource.Resource_en.SettingManualResetZ : Resource.Resource_zh.SettingManualResetZ;
         public string SettingManualCoordinateFineAdjustment => IsEnglish ? Resource.Resource_en.SettingManualCoordinateFineAdjustment : Resource.Resource_zh.SettingManualCoordinateFineAdjustment;
-        public string SettingManualXDirection => IsEnglish ? Resource.Resource_en.SettingManualXDirection : Resource.Resource_zh.SettingManualXDirection;
-        public string SettingManualYDirection => IsEnglish ? Resource.Resource_en.SettingManualYDirection : Resource.Resource_zh.SettingManualYDirection;
-        public string SettingManualZDirection => IsEnglish ? Resource.Resource_en.SettingManualZDirection : Resource.Resource_zh.SettingManualZDirection;
+        //方向控制
+        public string SettingManualCoordinateDirectionControl => IsEnglish ? Resource.Resource_en.SettingManualCoordinateDirectionControl : Resource.Resource_zh.SettingManualCoordinateDirectionControl;
+        //微小
+        public string SettingManualTinySize => IsEnglish ? Resource.Resource_en.SettingManualTinySize : Resource.Resource_zh.SettingManualTinySize;
+        //小
+        public string SettingManualSmallSize => IsEnglish ? Resource.Resource_en.SettingManualSmallSize : Resource.Resource_zh.SettingManualSmallSize;
+        //大
+        public string SettingManualBigSize => IsEnglish ? Resource.Resource_en.SettingManualBigSize : Resource.Resource_zh.SettingManualBigSize;
+        //X和Y方向
+        public string SettingManualXAndY => IsEnglish ? Resource.Resource_en.SettingManualXAndY : Resource.Resource_zh.SettingManualXAndY;
+        //Ｚ方向　Z－axis
+        public string SettingManualZAxis => IsEnglish ? Resource.Resource_en.SettingManualZAxis : Resource.Resource_zh.SettingManualZAxis;
+        //方向键
+        public string SettingManualArrowKeys => IsEnglish ? Resource.Resource_en.SettingManualArrowKeys : Resource.Resource_zh.SettingManualArrowKeys;
+        //Shift＋方向键
+        public string SettingManualSArrowKeys => IsEnglish ? Resource.Resource_en.SettingManualSArrowKeys : Resource.Resource_zh.SettingManualSArrowKeys;
         public string SettingManualPipetteControl => IsEnglish ? Resource.Resource_en.SettingManualPipetteControl : Resource.Resource_zh.SettingManualPipetteControl;
         public string SettingManualAspirationParams => IsEnglish ? Resource.Resource_en.SettingManualAspirationParams : Resource.Resource_zh.SettingManualAspirationParams;
         public string SettingManualVolume => IsEnglish ? Resource.Resource_en.SettingManualVolume : Resource.Resource_zh.SettingManualVolume;
@@ -183,6 +211,12 @@ namespace OctoFixFlow
         public string SettingManualGetCalibration => IsEnglish ? Resource.Resource_en.SettingManualGetCalibration : Resource.Resource_zh.SettingManualGetCalibration;
         public string SettingManualSetCalibration => IsEnglish ? Resource.Resource_en.SettingManualSetCalibration : Resource.Resource_zh.SettingManualSetCalibration;
         public string SettingManualBacklash => IsEnglish ? Resource.Resource_en.SettingManualBacklash : Resource.Resource_zh.SettingManualBacklash;
+        //抓手控制/Gripper control
+        public string SettingManualGripperControl => IsEnglish ? Resource.Resource_en.SettingManualGripperControl : Resource.Resource_zh.SettingManualGripperControl;
+        // 打开抓手 (Open the gripper）
+        public string SettingManualGripperOpen => IsEnglish ? Resource.Resource_en.SettingManualGripperOpen : Resource.Resource_zh.SettingManualGripperOpen;
+        // 关闭抓手 (Close the gripper）
+        public string SettingManualGripperClose => IsEnglish ? Resource.Resource_en.SettingManualGripperClose : Resource.Resource_zh.SettingManualGripperClose;
         public string SettingManualClose => IsEnglish ? Resource.Resource_en.SettingManualClose : Resource.Resource_zh.SettingManualClose;
         public string QuickTitile => IsEnglish ? Resource.Resource_en.QuickTitile : Resource.Resource_zh.QuickTitile;
         public string QuickSampleQty => IsEnglish ? Resource.Resource_en.QuickSampleQty : Resource.Resource_zh.QuickSampleQty;
@@ -289,6 +323,8 @@ namespace OctoFixFlow
         #region 步骤详情 - 标签类
         //列前缀（多语言：中文“列：” / 英文“Column: ”）
         public string StepDetailColumnPrefix => IsEnglish ? Resource.Resource_en.StepDetailColumnPrefix : Resource.Resource_zh.StepDetailColumnPrefix;
+        //行前缀（多语言：中文“行：” / 英文“Row: ”）
+        public string StepDetailRowPrefix => IsEnglish ? Resource.Resource_en.StepDetailRowPrefix : Resource.Resource_zh.StepDetailRowPrefix;
         // "选中移液器" / "Selected Pipette"
         public string StepDetailSelectedPipette => IsEnglish ? Resource.Resource_en.StepDetailSelectedPipette : Resource.Resource_zh.StepDetailSelectedPipette;
 
@@ -302,6 +338,8 @@ namespace OctoFixFlow
         public string StepDetailMixCount => IsEnglish ? Resource.Resource_en.StepDetailMixCount : Resource.Resource_zh.StepDetailMixCount;
         // 混合体积（“Mixing Volumes(ul):”/“混合体积(ul)：”）
         public string StepDetailMixVolume => IsEnglish ? Resource.Resource_en.StepDetailMixVolume : Resource.Resource_zh.StepDetailMixVolume;
+        // 最后一轮混吸参数（“Last Mix Parameter”）
+        public string StepDetailMixFinalCheck => IsEnglish ? Resource.Resource_en.StepDetailMixFinalCheck : Resource.Resource_zh.StepDetailMixFinalCheck;
         // 时间（“Time (seconds):”/“时间(秒)：”）
         public string StepDetailWaitTime => IsEnglish ? Resource.Resource_en.StepDetailWaitTime : Resource.Resource_zh.StepDetailWaitTime;
         // 等待描述（“Waiting description:”/“等待描述：”）

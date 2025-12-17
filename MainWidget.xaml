@@ -261,6 +261,12 @@
                                     Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionTransfer}"
                                     Style="{StaticResource ActionButtonStyle}" />
                                 <Button
+                                    x:Name="ActionMixButton"
+                                    Width="100"
+                                    Click="MixButton_Click"
+                                    Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionMix}"
+                                    Style="{StaticResource ActionButtonStyle}" />
+                                <Button
                                     x:Name="ActionShakeButton"
                                     Width="100"
                                     Click="ShakeButton_Click"
