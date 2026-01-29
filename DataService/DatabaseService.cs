@@ -1,22 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using MySqlConnector;
 using System.Data;
 using System.Data.SQLite;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using Serilog;
-
 namespace OctoFixFlow
 {
     internal class DatabaseService
     {
         private readonly SQLiteConnection connection;
         private const string DatabaseFilePath = "DataService/octoFixFlow_data.db";
+
+        private readonly string _mysqlConnectionString = "server=192.168.100.10;port=8003;database=qybot;uid=root;pwd=qy123456;charset=utf8;Allow User Variables=True;";
+
         public DatabaseService()
         {
             string directoryPath = Path.GetDirectoryName(DatabaseFilePath);
@@ -170,6 +164,79 @@ namespace OctoFixFlow
         {
             connection.Close();
         }
+        #region mysql
+        /// <summary>
+        /// MySQL通用查询方法（获取数据，对应SELECT操作）
+        /// </summary>
+        /// <param name="sql">查询SQL</param>
+        /// <param name="parameters">SQL参数（防止注入）</param>
+        /// <returns>查询结果DataTable</returns>
+        public async Task<DataTable> QueryMySqlDataAsync(string sql, MySqlParameter[] parameters = null)
+        {
+            DataTable dt = new DataTable();
+            // 使用using自动释放MySQL连接
+            using (MySqlConnection conn = new MySqlConnection(_mysqlConnectionString))
+            {
+                try
+                {
+                    await conn.OpenAsync();
+                    using (MySqlCommand cmd = new MySqlCommand(sql, conn))
+                    {
+                        if (parameters != null && parameters.Length > 0)
+                        {
+                            cmd.Parameters.AddRange(parameters);
+                        }
+                        using (MySqlDataAdapter adapter = new MySqlDataAdapter(cmd))
+                        {
+                            adapter.Fill(dt);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"MySQL查询失败：{ex.Message}");
+                    throw;
+                }
+            }
+            return dt;
+        }
+        /// <summary>
+        /// MySQL通用执行方法（新增/更新/删除，对应INSERT/UPDATE/DELETE操作）
+        /// </summary>
+        /// <param name="sql">执行SQL</param>
+        /// <param name="parameters">SQL参数</param>
+        /// <returns>受影响的行数</returns>
+        public async Task<int> ExecuteMySqlNonQueryAsync(string sql, MySqlParameter[] parameters = null)
+        {
+            int affectedRows = 0;
+            using (MySqlConnection conn = new MySqlConnection(_mysqlConnectionString))
+            {
+                try
+                {
+                    await conn.OpenAsync();
+                    // 可选：开启事务，保证原子操作
+                    using (MySqlTransaction tran = await conn.BeginTransactionAsync())
+                    {
+                        using (MySqlCommand cmd = new MySqlCommand(sql, conn, tran))
+                        {
+                            if (parameters != null && parameters.Length > 0)
+                            {
+                                cmd.Parameters.AddRange(parameters);
+                            }
+                            affectedRows = await cmd.ExecuteNonQueryAsync();
+                        }
+                        await tran.CommitAsync();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"MySQL执行失败：{ex.Message}");
+                    throw;
+                }
+            }
+            return affectedRows;
+        }
+        #endregion
         public async Task<bool> check_users_data(string displayName, string password)
         {
             return await Task.Run(() =>
@@ -181,7 +248,7 @@ namespace OctoFixFlow
                 using (var command = new SQLiteCommand(query, connection))
                 {
                     command.Parameters.AddWithValue("@displayName", displayName);
-                    command.Parameters.AddWithValue("@password", password);  
+                    command.Parameters.AddWithValue("@password", password);
 
                     var result = (long)command.ExecuteScalar();
                     return result > 0;

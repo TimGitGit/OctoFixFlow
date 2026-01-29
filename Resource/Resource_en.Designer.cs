@@ -79,7 +79,7 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
-        ///   查找类似 Operation failed: 的本地化字符串。
+        ///   查找类似 Operation failed 的本地化字符串。
         /// </summary>
         public static string DeviceOperationFailure {
             get {
@@ -133,7 +133,7 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
-        ///   查找类似 Steps 的本地化字符串。
+        ///   查找类似 Step 的本地化字符串。
         /// </summary>
         public static string FlowStepSteps {
             get {
@@ -165,15 +165,6 @@ namespace OctoFixFlow.Resource {
         public static string GrpcDeviceLoadSucc {
             get {
                 return ResourceManager.GetString("GrpcDeviceLoadSucc", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Device door not closed 的本地化字符串。
-        /// </summary>
-        public static string GrpcFailDoor {
-            get {
-                return ResourceManager.GetString("GrpcFailDoor", resourceCulture);
             }
         }
         
@@ -475,6 +466,15 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 Unsupported file format! 的本地化字符串。
+        /// </summary>
+        public static string OpenFileDialog_ErrFormal {
+            get {
+                return ResourceManager.GetString("OpenFileDialog_ErrFormal", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Failed to read the file 的本地化字符串。
         /// </summary>
         public static string OpenFileDialog_Error {
@@ -484,7 +484,7 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
-        ///   查找类似 JSON Script Files (*.json)|*.json|All Files (*.*)|*.* 的本地化字符串。
+        ///   查找类似 Python Files (*.py)|*.py|Table Files (*.xlsx;*.xls;*.csv)|*.xlsx;*.xls;*.csv|All Files (*.*)|*.* 的本地化字符串。
         /// </summary>
         public static string OpenFileDialog_Filter {
             get {
@@ -669,6 +669,51 @@ namespace OctoFixFlow.Resource {
         public static string QuickValidAspirationVolume {
             get {
                 return ResourceManager.GetString("QuickValidAspirationVolume", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Device Status 的本地化字符串。
+        /// </summary>
+        public static string RunningDeviceStatus {
+            get {
+                return ResourceManager.GetString("RunningDeviceStatus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Running Progress 的本地化字符串。
+        /// </summary>
+        public static string RunningRunningProgress {
+            get {
+                return ResourceManager.GetString("RunningRunningProgress", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Running Time 的本地化字符串。
+        /// </summary>
+        public static string RunningRunningTime {
+            get {
+                return ResourceManager.GetString("RunningRunningTime", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Start Time 的本地化字符串。
+        /// </summary>
+        public static string RunningStartTime {
+            get {
+                return ResourceManager.GetString("RunningStartTime", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Device Running Information 的本地化字符串。
+        /// </summary>
+        public static string RunningTitle {
+            get {
+                return ResourceManager.GetString("RunningTitle", resourceCulture);
             }
         }
         
@@ -1717,6 +1762,33 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 Retrieve plate position information 的本地化字符串。
+        /// </summary>
+        public static string SettingManualGetPlate {
+            get {
+                return ResourceManager.GetString("SettingManualGetPlate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Failed to get plate position info 的本地化字符串。
+        /// </summary>
+        public static string SettingManualGetPlateFail {
+            get {
+                return ResourceManager.GetString("SettingManualGetPlateFail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Successfully retrieved plate position data 的本地化字符串。
+        /// </summary>
+        public static string SettingManualGetPlateSucc {
+            get {
+                return ResourceManager.GetString("SettingManualGetPlateSucc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Gripper 的本地化字符串。
         /// </summary>
         public static string SettingManualGripper {
@@ -1771,11 +1843,65 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 Magnetic control 的本地化字符串。
+        /// </summary>
+        public static string SettingManualMagneticControl {
+            get {
+                return ResourceManager.GetString("SettingManualMagneticControl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Down the magnetic 的本地化字符串。
+        /// </summary>
+        public static string SettingManualMagneticDown {
+            get {
+                return ResourceManager.GetString("SettingManualMagneticDown", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Up the magnetic 的本地化字符串。
+        /// </summary>
+        public static string SettingManualMagneticUp {
+            get {
+                return ResourceManager.GetString("SettingManualMagneticUp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Functional Modules 的本地化字符串。
         /// </summary>
         public static string SettingManualModules {
             get {
                 return ResourceManager.GetString("SettingManualModules", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Data format error 的本地化字符串。
+        /// </summary>
+        public static string SettingManualMoveCoordinate {
+            get {
+                return ResourceManager.GetString("SettingManualMoveCoordinate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Arm movement failed 的本地化字符串。
+        /// </summary>
+        public static string SettingManualMoveFail {
+            get {
+                return ResourceManager.GetString("SettingManualMoveFail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Arm moved successfully 的本地化字符串。
+        /// </summary>
+        public static string SettingManualMoveSucc {
+            get {
+                return ResourceManager.GetString("SettingManualMoveSucc", resourceCulture);
             }
         }
         
@@ -1798,11 +1924,83 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 96-Channel 的本地化字符串。
+        /// </summary>
+        public static string SettingManualNineSixChannel {
+            get {
+                return ResourceManager.GetString("SettingManualNineSixChannel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Thermocycler Module 的本地化字符串。
         /// </summary>
         public static string SettingManualPCR {
             get {
                 return ResourceManager.GetString("SettingManualPCR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Close Lid 的本地化字符串。
+        /// </summary>
+        public static string SettingManualPCRClose {
+            get {
+                return ResourceManager.GetString("SettingManualPCRClose", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 PCR control 的本地化字符串。
+        /// </summary>
+        public static string SettingManualPCRControl {
+            get {
+                return ResourceManager.GetString("SettingManualPCRControl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Open Lid 的本地化字符串。
+        /// </summary>
+        public static string SettingManualPCROpen {
+            get {
+                return ResourceManager.GetString("SettingManualPCROpen", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Run Script 的本地化字符串。
+        /// </summary>
+        public static string SettingManualPCRScriptRun {
+            get {
+                return ResourceManager.GetString("SettingManualPCRScriptRun", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Script Selection 的本地化字符串。
+        /// </summary>
+        public static string SettingManualPCRSelection {
+            get {
+                return ResourceManager.GetString("SettingManualPCRSelection", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Start Run 的本地化字符串。
+        /// </summary>
+        public static string SettingManualPCRStart {
+            get {
+                return ResourceManager.GetString("SettingManualPCRStart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Stop Run 的本地化字符串。
+        /// </summary>
+        public static string SettingManualPCRStop {
+            get {
+                return ResourceManager.GetString("SettingManualPCRStop", resourceCulture);
             }
         }
         
@@ -1839,6 +2037,15 @@ namespace OctoFixFlow.Resource {
         public static string SettingManualReset {
             get {
                 return ResourceManager.GetString("SettingManualReset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Device reset successful 的本地化字符串。
+        /// </summary>
+        public static string SettingManualResetSucc {
+            get {
+                return ResourceManager.GetString("SettingManualResetSucc", resourceCulture);
             }
         }
         
@@ -1906,6 +2113,105 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 Failed to set plate position info 的本地化字符串。
+        /// </summary>
+        public static string SettingManualSetPlateFail {
+            get {
+                return ResourceManager.GetString("SettingManualSetPlateFail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Please select the plate position first 的本地化字符串。
+        /// </summary>
+        public static string SettingManualSetPlateNull {
+            get {
+                return ResourceManager.GetString("SettingManualSetPlateNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Successfully saved plate position data 的本地化字符串。
+        /// </summary>
+        public static string SettingManualSetPlateSucc {
+            get {
+                return ResourceManager.GetString("SettingManualSetPlateSucc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Shaker control 的本地化字符串。
+        /// </summary>
+        public static string SettingManualShakerControl {
+            get {
+                return ResourceManager.GetString("SettingManualShakerControl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Shaking Control 的本地化字符串。
+        /// </summary>
+        public static string SettingManualShakerShakingControl {
+            get {
+                return ResourceManager.GetString("SettingManualShakerShakingControl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Current Speed (RPM): 的本地化字符串。
+        /// </summary>
+        public static string SettingManualShakerShakingCurrent {
+            get {
+                return ResourceManager.GetString("SettingManualShakerShakingCurrent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Set Speed (RPM): 的本地化字符串。
+        /// </summary>
+        public static string SettingManualShakerShakingSet {
+            get {
+                return ResourceManager.GetString("SettingManualShakerShakingSet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Set Time (S): 的本地化字符串。
+        /// </summary>
+        public static string SettingManualShakerShakingTimeSet {
+            get {
+                return ResourceManager.GetString("SettingManualShakerShakingTimeSet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Temp control 的本地化字符串。
+        /// </summary>
+        public static string SettingManualShakerTempControl {
+            get {
+                return ResourceManager.GetString("SettingManualShakerTempControl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Current Temperature (℃): 的本地化字符串。
+        /// </summary>
+        public static string SettingManualShakerTempCurrent {
+            get {
+                return ResourceManager.GetString("SettingManualShakerTempCurrent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Set Temperature (℃): 的本地化字符串。
+        /// </summary>
+        public static string SettingManualShakerTempSet {
+            get {
+                return ResourceManager.GetString("SettingManualShakerTempSet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Single Channel 的本地化字符串。
         /// </summary>
         public static string SettingManualSingleChannel {
@@ -1929,6 +2235,69 @@ namespace OctoFixFlow.Resource {
         public static string SettingManualSpeed {
             get {
                 return ResourceManager.GetString("SettingManualSpeed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Reset the X-axis of the equipment 的本地化字符串。
+        /// </summary>
+        public static string SettingManualStartResetX {
+            get {
+                return ResourceManager.GetString("SettingManualStartResetX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Reset the Y-axis of the equipment 的本地化字符串。
+        /// </summary>
+        public static string SettingManualStartResetY {
+            get {
+                return ResourceManager.GetString("SettingManualStartResetY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Reset the Z-axis of the equipment 的本地化字符串。
+        /// </summary>
+        public static string SettingManualStartResetZ {
+            get {
+                return ResourceManager.GetString("SettingManualStartResetZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Start Shaking 的本地化字符串。
+        /// </summary>
+        public static string SettingManualStartShaking {
+            get {
+                return ResourceManager.GetString("SettingManualStartShaking", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Start Temp 的本地化字符串。
+        /// </summary>
+        public static string SettingManualStartTemperature {
+            get {
+                return ResourceManager.GetString("SettingManualStartTemperature", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Stop Shaking 的本地化字符串。
+        /// </summary>
+        public static string SettingManualStopShaking {
+            get {
+                return ResourceManager.GetString("SettingManualStopShaking", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Stop Temp 的本地化字符串。
+        /// </summary>
+        public static string SettingManualStopTemperature {
+            get {
+                return ResourceManager.GetString("SettingManualStopTemperature", resourceCulture);
             }
         }
         
@@ -1992,6 +2361,24 @@ namespace OctoFixFlow.Resource {
         public static string SettingManualYCoordinate {
             get {
                 return ResourceManager.GetString("SettingManualYCoordinate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Z2－axis 的本地化字符串。
+        /// </summary>
+        public static string SettingManualZ2Axis {
+            get {
+                return ResourceManager.GetString("SettingManualZ2Axis", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Z3－axis 的本地化字符串。
+        /// </summary>
+        public static string SettingManualZ3Axis {
+            get {
+                return ResourceManager.GetString("SettingManualZ3Axis", resourceCulture);
             }
         }
         
@@ -2086,7 +2473,7 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
-        ///   查找类似 Aspiration Parameters: 的本地化字符串。
+        ///   查找类似 Aspiration Parameters 的本地化字符串。
         /// </summary>
         public static string StepDetailAspirationParams {
             get {
@@ -2167,7 +2554,7 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
-        ///   查找类似 Dispensing Parameters: 的本地化字符串。
+        ///   查找类似 Dispensing Parameters 的本地化字符串。
         /// </summary>
         public static string StepDetailDispensingParams {
             get {
@@ -2284,6 +2671,15 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 PCR procedure 的本地化字符串。
+        /// </summary>
+        public static string StepDetailPCRprocedure {
+            get {
+                return ResourceManager.GetString("StepDetailPCRprocedure", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Row: 的本地化字符串。
         /// </summary>
         public static string StepDetailRowPrefix {
@@ -2338,6 +2734,15 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 TempCtrl Action 的本地化字符串。
+        /// </summary>
+        public static string StepDetailTempCtrlAction {
+            get {
+                return ResourceManager.GetString("StepDetailTempCtrlAction", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Only supports tip boxes or waste bins 的本地化字符串。
         /// </summary>
         public static string StepDetailTipOnOffConsTip {
@@ -2352,6 +2757,15 @@ namespace OctoFixFlow.Resource {
         public static string StepDetailTransferFrom {
             get {
                 return ResourceManager.GetString("StepDetailTransferFrom", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Press-Down Distance: 的本地化字符串。
+        /// </summary>
+        public static string StepDetailTransferPosition {
+            get {
+                return ResourceManager.GetString("StepDetailTransferPosition", resourceCulture);
             }
         }
         
@@ -2379,15 +2793,6 @@ namespace OctoFixFlow.Resource {
         public static string StepDetailWaitDesc {
             get {
                 return ResourceManager.GetString("StepDetailWaitDesc", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Note: Waiting time will be auto-converted to milliseconds. 的本地化字符串。
-        /// </summary>
-        public static string StepDetailWaitNote {
-            get {
-                return ResourceManager.GetString("StepDetailWaitNote", resourceCulture);
             }
         }
         
@@ -2428,11 +2833,29 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 Camera 的本地化字符串。
+        /// </summary>
+        public static string WindowActionCamera {
+            get {
+                return ResourceManager.GetString("WindowActionCamera", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Dispense 的本地化字符串。
         /// </summary>
         public static string WindowActionDispense {
             get {
                 return ResourceManager.GetString("WindowActionDispense", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 endLoop 的本地化字符串。
+        /// </summary>
+        public static string WindowActionEndLoop {
+            get {
+                return ResourceManager.GetString("WindowActionEndLoop", resourceCulture);
             }
         }
         
@@ -2505,6 +2928,15 @@ namespace OctoFixFlow.Resource {
         public static string WindowActionLoad {
             get {
                 return ResourceManager.GetString("WindowActionLoad", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Loop 的本地化字符串。
+        /// </summary>
+        public static string WindowActionLoop {
+            get {
+                return ResourceManager.GetString("WindowActionLoop", resourceCulture);
             }
         }
         
@@ -2635,11 +3067,29 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 Board position 的本地化字符串。
+        /// </summary>
+        public static string WindowBoardToopTip {
+            get {
+                return ResourceManager.GetString("WindowBoardToopTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Consumables Warehouse 的本地化字符串。
         /// </summary>
         public static string WindowConsumablesWarehouse {
             get {
                 return ResourceManager.GetString("WindowConsumablesWarehouse", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 gRPC communication failed 的本地化字符串。
+        /// </summary>
+        public static string WindowGrpcComFail {
+            get {
+                return ResourceManager.GetString("WindowGrpcComFail", resourceCulture);
             }
         }
         
@@ -2689,6 +3139,15 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 Remember Username 的本地化字符串。
+        /// </summary>
+        public static string WindowLoginRememberUser {
+            get {
+                return ResourceManager.GetString("WindowLoginRememberUser", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 User 的本地化字符串。
         /// </summary>
         public static string WindowLoginUser {
@@ -2734,7 +3193,7 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
-        ///   查找类似 Build 的本地化字符串。
+        ///   查找类似 Toggle 的本地化字符串。
         /// </summary>
         public static string Windowrapidgenerating {
             get {
@@ -2757,15 +3216,6 @@ namespace OctoFixFlow.Resource {
         public static string WindowStepdetails {
             get {
                 return ResourceManager.GetString("WindowStepdetails", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Please select the process steps to view details. 的本地化字符串。
-        /// </summary>
-        public static string WindowStepdetails2 {
-            get {
-                return ResourceManager.GetString("WindowStepdetails2", resourceCulture);
             }
         }
         
@@ -2797,7 +3247,7 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
-        ///   查找类似 Version 1.0.0 的本地化字符串。
+        ///   查找类似 Version 2.0.0 的本地化字符串。
         /// </summary>
         public static string WindowVersion {
             get {

@@ -36,6 +36,7 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <local:LevelToMarginConverter x:Key="LevelToMarginConverter" IndentPerLevel="20" />
 
 
     </Window.Resources>
@@ -62,12 +63,16 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
+                <!--  Source="/OctoFixFlow;component/images/GenLogo.png"  -->
 
                 <!--  Source="/OctoFixFlow;component/images/megarobo.png"  -->
+                <!--  Source="/OctoFixFlow;component/images/MegaOuLogo.png"  -->
+
                 <Image
                     Grid.Column="0"
                     Width="180"
                     Margin="5"
+                    Source="/OctoFixFlow;component/images/GenLogo.png"
                     Stretch="Uniform" />
                 <TextBlock
                     Grid.Column="1"
@@ -166,7 +171,7 @@
                         </ToggleButton.Template>
                     </ToggleButton>
                     <Button
-                        Width="60"
+                        Height="30"
                         Margin="20,0,0,0"
                         Background="#7f8c8d"
                         Click="LogoutButton_Click"
@@ -174,6 +179,7 @@
                         Cursor="Hand" />
                     <Button
                         Width="30"
+                        Height="30"
                         Margin="20,0,0,0"
                         Background="{StaticResource DangerColor}"
                         Click="CloseButton_Click"
@@ -188,20 +194,23 @@
             HorizontalAlignment="Stretch"
             Background="#E0E0E0" />
         <!--  主内容区  -->
-        <Grid Grid.Row="2">
+        <Grid x:Name="MainContentGrid" Grid.Row="2">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="300" />
+                <ColumnDefinition Width="30" />
+                <ColumnDefinition Width="320" />
+                <ColumnDefinition Width="30" />
                 <!--  左侧功能区  -->
                 <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="30" />
                 <!--  板位显示区  -->
-                <ColumnDefinition Width="280" />
-                <!--  右侧信息区  -->
-                <ColumnDefinition Width="350" />
+                <ColumnDefinition Width="300" />
+                <ColumnDefinition Width="30" />
+
                 <!--  新增：流程与详情区  -->
             </Grid.ColumnDefinitions>
 
             <!--  左侧功能区  -->
-            <Grid Grid.Column="0">
+            <Grid Grid.Column="1">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <!--  动作功能区  -->
@@ -296,6 +305,12 @@
                                     Click="WaitButton_Click"
                                     Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionWait}"
                                     Style="{StaticResource ActionButtonStyle}" />
+                                <Button
+                                    x:Name="LoopButton"
+                                    Width="100"
+                                    Click="LoopButton_Click"
+                                    Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionLoop}"
+                                    Style="{StaticResource ActionButtonStyle}" />
                             </UniformGrid>
                         </StackPanel>
                     </ScrollViewer>
@@ -314,9 +329,8 @@
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <WrapPanel
-                                        MaxWidth="210"
                                         Margin="5"
-                                        ItemWidth="100"
+                                        ItemWidth="139"
                                         Orientation="Horizontal" />
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
@@ -342,7 +356,7 @@
                                         <StackPanel HorizontalAlignment="Center" Orientation="Vertical">
                                             <!--  显示耗材平面图（使用已有的ConsumableCanvas）  -->
                                             <local:ConsumableCanvas
-                                                Width="70"
+                                                Width="95"
                                                 Height="60"
                                                 Margin="0"
                                                 ConsData="{Binding Settings}" />
@@ -367,7 +381,7 @@
             </Grid>
 
             <!--  板位显示区 (4行3列)  -->
-            <Grid Grid.Column="1" Margin="10">
+            <Grid Grid.Column="3">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
@@ -420,17 +434,6 @@
                             Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionStart}"
                             Style="{StaticResource ActionButtonStyle}" />
                         <Button
-                            x:Name="mainPauseName"
-                            Width="80"
-                            Click="PauseButton_Click"
-                            Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionPause}"
-                            Style="{StaticResource ActionButtonStyle}" />
-                        <Button
-                            Width="80"
-                            Click="StopButton_Click"
-                            Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionStop}"
-                            Style="{StaticResource ActionButtonStyle}" />
-                        <Button
                             x:Name="LightControlButton"
                             Width="80"
                             Click="LightControlButton_Click"
@@ -443,6 +446,13 @@
                             Width="80"
                             Click="UVLightControlButton_Click"
                             Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionUV}"
+                            Cursor="Hand"
+                            Style="{StaticResource ActionButtonStyle}" />
+                        <Button
+                            x:Name="CameraControlButton"
+                            Width="80"
+                            Click="CameraControlButton_Click"
+                            Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionCamera}"
                             Cursor="Hand"
                             Style="{StaticResource ActionButtonStyle}" />
                     </StackPanel>
@@ -759,7 +769,7 @@
             </Grid>
             <!--  新增：流程列表与步骤详情区域  -->
             <!--  3. 流程列表区（独立整列）  -->
-            <Grid Grid.Column="2" Margin="10">
+            <Grid Grid.Column="5">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <!--  标题  -->
@@ -835,12 +845,12 @@
                                             </Style.Triggers>
                                         </Style>
                                     </Border.Style>
-                                    <StackPanel Orientation="Horizontal">
+                                    <StackPanel Margin="{Binding Level, Converter={StaticResource LevelToMarginConverter}}" Orientation="Horizontal">
                                         <TextBlock
                                             Width="30"
                                             FontWeight="Bold"
                                             Foreground="{StaticResource PrimaryColor}"
-                                            Text="{Binding Index}" />
+                                            Text="{Binding DisplayIndex}" />
                                         <TextBlock Text="{Binding Name}" />
                                     </StackPanel>
                                 </Border>
@@ -848,170 +858,6 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </ScrollViewer>
-            </Grid>
-            <!--  4. 右侧分页区（步骤详情/运行信息切换）  -->
-            <Grid Grid.Column="3" Margin="10">
-                <!--  切换逻辑：通过Visibility控制显示  -->
-                <Grid x:Name="StepDetailView" Visibility="Visible">
-                    <!--  步骤详情视图（默认显示）  -->
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-                    <TextBlock
-                        Grid.Row="0"
-                        Margin="0,10,0,10"
-                        FontSize="16"
-                        FontWeight="Bold"
-                        Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowStepdetails}" />
-                    <Border
-                        Grid.Row="1"
-                        Padding="10"
-                        Background="White"
-                        BorderBrush="#BDC3C7"
-                        BorderThickness="1"
-                        CornerRadius="5">
-                        <StackPanel x:Name="StepDetailPanel">
-                            <TextBlock
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center"
-                                Foreground="#999"
-                                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowStepdetails2}" />
-                        </StackPanel>
-                    </Border>
-                </Grid>
-
-                <Grid x:Name="RunInfoView" Visibility="Collapsed">
-                    <!--  运行信息视图（点击开始后显示）  -->
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-                    <TextBlock
-                        Grid.Row="0"
-                        Margin="0,10,0,10"
-                        FontSize="16"
-                        FontWeight="Bold"
-                        Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowRunningMessage}" />
-                    <!--  2. 固定内容区域（运行状态+进度条，不滚动）  -->
-                    <StackPanel Grid.Row="1" Margin="0,0,0,10">
-                        <!--  运行状态信息  -->
-                        <Grid Margin="0,0,0,15">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock
-                                Grid.Row="0"
-                                Margin="0,5,0,0"
-                                FontWeight="Bold"
-                                Text="运行时间:" />
-                            <TextBlock
-                                x:Name="RunTimeText"
-                                Grid.Row="0"
-                                Grid.Column="1"
-                                Margin="10,5,0,0"
-                                Text="00:00:00" />
-
-                            <TextBlock
-                                Grid.Row="1"
-                                Margin="0,5,0,0"
-                                FontWeight="Bold"
-                                Text="当前步骤:" />
-                            <TextBlock
-                                x:Name="CurrentStepText"
-                                Grid.Row="1"
-                                Grid.Column="1"
-                                Margin="10,5,0,0"
-                                Text="0/0" />
-
-                            <TextBlock
-                                Grid.Row="2"
-                                Margin="0,5,0,0"
-                                FontWeight="Bold"
-                                Text="状态:" />
-                            <StackPanel
-                                Grid.Row="2"
-                                Grid.Column="1"
-                                Margin="10,5,0,0"
-                                Orientation="Horizontal">
-                                <Ellipse
-                                    x:Name="StatusIndicator"
-                                    Width="10"
-                                    Height="10"
-                                    Fill="Green" />
-                                <TextBlock
-                                    x:Name="StatusText"
-                                    Foreground="Green"
-                                    Text="运行中" />
-                            </StackPanel>
-                        </Grid>
-
-                        <!--  进度条区域  -->
-                        <StackPanel Margin="0,5,0,15">
-                            <Grid Margin="0,5,0,5">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="60" />
-                                </Grid.ColumnDefinitions>
-                                <TextBlock
-                                    FontSize="12"
-                                    Foreground="#7F8C8D"
-                                    Text="运行进度" />
-                                <TextBlock
-                                    x:Name="ProgressPercentText"
-                                    Grid.Column="1"
-                                    FontSize="12"
-                                    Foreground="#7F8C8D"
-                                    Text="30%"
-                                    TextAlignment="Right" />
-                            </Grid>
-                            <ProgressBar
-                                x:Name="RunProgressBar"
-                                Height="10"
-                                Margin="0,0,0,5"
-                                Background="#ECF0F1"
-                                Foreground="#3498DB"
-                                Maximum="100"
-                                Value="30" />
-                        </StackPanel>
-                    </StackPanel>
-                    <ScrollViewer
-                        Grid.Row="2"
-                        Background="White"
-                        BorderBrush="#BDC3C7"
-                        BorderThickness="1">
-                        <StackPanel Margin="10">
-                            <!--  运行日志  -->
-                            <TextBlock
-                                Margin="0,10,0,5"
-                                FontWeight="Bold"
-                                Text="运行日志:" />
-                            <ListBox
-                                x:Name="RunLogListBox"
-                                Height="auto"
-                                Background="White"
-                                BorderThickness="0"
-                                ItemsSource="{Binding RunLogs}"
-                                ScrollViewer.VerticalScrollBarVisibility="Auto">
-                                <ListBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <TextBlock
-                                            Margin="0,2"
-                                            Text="{Binding}"
-                                            TextWrapping="Wrap" />
-                                    </DataTemplate>
-                                </ListBox.ItemTemplate>
-                            </ListBox>
-                        </StackPanel>
-                    </ScrollViewer>
-                </Grid>
             </Grid>
         </Grid>
 

@@ -7,6 +7,9 @@
     </ApplicationDefinition>
   </ItemGroup>
   <ItemGroup>
+    <Compile Update="cameraShow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="GuideWindow.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -19,11 +22,25 @@
     <Compile Update="QuickFlowWindow.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="RunningInfoShow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="SettingPopupControl.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Update="Resource\Resource_en.resx">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resource\Resource_zh.resx">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="cameraShow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="GuideWindow.xaml">
       <SubType>Designer</SubType>
     </Page>
@@ -34,6 +51,9 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Update="QuickFlowWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="RunningInfoShow.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="SettingPopupControl.xaml">

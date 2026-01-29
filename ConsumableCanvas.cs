@@ -9,12 +9,12 @@ namespace OctoFixFlow
     public enum CanvasSelectionMode
     {
         SingleCell,    // 单通道：选单个单元格
-        EntireColumn   // 八通道：选整列
+        EntireColumn,   // 八通道：选整列
+        EntirePlate    // 96通道：选整板（所有行+所有列）
     }
     public class ConsumableCanvas : Canvas
     {
-        //选中的列集合（排序去重）
-        //private SortedSet<int> _selectedColumns = new SortedSet<int>();
+        //选中的孔集合（排序去重）
         private SortedSet<(int Row, int Col)> _selectedCells = new SortedSet<(int, int)>();
         // 画布选择模式（单通道选单元格/八通道选整列）
 
@@ -71,7 +71,8 @@ namespace OctoFixFlow
                 return;
 
             var borderPen = new Pen(Brushes.Black, 2);
-            var selectedCellPen = new Pen(Brushes.Red, 1.5);
+            var primaryBrush = (SolidColorBrush)FindResource("PrimaryColor");
+            var selectedCellPen = new Pen(primaryBrush, 1.5);
             var holePen = new Pen(Brushes.DarkGray, 1);
 
             double scaleX = ActualWidth / (ConsData.labL + 20);
@@ -191,7 +192,8 @@ namespace OctoFixFlow
             double m_gap = ConsData.distanceColumnX;     // 对应Qt的m_gap
             double colSpacing = ConsData.distanceColumn * scale; // 列间距（缩放后）
             double rowSpacing = ConsData.distanceRow * scale;   // 行间距（缩放后）
-            Brush selectedFillBrush = Brushes.Orange;       // 选中列的孔填充色
+            var primaryBrush = (SolidColorBrush)FindResource("SuspendColor");
+            Brush selectedFillBrush = primaryBrush;       // 选中列的孔填充色
             Brush normalFillBrush = Brushes.Transparent;    // 未选中列的孔填充色（透明不遮挡背景）
             // 1. TIP类型耗材（对应Qt的m_Type == 4）
             if (ConsData.type == 4)
@@ -308,7 +310,18 @@ namespace OctoFixFlow
             // 单选逻辑：先清空所有选中列，再添加当前列
             _selectedCells.Clear();
             //_selectedCells.Add((row, col));
-            if (CurrentSelectionMode == CanvasSelectionMode.EntireColumn)
+            if (CurrentSelectionMode == CanvasSelectionMode.EntirePlate)
+            {
+                // 96通道：选中所有行+所有列（整板）
+                for (int r = 1; r <= ConsData.numRows; r++)
+                {
+                    for (int c = 1; c <= ConsData.numColumns; c++)
+                    {
+                        _selectedCells.Add((r, c));
+                    }
+                }
+            }
+            else if (CurrentSelectionMode == CanvasSelectionMode.EntireColumn)
             {
                 // 八通道：选中整列（当前列的所有行）
                 for (int r = 1; r <= ConsData.numRows; r++)

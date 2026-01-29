@@ -1,0 +1,12 @@
+﻿<Window
+    x:Class="OctoFixFlow.CameraShowWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+    Title="Camera Stream"
+    Width="800"
+    Height="600"
+    WindowStartupLocation="CenterOwner">
+    <!--  直接放WebView2，无多余布局  -->
+    <wv2:WebView2 x:Name="webView" />
+</Window>

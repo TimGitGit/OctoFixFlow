@@ -153,9 +153,6 @@
   <data name="GrpcDeviceLoadSucc" xml:space="preserve">
     <value>设备状态加载完成</value>
   </data>
-  <data name="GrpcFailDoor" xml:space="preserve">
-    <value>设备门未关闭</value>
-  </data>
   <data name="GrpcIniting" xml:space="preserve">
     <value>设备初始化中...</value>
   </data>
@@ -255,11 +252,14 @@
   <data name="OpenFileDialog_Empty" xml:space="preserve">
     <value>选择的文件为空</value>
   </data>
+  <data name="OpenFileDialog_ErrFormal" xml:space="preserve">
+    <value>不支持的文件格式！</value>
+  </data>
   <data name="OpenFileDialog_Error" xml:space="preserve">
     <value>读取文件失败</value>
   </data>
   <data name="OpenFileDialog_Filter" xml:space="preserve">
-    <value>JSON脚本文件 (*.json)|*.json|所有文件 (*.*)|*.*</value>
+    <value>Python文件 (*.py)|*.py|表格文件 (*.xlsx;*.xls;*.csv)|*.xlsx;*.xls;*.csv|所有文件 (*.*)|*.*</value>
   </data>
   <data name="OpenFileDialog_Title" xml:space="preserve">
     <value>选择要加载的脚本文件</value>
@@ -320,6 +320,21 @@
   </data>
   <data name="QuickValidAspirationVolume" xml:space="preserve">
     <value>请输入有效的吸液体积</value>
+  </data>
+  <data name="RunningDeviceStatus" xml:space="preserve">
+    <value>设备状态</value>
+  </data>
+  <data name="RunningRunningProgress" xml:space="preserve">
+    <value>运行进度</value>
+  </data>
+  <data name="RunningRunningTime" xml:space="preserve">
+    <value>运行时间</value>
+  </data>
+  <data name="RunningStartTime" xml:space="preserve">
+    <value>开始时间</value>
+  </data>
+  <data name="RunningTitle" xml:space="preserve">
+    <value>设备运行信息</value>
   </data>
   <data name="ScriptContinue" xml:space="preserve">
     <value>继续流程</value>
@@ -669,6 +684,15 @@
   <data name="SettingManualGetCalibration" xml:space="preserve">
     <value>获取定标</value>
   </data>
+  <data name="SettingManualGetPlate" xml:space="preserve">
+    <value>板位信息获取</value>
+  </data>
+  <data name="SettingManualGetPlateFail" xml:space="preserve">
+    <value>板位信息获取失败</value>
+  </data>
+  <data name="SettingManualGetPlateSucc" xml:space="preserve">
+    <value>板位信息获取成功</value>
+  </data>
   <data name="SettingManualGripper" xml:space="preserve">
     <value>抓手</value>
   </data>
@@ -687,8 +711,26 @@
   <data name="SettingManualMagnetic" xml:space="preserve">
     <value>磁吸模块</value>
   </data>
+  <data name="SettingManualMagneticControl" xml:space="preserve">
+    <value>磁吸控制</value>
+  </data>
+  <data name="SettingManualMagneticDown" xml:space="preserve">
+    <value>下降磁吸</value>
+  </data>
+  <data name="SettingManualMagneticUp" xml:space="preserve">
+    <value>上升磁吸</value>
+  </data>
   <data name="SettingManualModules" xml:space="preserve">
     <value>功能模块</value>
+  </data>
+  <data name="SettingManualMoveCoordinate" xml:space="preserve">
+    <value>数据格式错误</value>
+  </data>
+  <data name="SettingManualMoveFail" xml:space="preserve">
+    <value>设备移动失败</value>
+  </data>
+  <data name="SettingManualMoveSucc" xml:space="preserve">
+    <value>设备移动成功</value>
   </data>
   <data name="SettingManualMovetoPlatePosition" xml:space="preserve">
     <value>移动到板位</value>
@@ -696,8 +738,32 @@
   <data name="SettingManualMoveZaxis" xml:space="preserve">
     <value>移动Z轴</value>
   </data>
+  <data name="SettingManualNineSixChannel" xml:space="preserve">
+    <value>96通道</value>
+  </data>
   <data name="SettingManualPCR" xml:space="preserve">
     <value>热循环模块</value>
+  </data>
+  <data name="SettingManualPCRClose" xml:space="preserve">
+    <value>关盖</value>
+  </data>
+  <data name="SettingManualPCRControl" xml:space="preserve">
+    <value>PCR控制</value>
+  </data>
+  <data name="SettingManualPCROpen" xml:space="preserve">
+    <value>开盖</value>
+  </data>
+  <data name="SettingManualPCRScriptRun" xml:space="preserve">
+    <value>运行脚本</value>
+  </data>
+  <data name="SettingManualPCRSelection" xml:space="preserve">
+    <value>脚本选择</value>
+  </data>
+  <data name="SettingManualPCRStart" xml:space="preserve">
+    <value>开始运行</value>
+  </data>
+  <data name="SettingManualPCRStop" xml:space="preserve">
+    <value>停止运行</value>
   </data>
   <data name="SettingManualPipetteControl" xml:space="preserve">
     <value>移液器控制</value>
@@ -710,6 +776,9 @@
   </data>
   <data name="SettingManualReset" xml:space="preserve">
     <value>复位</value>
+  </data>
+  <data name="SettingManualResetSucc" xml:space="preserve">
+    <value>设备复位成功</value>
   </data>
   <data name="SettingManualResetX" xml:space="preserve">
     <value>复位X</value>
@@ -732,6 +801,39 @@
   <data name="SettingManualSetCalibration" xml:space="preserve">
     <value>设置定标</value>
   </data>
+  <data name="SettingManualSetPlateFail" xml:space="preserve">
+    <value>板位信息保存失败</value>
+  </data>
+  <data name="SettingManualSetPlateNull" xml:space="preserve">
+    <value>请先选择板位</value>
+  </data>
+  <data name="SettingManualSetPlateSucc" xml:space="preserve">
+    <value>板位信息保存成功</value>
+  </data>
+  <data name="SettingManualShakerControl" xml:space="preserve">
+    <value>加热振荡控制</value>
+  </data>
+  <data name="SettingManualShakerShakingControl" xml:space="preserve">
+    <value>振荡控制</value>
+  </data>
+  <data name="SettingManualShakerShakingCurrent" xml:space="preserve">
+    <value>当前转速（RPM）：</value>
+  </data>
+  <data name="SettingManualShakerShakingSet" xml:space="preserve">
+    <value>设定转速（RPM）：</value>
+  </data>
+  <data name="SettingManualShakerShakingTimeSet" xml:space="preserve">
+    <value>设定时间（秒）：</value>
+  </data>
+  <data name="SettingManualShakerTempControl" xml:space="preserve">
+    <value>温度控制</value>
+  </data>
+  <data name="SettingManualShakerTempCurrent" xml:space="preserve">
+    <value>当前温度（℃）：</value>
+  </data>
+  <data name="SettingManualShakerTempSet" xml:space="preserve">
+    <value>设定温度（℃）：</value>
+  </data>
   <data name="SettingManualSingleChannel" xml:space="preserve">
     <value>单通道</value>
   </data>
@@ -740,6 +842,27 @@
   </data>
   <data name="SettingManualSpeed" xml:space="preserve">
     <value>速度 (μl/s)：</value>
+  </data>
+  <data name="SettingManualStartResetX" xml:space="preserve">
+    <value>设备X轴复位</value>
+  </data>
+  <data name="SettingManualStartResetY" xml:space="preserve">
+    <value>设备Y轴复位</value>
+  </data>
+  <data name="SettingManualStartResetZ" xml:space="preserve">
+    <value>设备Z轴复位</value>
+  </data>
+  <data name="SettingManualStartShaking" xml:space="preserve">
+    <value>开始振荡</value>
+  </data>
+  <data name="SettingManualStartTemperature" xml:space="preserve">
+    <value>开始温控</value>
+  </data>
+  <data name="SettingManualStopShaking" xml:space="preserve">
+    <value>停止振荡</value>
+  </data>
+  <data name="SettingManualStopTemperature" xml:space="preserve">
+    <value>停止温控</value>
   </data>
   <data name="SettingManualTemperatureControl" xml:space="preserve">
     <value>温控模块</value>
@@ -761,6 +884,12 @@
   </data>
   <data name="SettingManualYCoordinate" xml:space="preserve">
     <value>Y坐标：</value>
+  </data>
+  <data name="SettingManualZ2Axis" xml:space="preserve">
+    <value>Ｚ2方向</value>
+  </data>
+  <data name="SettingManualZ3Axis" xml:space="preserve">
+    <value>Ｚ3方向</value>
   </data>
   <data name="SettingManualZAxis" xml:space="preserve">
     <value>Z轴</value>
@@ -793,7 +922,7 @@
     <value>吸液距离：</value>
   </data>
   <data name="StepDetailAspirationParams" xml:space="preserve">
-    <value>吸液参数：</value>
+    <value>吸液参数</value>
   </data>
   <data name="StepDetailAspSpeed" xml:space="preserve">
     <value>吸液速度：</value>
@@ -820,7 +949,7 @@
     <value>注液距离：</value>
   </data>
   <data name="StepDetailDispensingParams" xml:space="preserve">
-    <value>注液参数：</value>
+    <value>注液参数</value>
   </data>
   <data name="StepDetailDispSpeed" xml:space="preserve">
     <value>注液速度：</value>
@@ -858,6 +987,9 @@
   <data name="StepDetailOperationPosition" xml:space="preserve">
     <value>操作位置：</value>
   </data>
+  <data name="StepDetailPCRprocedure" xml:space="preserve">
+    <value>PCR动作</value>
+  </data>
   <data name="StepDetailRowPrefix" xml:space="preserve">
     <value>行：</value>
   </data>
@@ -876,11 +1008,17 @@
   <data name="StepDetailShakeUnlockNext" xml:space="preserve">
     <value>振荡结束前解锁下一步运动</value>
   </data>
+  <data name="StepDetailTempCtrlAction" xml:space="preserve">
+    <value>温控动作</value>
+  </data>
   <data name="StepDetailTipOnOffConsTip" xml:space="preserve">
     <value>取头 / 退头步骤仅支持 TIP 盒或垃圾桶</value>
   </data>
   <data name="StepDetailTransferFrom" xml:space="preserve">
     <value>起始板位:</value>
+  </data>
+  <data name="StepDetailTransferPosition" xml:space="preserve">
+    <value>下压距离：</value>
   </data>
   <data name="StepDetailTransferTo" xml:space="preserve">
     <value>终止板位：</value>
@@ -890,9 +1028,6 @@
   </data>
   <data name="StepDetailWaitDesc" xml:space="preserve">
     <value>等待描述：</value>
-  </data>
-  <data name="StepDetailWaitNote" xml:space="preserve">
-    <value>提示：等待时间将自动转换为毫秒执行</value>
   </data>
   <data name="StepDetailWaitTime" xml:space="preserve">
     <value>时间 (秒)：</value>
@@ -906,8 +1041,14 @@
   <data name="WindowActionAspirate" xml:space="preserve">
     <value>吸液</value>
   </data>
+  <data name="WindowActionCamera" xml:space="preserve">
+    <value>摄像头</value>
+  </data>
   <data name="WindowActionDispense" xml:space="preserve">
     <value>注液</value>
+  </data>
+  <data name="WindowActionEndLoop" xml:space="preserve">
+    <value>结束循环</value>
   </data>
   <data name="WindowActionFunctionAll" xml:space="preserve">
     <value>全部</value>
@@ -932,6 +1073,9 @@
   </data>
   <data name="WindowActionLoad" xml:space="preserve">
     <value>加载</value>
+  </data>
+  <data name="WindowActionLoop" xml:space="preserve">
+    <value>循环</value>
   </data>
   <data name="WindowActionMagnetic" xml:space="preserve">
     <value>磁吸</value>
@@ -975,8 +1119,14 @@
   <data name="WindowBoardPosition" xml:space="preserve">
     <value>板位布局(4×3)</value>
   </data>
+  <data name="WindowBoardToopTip" xml:space="preserve">
+    <value>板位</value>
+  </data>
   <data name="WindowConsumablesWarehouse" xml:space="preserve">
     <value>耗材库</value>
+  </data>
+  <data name="WindowGrpcComFail" xml:space="preserve">
+    <value>通信失败</value>
   </data>
   <data name="WindowLoginCancel" xml:space="preserve">
     <value>退出</value>
@@ -992,6 +1142,9 @@
   </data>
   <data name="WindowLoginPassTitle" xml:space="preserve">
     <value>请输入密码</value>
+  </data>
+  <data name="WindowLoginRememberUser" xml:space="preserve">
+    <value>记住用户名</value>
   </data>
   <data name="WindowLoginUser" xml:space="preserve">
     <value>用户名</value>
@@ -1009,16 +1162,13 @@
     <value>流程列表</value>
   </data>
   <data name="Windowrapidgenerating" xml:space="preserve">
-    <value>生成</value>
+    <value>切换</value>
   </data>
   <data name="WindowRunningMessage" xml:space="preserve">
     <value>运行信息</value>
   </data>
   <data name="WindowStepdetails" xml:space="preserve">
     <value>步骤详情</value>
-  </data>
-  <data name="WindowStepdetails2" xml:space="preserve">
-    <value>请选择流程步骤查看详情</value>
   </data>
   <data name="WindowTitle" xml:space="preserve">
     <value>八通道移液工作站</value>
@@ -1030,6 +1180,6 @@
     <value>管理员</value>
   </data>
   <data name="WindowVersion" xml:space="preserve">
-    <value>版本 1.0.0</value>
+    <value>版本 2.0.0</value>
   </data>
 </root>

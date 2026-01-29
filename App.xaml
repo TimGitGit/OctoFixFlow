@@ -6,7 +6,8 @@
     StartupUri="MainWindow.xaml">
     <Application.Resources>
         <!--  颜色定义  -->
-        <SolidColorBrush x:Key="PrimaryColor" Color="#E75333" />
+        <!--<SolidColorBrush x:Key="PrimaryColor" Color="#E75333" />-->
+        <SolidColorBrush x:Key="PrimaryColor" Color="#048B46" />
         <SolidColorBrush x:Key="SecondaryColor" Color="#FFFFFF" />
         <SolidColorBrush x:Key="SuspendColor" Color="#FFDAD0" />
         <SolidColorBrush x:Key="PlateBackground" Color="#f8f9fa" />
@@ -197,7 +198,7 @@
                                             <ColorAnimation
                                                 Storyboard.TargetName="border"
                                                 Storyboard.TargetProperty="BorderBrush.Color"
-                                                To="#E75333"
+                                                To="#048B46"
                                                 Duration="0:0:0.2" />
                                             <ThicknessAnimation
                                                 Storyboard.TargetName="border"
@@ -281,7 +282,7 @@
                                             <ColorAnimation
                                                 Storyboard.TargetName="border"
                                                 Storyboard.TargetProperty="BorderBrush.Color"
-                                                To="#E75333"
+                                                To="#048B46"
                                                 Duration="0:0:0.2" />
                                             <!--  边框厚度动画（替换为ThicknessAnimation）  -->
                                             <ThicknessAnimation

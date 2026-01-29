@@ -171,9 +171,11 @@
                                                 x:Name="cmbPipette1"
                                                 Width="150"
                                                 SelectedIndex="0"
+                                                SelectionChanged="cmbPipette1_SelectionChanged" 
                                                 Style="{StaticResource InputComboBoxStyle}">
                                                 <ComboBoxItem Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualSingleChannel}" />
                                                 <ComboBoxItem Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualEightChannel}" />
+                                                <ComboBoxItem Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualNineSixChannel}" />
                                             </ComboBox>
                                             <ComboBox
                                                 x:Name="cmbPipetteVolume"

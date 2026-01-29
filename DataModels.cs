@@ -1,10 +1,32 @@
 ﻿using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Windows;
 using System.Windows.Data;
 
 namespace OctoFixFlow
 {
+
+    public class LevelToMarginConverter : IValueConverter
+    {
+        // 可配置：每级缩进的像素数（默认20）
+        public double IndentPerLevel { get; set; } = 20;
+
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is int level)
+            {
+                // 仅左边缩进，其他方向留白为0
+                return new Thickness(level * IndentPerLevel, 0, 0, 0);
+            }
+            return new Thickness(0);
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
     // 耗材信息
     //孔数乘积
     public class RowColumnMultiplierConverter : IMultiValueConverter
@@ -638,14 +660,13 @@ namespace OctoFixFlow
         // 加热振荡模块温度
         private const int MIN_SHAKE_TEMP = 4;
         private const int MAX_SHAKE_TEMP = 105;
-        //磁吸模块距离
-        private const int MIN_MAGNET_DISTANCE = 0;
-        private const int MAX_MAGNET_DISTANCE = 20;
 
         private int _index;
         private string _name;
         private string _type;
-        private int _volume;
+        private int _level; //步骤的嵌套层级（0=外层，1=Loop内第一层）
+        public string _displayIndex;
+        private float _volume;
         private string _position;
         private string _consName;
         private string _wellPosition;
@@ -654,25 +675,34 @@ namespace OctoFixFlow
         private string _selectedCells;
         private int _mixCount;
         private float _mixVolume;
-        private bool _isFinalMix;
-        private float _mixFinalAisSpeed;
-        private float _mixFinalDisSpeed;
         private LiquidSettings _selectedLiquid;
+        private float _liquidAisAirB;
+        private float _liquidAisAirA;
+        private float _liquidAisSpeed;
+        private float _liquidAisDelay;
+        private float _liquidAisDistance;
+        private float _liquidDisAirB;
+        private float _liquidDisAirA;
+        private float _liquidDisSpeed;
+        private float _liquidDisDelay;
+        private float _liquidDisDistance;
         public bool _isSystemstep;
         private int _waitTime;
         private string _waitContent;
         private string _selectedPipetteName;
         private string _moduleName;
         private int _shakeRPM;
-        private int _shakeTemp;
-        private bool _isPreHeat;
-        private bool _isUnlockNext = true;
+        private float _shakeTemp;
         private bool _isMagnetUp = true;
         private bool _isMagnetDown = false;
-        private int _magnetDistance;
-        private int _tempCtrlTemp;
+        private float _tempCtrlTemp;
+        private bool _isTempCtrlOpen = true;
+        private bool _isTempCtrlClose = false;
         private string _fromPos;
         private string _toPos;
+        private float _transferPosition;
+        private string _pcrStep;
+        private string _pcrScriptAdress;
 
         public FlowStep()
         {
@@ -714,13 +744,18 @@ namespace OctoFixFlow
                     "PCR" => ResourceHelper.Instance.WindowActionPCR,
                     "Transfer" => ResourceHelper.Instance.WindowActionTransfer,
                     "Mix" => ResourceHelper.Instance.WindowActionMix,
+                    "Loop" => ResourceHelper.Instance.WindowActionLoop,
+                    "endLoop" => ResourceHelper.Instance.WindowActionEndLoop,
                     _ => _type // 未知类型时显示原始Type值（避免空值）
                 };
 
                 // 生成最终名称：系统步骤（Start/End）无后缀，自定义步骤加“步骤/Steps + 序号”
+                //return _isSystemstep
+                //    ? typeText
+                //    : $"{typeText} {ResourceHelper.Instance.FlowStepSteps} {_index}";
                 return _isSystemstep
-                    ? typeText
-                    : $"{typeText} {ResourceHelper.Instance.FlowStepSteps} {_index}";
+                  ? typeText
+                  : $"{typeText} {ResourceHelper.Instance.FlowStepSteps}";
             }
         }
         public string Type
@@ -732,8 +767,25 @@ namespace OctoFixFlow
                 OnPropertyChanged();
             }
         }
-
-        public int Volume
+        public int Level
+        {
+            get => _level;
+            set
+            {
+                _level = value;
+                OnPropertyChanged();
+            }
+        }
+        public string DisplayIndex
+        {
+            get => _displayIndex;
+            set
+            {
+                _displayIndex = value;
+                OnPropertyChanged();
+            }
+        }
+        public float Volume
         {
             get => _volume;
             set
@@ -808,21 +860,6 @@ namespace OctoFixFlow
             get => _mixVolume;
             set { _mixVolume = value; OnPropertyChanged(); }
         }
-        public bool IsFinalMix
-        {
-            get => _isFinalMix;
-            set { _isFinalMix = value; OnPropertyChanged(); }
-        }
-        public float MixFinalAisSpeed
-        {
-            get => _mixFinalAisSpeed;
-            set { _mixFinalAisSpeed = value; OnPropertyChanged(); }
-        }
-        public float MixFinalDisSpeed
-        {
-            get => _mixFinalDisSpeed;
-            set { _mixFinalDisSpeed = value; OnPropertyChanged(); }
-        }
         public bool IsSystemStep
         {
             get => _isSystemstep;
@@ -895,12 +932,12 @@ namespace OctoFixFlow
                 }
             }
         }
-        public int ShakeTemp
+        public float ShakeTemp
         {
             get => _shakeTemp;
             set
             {
-                int correctedValue = Math.Clamp(value, MIN_SHAKE_TEMP, MAX_SHAKE_TEMP);
+                float correctedValue = Math.Clamp(value, MIN_SHAKE_TEMP, MAX_SHAKE_TEMP);
                 if (_shakeTemp != correctedValue)
                 {
                     _shakeTemp = correctedValue;
@@ -908,12 +945,12 @@ namespace OctoFixFlow
                 }
             }
         }
-        public int TempCtrlTemp
+        public float TempCtrlTemp
         {
             get => _tempCtrlTemp;
             set
             {
-                int correctedValue = Math.Clamp(value, MIN_SHAKE_TEMP, MAX_SHAKE_TEMP);
+                float correctedValue = Math.Clamp(value, MIN_SHAKE_TEMP, MAX_SHAKE_TEMP);
                 if (_tempCtrlTemp != correctedValue)
                 {
                     _tempCtrlTemp = correctedValue;
@@ -921,15 +958,15 @@ namespace OctoFixFlow
                 }
             }
         }
-        public bool IsPreHeat
+        public bool IsTempCtrlOpen
         {
-            get => _isPreHeat;
-            set { _isPreHeat = value; OnPropertyChanged(); }
+            get => _isTempCtrlOpen;
+            set { _isTempCtrlOpen = value; OnPropertyChanged(); }
         }
-        public bool IsUnlockNext
+        public bool IsTempCtrlClose
         {
-            get => _isUnlockNext;
-            set { _isUnlockNext = value; OnPropertyChanged(); }
+            get => _isTempCtrlClose;
+            set { _isTempCtrlClose = value; OnPropertyChanged(); }
         }
         public bool IsMagnetUp
         {
@@ -940,19 +977,6 @@ namespace OctoFixFlow
         {
             get => _isMagnetDown;
             set { _isMagnetDown = value; OnPropertyChanged(); }
-        }
-        public int MagnetDistance
-        {
-            get => _magnetDistance;
-            set
-            {
-                int correctedValue = Math.Clamp(value, MIN_MAGNET_DISTANCE, MAX_MAGNET_DISTANCE);
-                if (_magnetDistance != correctedValue)
-                {
-                    _magnetDistance = correctedValue;
-                    OnPropertyChanged();
-                }
-            }
         }
         public string FromPos
         {
@@ -972,11 +996,128 @@ namespace OctoFixFlow
                 OnPropertyChanged();
             }
         }
+        public float TransferPosition
+        {
+            get => _transferPosition;
+            set
+            {
+                _transferPosition = value;
+                OnPropertyChanged();
+            }
+        }
+        public string PcrStep
+        {
+            get => _pcrStep;
+            set
+            {
+                _pcrStep = value;
+                OnPropertyChanged();
+            }
+        }
+        public string PcrScriptAdress
+        {
+            get => _pcrScriptAdress;
+            set
+            {
+                _pcrScriptAdress = value;
+                OnPropertyChanged();
+            }
+        }
         // 液体相关属性
         public LiquidSettings SelectedLiquid
         {
             get => _selectedLiquid;
             set { _selectedLiquid = value; OnPropertyChanged(); }
+        }
+        public float LiquidAisAirB
+        {
+            get => _liquidAisAirB;
+            set
+            {
+                _liquidAisAirB = value;
+                OnPropertyChanged();
+            }
+        }
+        public float LiquidAisAirA
+        {
+            get => _liquidAisAirA;
+            set
+            {
+                _liquidAisAirA = value;
+                OnPropertyChanged();
+            }
+        }
+        public float LiquidAisSpeed
+        {
+            get => _liquidAisSpeed;
+            set
+            {
+                _liquidAisSpeed = value;
+                OnPropertyChanged();
+            }
+        }
+        public float LiquidAisDelay
+        {
+            get => _liquidAisDelay;
+            set
+            {
+                _liquidAisDelay = value;
+                OnPropertyChanged();
+            }
+        }
+        public float LiquidAisDistance
+        {
+            get => _liquidAisDistance;
+            set
+            {
+                _liquidAisDistance = value;
+                OnPropertyChanged();
+            }
+        }
+        public float LiquidDisAirB
+        {
+            get => _liquidDisAirB;
+            set
+            {
+                _liquidDisAirB = value;
+                OnPropertyChanged();
+            }
+        }
+        public float LiquidDisAirA
+        {
+            get => _liquidDisAirA;
+            set
+            {
+                _liquidDisAirA = value;
+                OnPropertyChanged();
+            }
+        }
+        public float LiquidDisSpeed
+        {
+            get => _liquidDisSpeed;
+            set
+            {
+                _liquidDisSpeed = value;
+                OnPropertyChanged();
+            }
+        }
+        public float LiquidDisDelay
+        {
+            get => _liquidDisDelay;
+            set
+            {
+                _liquidDisDelay = value;
+                OnPropertyChanged();
+            }
+        }
+        public float LiquidDisDistance
+        {
+            get => _liquidDisDistance;
+            set
+            {
+                _liquidDisDistance = value;
+                OnPropertyChanged();
+            }
         }
         public event PropertyChangedEventHandler PropertyChanged;
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
@@ -1183,6 +1324,7 @@ namespace OctoFixFlow
             _guideProtocolName = "";
             _guideProtocolDescription = "";
             _guideProtocolAuthor = "";
+            _guideProtocolStartTime = "";
 
             _isGripperEnabled = false;
             _isPCREnabled = false;
@@ -1229,6 +1371,20 @@ namespace OctoFixFlow
                 if (_guideProtocolAuthor != value)
                 {
                     _guideProtocolAuthor = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        //项目时间
+        private string _guideProtocolStartTime;
+        public string GuideProtocolStartTime
+        {
+            get => _guideProtocolStartTime;
+            set
+            {
+                if (_guideProtocolStartTime != value)
+                {
+                    _guideProtocolStartTime = value;
                     OnPropertyChanged();
                 }
             }
@@ -1309,6 +1465,14 @@ namespace OctoFixFlow
 
             OnPropertyChanged(nameof(PlateModuleMap)); // 触发通知，UI同步
         }
+        public void DeleteModule(string plateId)
+        {
+
+            if (_plateModuleMap.ContainsKey(plateId))
+                _plateModuleMap.Remove(plateId);
+
+            OnPropertyChanged(nameof(PlateModuleMap)); // 触发通知，UI同步
+        }
         //判断加热振荡有没有
         public bool HasHeatingShaking() => PlateModuleMap.Values.Any(m => m.Type == 5);
 
@@ -1380,21 +1544,37 @@ namespace OctoFixFlow
     }
     public class PipeCalibrationParams
     {
-        public string PipeName { get; set; }
-        public float BackDiff { get; set; } // 回程差
-        public float K10 { get; set; }      // 10挡
-        public float K20 { get; set; }      // 20挡
-        public float K50 { get; set; }      // 50挡
-        public float K100 { get; set; }     // 100挡
-        public float K200 { get; set; }     // 200挡
-        public float K300 { get; set; }     // 300挡
-        public float K400 { get; set; }     // 400挡
-        public float K500 { get; set; }     // 500挡
-        public float K600 { get; set; }     // 600挡
-        public float K700 { get; set; }     // 700挡
-        public float K800 { get; set; }     // 800挡
-        public float K900 { get; set; }     // 900挡
-        public float K1000 { get; set; }    // 1000挡
+        // 回程差
+        public double backdiff { get; set; }
+        // 10挡
+        public double k_10 { get; set; }
+        // 20挡
+        public double k_20 { get; set; }
+        // 50挡
+        public double k_50 { get; set; }
+        // 100挡
+        public double k_100 { get; set; }
+        // 200挡
+        public double k_200 { get; set; }
+        // 300挡
+        public double k_300 { get; set; }
+        // 400挡
+        public double k_400 { get; set; }
+        // 500挡
+        public double k_500 { get; set; }
+        // 600挡
+        public double k_600 { get; set; }
+        // 700挡
+        public double k_700 { get; set; }
+        // 800挡
+        public double k_800 { get; set; }
+        // 900挡
+        public double k_900 { get; set; }
+        // 1000挡
+        public double k_1000 { get; set; }
+        // 额外字段（用户示例未用到，可保留或删除）
+        public double k_1 { get; set; }
+        public double k_2 { get; set; }
     }
     public class ScriptMonitorEventArgs : EventArgs
     {

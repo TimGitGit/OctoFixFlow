@@ -55,7 +55,7 @@
                                             <ColorAnimation
                                                 Storyboard.TargetName="border"
                                                 Storyboard.TargetProperty="BorderBrush.Color"
-                                                To="#E75333"
+                                                To="#048B46"
                                                 Duration="0:0:0.2" />
                                             <!--  边框厚度动画（替换为ThicknessAnimation）  -->
                                             <ThicknessAnimation
@@ -179,10 +179,11 @@
                 Width="1"
                 Margin="0,30"
                 VerticalAlignment="Stretch"
-                Fill="Red" />
+                Fill="{StaticResource PrimaryColor}" />
             <!--  右侧：登录表单  -->
-            <Grid Grid.Column="2" Margin="30">
+            <Grid Grid.Column="2" Margin="30,20,30,0">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
@@ -233,9 +234,18 @@
                         Style="{StaticResource InputTextBoxStyle}"
                         Tag="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowLoginPassTitle}" />
                 </StackPanel>
-
                 <StackPanel
                     Grid.Row="3"
+                    Margin="0,0,0,15"
+                    HorizontalAlignment="Stretch">
+                    <CheckBox
+                        FontSize="14"
+                        Foreground="#666666">
+                        <TextBlock Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowLoginRememberUser}" TextWrapping="Wrap" />
+                    </CheckBox>
+                </StackPanel>
+                <StackPanel
+                    Grid.Row="4"
                     Margin="0,0,0,15"
                     HorizontalAlignment="Stretch">
                     <CheckBox
@@ -248,7 +258,7 @@
 
                 <!--  并排按钮（登录/退出）  -->
                 <StackPanel
-                    Grid.Row="4"
+                    Grid.Row="5"
                     HorizontalAlignment="Center"
                     Orientation="Horizontal">
                     <Button
@@ -263,7 +273,7 @@
 
                 <!--  版本信息  -->
                 <TextBlock
-                    Grid.Row="5"
+                    Grid.Row="6"
                     Margin="0,15,0,0"
                     HorizontalAlignment="Center"
                     FontSize="12"

@@ -124,7 +124,7 @@
     <value>Turn on the fill light</value>
   </data>
   <data name="DeviceOperationFailure" xml:space="preserve">
-    <value>Operation failed:</value>
+    <value>Operation failed</value>
   </data>
   <data name="DeviceOperationSucc" xml:space="preserve">
     <value>Operate successfully</value>
@@ -142,7 +142,7 @@
     <value>Start</value>
   </data>
   <data name="FlowStepSteps" xml:space="preserve">
-    <value>Steps</value>
+    <value>Step</value>
   </data>
   <data name="FlowStepWaitContent" xml:space="preserve">
     <value>Waiting for operation</value>
@@ -152,9 +152,6 @@
   </data>
   <data name="GrpcDeviceLoadSucc" xml:space="preserve">
     <value>Equipment status loading completed</value>
-  </data>
-  <data name="GrpcFailDoor" xml:space="preserve">
-    <value>Device door not closed</value>
   </data>
   <data name="GrpcIniting" xml:space="preserve">
     <value>Device Initializing...</value>
@@ -255,11 +252,14 @@
   <data name="OpenFileDialog_Empty" xml:space="preserve">
     <value>The selected file is empty</value>
   </data>
+  <data name="OpenFileDialog_ErrFormal" xml:space="preserve">
+    <value>Unsupported file format!</value>
+  </data>
   <data name="OpenFileDialog_Error" xml:space="preserve">
     <value>Failed to read the file</value>
   </data>
   <data name="OpenFileDialog_Filter" xml:space="preserve">
-    <value>JSON Script Files (*.json)|*.json|All Files (*.*)|*.*</value>
+    <value>Python Files (*.py)|*.py|Table Files (*.xlsx;*.xls;*.csv)|*.xlsx;*.xls;*.csv|All Files (*.*)|*.*</value>
   </data>
   <data name="OpenFileDialog_Title" xml:space="preserve">
     <value>Select Script File to Load</value>
@@ -320,6 +320,21 @@
   </data>
   <data name="QuickValidAspirationVolume" xml:space="preserve">
     <value>Please enter valid aspiration volume</value>
+  </data>
+  <data name="RunningDeviceStatus" xml:space="preserve">
+    <value>Device Status</value>
+  </data>
+  <data name="RunningRunningProgress" xml:space="preserve">
+    <value>Running Progress</value>
+  </data>
+  <data name="RunningRunningTime" xml:space="preserve">
+    <value>Running Time</value>
+  </data>
+  <data name="RunningStartTime" xml:space="preserve">
+    <value>Start Time</value>
+  </data>
+  <data name="RunningTitle" xml:space="preserve">
+    <value>Device Running Information</value>
   </data>
   <data name="ScriptContinue" xml:space="preserve">
     <value>Resume process</value>
@@ -672,6 +687,15 @@
   <data name="SettingManualGetCalibration" xml:space="preserve">
     <value>Get Calib</value>
   </data>
+  <data name="SettingManualGetPlate" xml:space="preserve">
+    <value>Retrieve plate position information</value>
+  </data>
+  <data name="SettingManualGetPlateFail" xml:space="preserve">
+    <value>Failed to get plate position info</value>
+  </data>
+  <data name="SettingManualGetPlateSucc" xml:space="preserve">
+    <value>Successfully retrieved plate position data</value>
+  </data>
   <data name="SettingManualGripper" xml:space="preserve">
     <value>Gripper</value>
   </data>
@@ -690,8 +714,26 @@
   <data name="SettingManualMagnetic" xml:space="preserve">
     <value>Magnetic Module</value>
   </data>
+  <data name="SettingManualMagneticControl" xml:space="preserve">
+    <value>Magnetic control</value>
+  </data>
+  <data name="SettingManualMagneticDown" xml:space="preserve">
+    <value>Down the magnetic</value>
+  </data>
+  <data name="SettingManualMagneticUp" xml:space="preserve">
+    <value>Up the magnetic</value>
+  </data>
   <data name="SettingManualModules" xml:space="preserve">
     <value>Functional Modules</value>
+  </data>
+  <data name="SettingManualMoveCoordinate" xml:space="preserve">
+    <value>Data format error</value>
+  </data>
+  <data name="SettingManualMoveFail" xml:space="preserve">
+    <value>Arm movement failed</value>
+  </data>
+  <data name="SettingManualMoveSucc" xml:space="preserve">
+    <value>Arm moved successfully</value>
   </data>
   <data name="SettingManualMovetoPlatePosition" xml:space="preserve">
     <value>Move Plate</value>
@@ -699,8 +741,32 @@
   <data name="SettingManualMoveZaxis" xml:space="preserve">
     <value>Move Z-axis</value>
   </data>
+  <data name="SettingManualNineSixChannel" xml:space="preserve">
+    <value>96-Channel</value>
+  </data>
   <data name="SettingManualPCR" xml:space="preserve">
     <value>Thermocycler Module</value>
+  </data>
+  <data name="SettingManualPCRClose" xml:space="preserve">
+    <value>Close Lid</value>
+  </data>
+  <data name="SettingManualPCRControl" xml:space="preserve">
+    <value>PCR control</value>
+  </data>
+  <data name="SettingManualPCROpen" xml:space="preserve">
+    <value>Open Lid</value>
+  </data>
+  <data name="SettingManualPCRScriptRun" xml:space="preserve">
+    <value>Run Script</value>
+  </data>
+  <data name="SettingManualPCRSelection" xml:space="preserve">
+    <value>Script Selection</value>
+  </data>
+  <data name="SettingManualPCRStart" xml:space="preserve">
+    <value>Start Run</value>
+  </data>
+  <data name="SettingManualPCRStop" xml:space="preserve">
+    <value>Stop Run</value>
   </data>
   <data name="SettingManualPipetteControl" xml:space="preserve">
     <value>Pipette Control</value>
@@ -714,6 +780,9 @@
   </data>
   <data name="SettingManualReset" xml:space="preserve">
     <value>Reset</value>
+  </data>
+  <data name="SettingManualResetSucc" xml:space="preserve">
+    <value>Device reset successful</value>
   </data>
   <data name="SettingManualResetX" xml:space="preserve">
     <value>Reset X</value>
@@ -736,6 +805,39 @@
   <data name="SettingManualSetCalibration" xml:space="preserve">
     <value>Set Calib</value>
   </data>
+  <data name="SettingManualSetPlateFail" xml:space="preserve">
+    <value>Failed to set plate position info</value>
+  </data>
+  <data name="SettingManualSetPlateNull" xml:space="preserve">
+    <value>Please select the plate position first</value>
+  </data>
+  <data name="SettingManualSetPlateSucc" xml:space="preserve">
+    <value>Successfully saved plate position data</value>
+  </data>
+  <data name="SettingManualShakerControl" xml:space="preserve">
+    <value>Shaker control</value>
+  </data>
+  <data name="SettingManualShakerShakingControl" xml:space="preserve">
+    <value>Shaking Control</value>
+  </data>
+  <data name="SettingManualShakerShakingCurrent" xml:space="preserve">
+    <value>Current Speed (RPM):</value>
+  </data>
+  <data name="SettingManualShakerShakingSet" xml:space="preserve">
+    <value>Set Speed (RPM):</value>
+  </data>
+  <data name="SettingManualShakerShakingTimeSet" xml:space="preserve">
+    <value>Set Time (S):</value>
+  </data>
+  <data name="SettingManualShakerTempControl" xml:space="preserve">
+    <value>Temp control</value>
+  </data>
+  <data name="SettingManualShakerTempCurrent" xml:space="preserve">
+    <value>Current Temperature (℃):</value>
+  </data>
+  <data name="SettingManualShakerTempSet" xml:space="preserve">
+    <value>Set Temperature (℃):</value>
+  </data>
   <data name="SettingManualSingleChannel" xml:space="preserve">
     <value>Single Channel</value>
   </data>
@@ -744,6 +846,27 @@
   </data>
   <data name="SettingManualSpeed" xml:space="preserve">
     <value>Speed (μl/s):</value>
+  </data>
+  <data name="SettingManualStartResetX" xml:space="preserve">
+    <value>Reset the X-axis of the equipment</value>
+  </data>
+  <data name="SettingManualStartResetY" xml:space="preserve">
+    <value>Reset the Y-axis of the equipment</value>
+  </data>
+  <data name="SettingManualStartResetZ" xml:space="preserve">
+    <value>Reset the Z-axis of the equipment</value>
+  </data>
+  <data name="SettingManualStartShaking" xml:space="preserve">
+    <value>Start Shaking</value>
+  </data>
+  <data name="SettingManualStartTemperature" xml:space="preserve">
+    <value>Start Temp</value>
+  </data>
+  <data name="SettingManualStopShaking" xml:space="preserve">
+    <value>Stop Shaking</value>
+  </data>
+  <data name="SettingManualStopTemperature" xml:space="preserve">
+    <value>Stop Temp</value>
   </data>
   <data name="SettingManualTemperatureControl" xml:space="preserve">
     <value>Temperature Module</value>
@@ -765,6 +888,12 @@
   </data>
   <data name="SettingManualYCoordinate" xml:space="preserve">
     <value>Y Coordinate:</value>
+  </data>
+  <data name="SettingManualZ2Axis" xml:space="preserve">
+    <value>Z2－axis</value>
+  </data>
+  <data name="SettingManualZ3Axis" xml:space="preserve">
+    <value>Z3－axis</value>
   </data>
   <data name="SettingManualZAxis" xml:space="preserve">
     <value>Z-axis</value>
@@ -797,7 +926,7 @@
     <value>Aspiration Distance:</value>
   </data>
   <data name="StepDetailAspirationParams" xml:space="preserve">
-    <value>Aspiration Parameters:</value>
+    <value>Aspiration Parameters</value>
   </data>
   <data name="StepDetailAspSpeed" xml:space="preserve">
     <value>Aspiration Speed:</value>
@@ -824,7 +953,7 @@
     <value>Dispensing Distance:</value>
   </data>
   <data name="StepDetailDispensingParams" xml:space="preserve">
-    <value>Dispensing Parameters:</value>
+    <value>Dispensing Parameters</value>
   </data>
   <data name="StepDetailDispSpeed" xml:space="preserve">
     <value>Dispensing Speed:</value>
@@ -862,6 +991,9 @@
   <data name="StepDetailOperationPosition" xml:space="preserve">
     <value>Operation Position:</value>
   </data>
+  <data name="StepDetailPCRprocedure" xml:space="preserve">
+    <value>PCR procedure</value>
+  </data>
   <data name="StepDetailRowPrefix" xml:space="preserve">
     <value>Row:</value>
   </data>
@@ -880,11 +1012,17 @@
   <data name="StepDetailShakeUnlockNext" xml:space="preserve">
     <value>Unlock next step before shaking finished</value>
   </data>
+  <data name="StepDetailTempCtrlAction" xml:space="preserve">
+    <value>TempCtrl Action</value>
+  </data>
   <data name="StepDetailTipOnOffConsTip" xml:space="preserve">
     <value>Only supports tip boxes or waste bins</value>
   </data>
   <data name="StepDetailTransferFrom" xml:space="preserve">
     <value>From Slot:</value>
+  </data>
+  <data name="StepDetailTransferPosition" xml:space="preserve">
+    <value>Press-Down Distance:</value>
   </data>
   <data name="StepDetailTransferTo" xml:space="preserve">
     <value>To Slot:</value>
@@ -894,9 +1032,6 @@
   </data>
   <data name="StepDetailWaitDesc" xml:space="preserve">
     <value>Waiting Description:</value>
-  </data>
-  <data name="StepDetailWaitNote" xml:space="preserve">
-    <value>Note: Waiting time will be auto-converted to milliseconds.</value>
   </data>
   <data name="StepDetailWaitTime" xml:space="preserve">
     <value>Time (seconds):</value>
@@ -910,8 +1045,14 @@
   <data name="WindowActionAspirate" xml:space="preserve">
     <value>Aspirate</value>
   </data>
+  <data name="WindowActionCamera" xml:space="preserve">
+    <value>Camera</value>
+  </data>
   <data name="WindowActionDispense" xml:space="preserve">
     <value>Dispense</value>
+  </data>
+  <data name="WindowActionEndLoop" xml:space="preserve">
+    <value>endLoop</value>
   </data>
   <data name="WindowActionFunctionAll" xml:space="preserve">
     <value>All</value>
@@ -937,6 +1078,9 @@
   </data>
   <data name="WindowActionLoad" xml:space="preserve">
     <value>Load</value>
+  </data>
+  <data name="WindowActionLoop" xml:space="preserve">
+    <value>Loop</value>
   </data>
   <data name="WindowActionMagnetic" xml:space="preserve">
     <value>Magnetic</value>
@@ -981,9 +1125,15 @@
   <data name="WindowBoardPosition" xml:space="preserve">
     <value>Board position layout (4×3)</value>
   </data>
+  <data name="WindowBoardToopTip" xml:space="preserve">
+    <value>Board position</value>
+  </data>
   <data name="WindowConsumablesWarehouse" xml:space="preserve">
     <value>Consumables Warehouse</value>
     <comment>耗材库</comment>
+  </data>
+  <data name="WindowGrpcComFail" xml:space="preserve">
+    <value>gRPC communication failed</value>
   </data>
   <data name="WindowLoginCancel" xml:space="preserve">
     <value>Cancel</value>
@@ -1003,6 +1153,9 @@
   <data name="WindowLoginPassTitle" xml:space="preserve">
     <value>Please enter your password.</value>
     <comment>请输入密码</comment>
+  </data>
+  <data name="WindowLoginRememberUser" xml:space="preserve">
+    <value>Remember Username</value>
   </data>
   <data name="WindowLoginUser" xml:space="preserve">
     <value>User</value>
@@ -1024,8 +1177,8 @@
     <comment>流程列表</comment>
   </data>
   <data name="Windowrapidgenerating" xml:space="preserve">
-    <value>Build</value>
-    <comment>快速生成</comment>
+    <value>Toggle</value>
+    <comment>切换</comment>
   </data>
   <data name="WindowRunningMessage" xml:space="preserve">
     <value>Running Info</value>
@@ -1033,10 +1186,6 @@
   <data name="WindowStepdetails" xml:space="preserve">
     <value>Step details</value>
     <comment>步骤详情</comment>
-  </data>
-  <data name="WindowStepdetails2" xml:space="preserve">
-    <value>Please select the process steps to view details.</value>
-    <comment>请选择流程步骤查看详情</comment>
   </data>
   <data name="WindowTitle" xml:space="preserve">
     <value>8-Channel Pipetting Workstation</value>
@@ -1048,7 +1197,7 @@
     <value>Admin</value>
   </data>
   <data name="WindowVersion" xml:space="preserve">
-    <value>Version 1.0.0</value>
+    <value>Version 2.0.0</value>
     <comment>镁伽科技 | 版本 1.0.0</comment>
   </data>
 </root>

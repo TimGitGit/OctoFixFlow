@@ -1,6 +1,9 @@
-﻿using System.ComponentModel;
+﻿using MySqlConnector;
+using System.ComponentModel;
+using System.Data;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
@@ -82,6 +85,9 @@ namespace OctoFixFlow
             {
                 await loadSqlData();
             };
+            AddHeatingOscillModule();
+            AddMagnetModule();
+            AddTempControlModule();
         }
         private async Task loadSqlData()
         {
@@ -815,20 +821,20 @@ namespace OctoFixFlow
                         child.IsChecked = false;
                 }
                 btn.IsChecked = true;
-                _mainWidget.ShowNotification("板位信息获取", NotificationControl.NotificationType.Info);
-                if (plateId == "3")
-                {
-                    LoadPlateCoordinates("magnetic_1");
-
-                }
-                else if (plateId == "9")
-                {
-                    LoadPlateCoordinates("shaker_1");
-                }
-                else
-                {
-                    LoadPlateCoordinates("p" + plateId);
-                }
+                _mainWidget.ShowNotification(_mainWidget._res.SettingManualGetPlate, NotificationControl.NotificationType.Info);
+                LoadPlateCoordinates("p" + plateId);
+                //if (plateId == "3")
+                //{
+                //    LoadPlateCoordinates("magnetic_1");
+                //}
+                //else if (plateId == "9")
+                //{
+                //    LoadPlateCoordinates("shaker_1");
+                //}
+                //else
+                //{
+                //    LoadPlateCoordinates("p" + plateId);
+                //}
             }
         }
         // 辅助方法：查找视觉子元素
@@ -848,88 +854,133 @@ namespace OctoFixFlow
             }
         }
         // 加载板位坐标
-        private async void LoadPlateCoordinates(string plateId)
+        private async Task LoadPlateCoordinates(string plateId)
         {
-            var coordinates = await _mainWidget.GetSQLDataAsync(plateId);
-            if (coordinates.Errcode == 0)
+            string sql = "SELECT `offset` FROM plate WHERE name = @name";
+            MySqlParameter[] param = new MySqlParameter[]
             {
-                txtPlateX.Text = coordinates.X.ToString("F2");
-                txtPlateY.Text = coordinates.Y.ToString("F2");
-                txtPlateZ.Text = coordinates.Z.ToString("F2");
-                _mainWidget.ShowNotification("板位信息获取成功", NotificationControl.NotificationType.Info);
+    new MySqlParameter("@name", plateId)
+            };
+            DataTable dt = await databaseService.QueryMySqlDataAsync(sql, param);
+            if (dt.Rows.Count > 0)
+            {
+                string offsetValue = dt.Rows[0]["offset"].ToString();
+                if (!string.IsNullOrWhiteSpace(offsetValue))
+                {
+                    string[] coordinateArray = offsetValue.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                    if (coordinateArray.Length == 3)
+                    {
+                        if (double.TryParse(coordinateArray[0].Trim(), out double xValue))
+                        {
+                            txtPlateX.Text = xValue.ToString("F2");
+                        }
+                        else
+                        {
+                            txtPlateX.Text = string.Empty;
+                        }
+
+                        if (double.TryParse(coordinateArray[1].Trim(), out double yValue))
+                        {
+                            txtPlateY.Text = yValue.ToString("F2");
+                        }
+                        else
+                        {
+                            txtPlateY.Text = string.Empty;
+                        }
+
+                        if (double.TryParse(coordinateArray[2].Trim(), out double zValue))
+                        {
+                            txtPlateZ.Text = zValue.ToString("F2");
+                        }
+                        else
+                        {
+                            txtPlateZ.Text = string.Empty;
+                        }
+
+                        _mainWidget.ShowNotification(_mainWidget._res.SettingManualGetPlateSucc, NotificationControl.NotificationType.Info);
+                    }
+                    else
+                    {
+                        _mainWidget.ShowNotification(_mainWidget._res.SettingManualGetPlateFail, NotificationControl.NotificationType.Warn);
+
+                        txtPlateX.Text = txtPlateY.Text = txtPlateZ.Text = string.Empty;
+                    }
+                    _mainWidget.ShowNotification(_mainWidget._res.SettingManualGetPlateSucc, NotificationControl.NotificationType.Info);
+                }
+                else
+                {
+                    _mainWidget.ShowNotification(_mainWidget._res.SettingManualGetPlateFail, NotificationControl.NotificationType.Warn);
+                }
             }
             else
             {
-                _mainWidget.ShowNotification("板位信息获取失败", NotificationControl.NotificationType.Warn);
+                _mainWidget.ShowNotification(_mainWidget._res.SettingManualGetPlateFail, NotificationControl.NotificationType.Warn);
+
+                txtPlateX.Text = txtPlateY.Text = txtPlateZ.Text = string.Empty;
             }
         }
         // 移动到指定板位坐标
         private async void MoveToPlate_Click(object sender, RoutedEventArgs e)
         {
-            if (float.TryParse(txtPlateX.Text, out float x) &&
-                float.TryParse(txtPlateY.Text, out float y)
+            if (float.TryParse(txtPlateX.Text, out float numX) &&
+                float.TryParse(txtPlateY.Text, out float numY)
                )
             {
-                // 发送移动指令到硬件（实际需调用GRPC接口）
-                _mainWidget.ShowNotification($"正在移动到坐标：X={x:F2}, Y={y:F2}", NotificationControl.NotificationType.Info);
-                // 合并 X 和 Y 电机的动作到同一个列表中
-                var allMotorActions = new List<MotorActionParams>
-    {
-        // X 电机参数
-        new MotorActionParams
-        {
-            MotorId = 0,
-            ActionType = 0,
-            Target = x,
-            Speed = 300.0f,
-            Acc = 500.0f,
-            Dcc = 500.0f
-        },
-        // Y 电机参数（与 X 电机一起发送）
-        new MotorActionParams
-        {
-            MotorId = 1,
-            ActionType = 0,
-            Target = y,
-            Speed = 300.0f,
-            Acc = 500.0f,
-            Dcc = 500.0f
-        }
-    };
-
-                // 单次调用 gRPC 接口，同时发送 X 和 Y 电机的动作
-                var result = await _mainWidget.MotorActionAsync(allMotorActions);
-                if (result == 0)
-                    _mainWidget.ShowNotification("设备移动成功", NotificationControl.NotificationType.Info);
+                StringBuilder pythonCode = new StringBuilder();
+                pythonCode.AppendLine("from arm import Arm");
+                pythonCode.AppendLine($"Arm.to(1, {{'x': {numX},'y':{numY}}} )");
+                var rawMoveToFlag = await _mainWidget.ScriptDebugAsync(pythonCode.ToString());
+                var moveToFlag = _mainWidget.ParseScriptDebugResponse(rawMoveToFlag);
+                if (moveToFlag != null)
+                {
+                    if (moveToFlag.Result == "succeed")
+                    {
+                        _mainWidget.ShowNotification(_mainWidget._res.SettingManualMoveSucc, NotificationControl.NotificationType.Info);
+                    }
+                    else
+                    {
+                        _mainWidget.ShowNotification(_mainWidget._res.SettingManualMoveFail, NotificationControl.NotificationType.Error);
+                    }
+                }
+                else
+                {
+                    _mainWidget.ShowNotification(_mainWidget._res.WindowGrpcComFail, NotificationControl.NotificationType.Error);
+                }
             }
             else
             {
-                _mainWidget.ShowNotification("坐标格式错误，请输入有效的数字", NotificationControl.NotificationType.Error);
+                _mainWidget.ShowNotification(_mainWidget._res.SettingManualMoveCoordinate, NotificationControl.NotificationType.Warn);
             }
         }
         //移动Z轴
         private async void DownToPlate_Click(object sender, RoutedEventArgs e)
         {
-            if (float.TryParse(txtPlateZ.Text, out float z))
+            if (float.TryParse(txtPlateZ.Text, out float numZ))
             {
-                _mainWidget.ShowNotification("设备移动Z轴", NotificationControl.NotificationType.Info);
-                var motorActions = new List<MotorActionParams>();
-                motorActions.Add(new MotorActionParams
+                StringBuilder pythonCode = new StringBuilder();
+                pythonCode.AppendLine("from arm import Arm");
+                pythonCode.AppendLine($"Arm.to(1, {{'z': {numZ}}} )");
+                var rawDownMoveFlag = await _mainWidget.ScriptDebugAsync(pythonCode.ToString());
+                var downMoveFlag = _mainWidget.ParseScriptDebugResponse(rawDownMoveFlag);
+                if (downMoveFlag != null)
                 {
-                    MotorId = 2,
-                    ActionType = 0,
-                    Target = z,
-                    Speed = 30.0f,
-                    Acc = 100.0f,
-                    Dcc = 100.0f
-                });
-                var result = await _mainWidget.MotorActionAsync(motorActions);
-                if (result == 0)
-                    _mainWidget.ShowNotification("设备移动成功", NotificationControl.NotificationType.Info);
+                    if (downMoveFlag.Result == "succeed")
+                    {
+                        _mainWidget.ShowNotification(_mainWidget._res.SettingManualMoveSucc, NotificationControl.NotificationType.Info);
+                    }
+                    else
+                    {
+                        _mainWidget.ShowNotification(_mainWidget._res.SettingManualMoveFail, NotificationControl.NotificationType.Error);
+                    }
+                }
+                else
+                {
+                    _mainWidget.ShowNotification(_mainWidget._res.WindowGrpcComFail, NotificationControl.NotificationType.Error);
+                }
             }
             else
             {
-                _mainWidget.ShowNotification("坐标格式错误，请输入有效的数字", NotificationControl.NotificationType.Error);
+                _mainWidget.ShowNotification(_mainWidget._res.SettingManualMoveCoordinate, NotificationControl.NotificationType.Warn);
             }
 
         }
@@ -942,99 +993,111 @@ namespace OctoFixFlow
 
             if (selectedPlate == null)
             {
-                _mainWidget.ShowNotification("请先选择板位", NotificationControl.NotificationType.Warn);
+                _mainWidget.ShowNotification(_mainWidget._res.SettingManualSetPlateNull, NotificationControl.NotificationType.Warn);
                 return;
             }
-            string nowPlate = selectedPlate;
-            if (selectedPlate == "3")
-            {
-                nowPlate = "magnetic_1";
-
-            }
-            else if (selectedPlate == "9")
-            {
-                nowPlate = "shaker_1";
-            }
-            else
-            {
-                nowPlate = "p" + selectedPlate;
-            }
+            string nowPlate = "p" + selectedPlate;
 
             if (float.TryParse(txtPlateX.Text, out float x) &&
                 float.TryParse(txtPlateY.Text, out float y) &&
                 float.TryParse(txtPlateZ.Text, out float z))
             {
-                // 保存坐标到存储（数据库或配置文件）
-                //_plateCoordinateMap[selectedPlate] = (x, y, z);
-                var coordinates = await _mainWidget.SetSQLDataAsync(nowPlate, x, y, z);
-                if (coordinates.Errcode == 0)
-                {
 
-                    _mainWidget.ShowNotification($"板位 {selectedPlate} 坐标已保存", NotificationControl.NotificationType.Info);
-                }
-                else
+                string offset = $"{x},{y},{z}";
+
+                string updateSql = "UPDATE plate SET `offset` = @offset WHERE name = @name";
+
+                MySqlParameter[] updateParam = new MySqlParameter[]
                 {
-                    _mainWidget.ShowNotification("板位信息保存失败", NotificationControl.NotificationType.Warn);
+                new MySqlParameter("@name", nowPlate),
+                new MySqlParameter("@offset", offset)
+                };
+
+                int affectedRows = await databaseService.ExecuteMySqlNonQueryAsync(updateSql, updateParam);
+
+                if (affectedRows > 0)
+                {
+                    _mainWidget.ShowNotification(_mainWidget._res.SettingManualSetPlateSucc, NotificationControl.NotificationType.Info);
                 }
+                else//Y120X162
+                {
+                    _mainWidget.ShowNotification(_mainWidget._res.SettingManualSetPlateFail, NotificationControl.NotificationType.Warn);
+
+                }
+
             }
             else
             {
-                _mainWidget.ShowNotification("坐标格式错误，保存失败", NotificationControl.NotificationType.Error);
+                _mainWidget.ShowNotification(_mainWidget._res.SettingManualMoveCoordinate, NotificationControl.NotificationType.Warn);
             }
         }
         //复位X
         private async void btnResetX_Click(object sender, RoutedEventArgs e)
         {
-            _mainWidget.ShowNotification("设备X轴复位", NotificationControl.NotificationType.Info);
-            var motorActions = new List<MotorActionParams>();
-            motorActions.Add(new MotorActionParams
+            _mainWidget.ShowNotification(_mainWidget._res.SettingManualStartResetX, NotificationControl.NotificationType.Info);
+            StringBuilder pythonCode = new StringBuilder();
+            pythonCode.AppendLine("from arm import Arm");
+            pythonCode.AppendLine("Arm.reset(1,{'x'})");
+
+            var rawXResetFlag = await _mainWidget.ScriptDebugAsync(pythonCode.ToString());//复位X
+            var xResetFlag = _mainWidget.ParseScriptDebugResponse(rawXResetFlag);
+            if (xResetFlag != null)
             {
-                MotorId = 0,
-                ActionType = 4,
-                Target = 0,
-                Speed = 300.0f,
-                Acc = 500.0f,
-                Dcc = 500.0f
-            });
-            var result = await _mainWidget.MotorActionAsync(motorActions);
-            if (result == 0)
-                _mainWidget.ShowNotification("设备复位成功", NotificationControl.NotificationType.Info);
+                if (xResetFlag.Result == "succeed")
+                {
+                    _mainWidget.ShowNotification(_mainWidget._res.SettingManualResetSucc, NotificationControl.NotificationType.Info);
+                }
+            }
+            else
+            {
+                _mainWidget.ShowNotification(_mainWidget._res.WindowGrpcComFail, NotificationControl.NotificationType.Error);
+            }
         }
         //复位Y
         private async void btnResetY_Click(object sender, RoutedEventArgs e)
         {
-            _mainWidget.ShowNotification("设备Y轴复位", NotificationControl.NotificationType.Info);
-            var motorActions = new List<MotorActionParams>();
-            motorActions.Add(new MotorActionParams
+            _mainWidget.ShowNotification(_mainWidget._res.SettingManualStartResetY, NotificationControl.NotificationType.Info);
+
+            StringBuilder pythonCode = new StringBuilder();
+            pythonCode.AppendLine("from arm import Arm");
+            pythonCode.AppendLine("Arm.reset(1,{'y'})");
+
+            var rawYResetFlag = await _mainWidget.ScriptDebugAsync(pythonCode.ToString());//复位y
+            var yResetFlag = _mainWidget.ParseScriptDebugResponse(rawYResetFlag);
+            if (yResetFlag != null)
             {
-                MotorId = 1,
-                ActionType = 4,
-                Target = 0,
-                Speed = 300.0f,
-                Acc = 500.0f,
-                Dcc = 500.0f
-            });
-            var result = await _mainWidget.MotorActionAsync(motorActions);
-            if (result == 0)
-                _mainWidget.ShowNotification("设备复位成功", NotificationControl.NotificationType.Info);
+                if (yResetFlag.Result == "succeed")
+                {
+                    _mainWidget.ShowNotification(_mainWidget._res.SettingManualResetSucc, NotificationControl.NotificationType.Info);
+                }
+            }
+            else
+            {
+                _mainWidget.ShowNotification(_mainWidget._res.WindowGrpcComFail, NotificationControl.NotificationType.Error);
+            }
         }
         //复位Z
         private async void btnResetZ_Click(object sender, RoutedEventArgs e)
         {
-            _mainWidget.ShowNotification("设备Z轴复位", NotificationControl.NotificationType.Info);
-            var motorActions = new List<MotorActionParams>();
-            motorActions.Add(new MotorActionParams
+            _mainWidget.ShowNotification(_mainWidget._res.SettingManualStartResetZ, NotificationControl.NotificationType.Info);
+
+            StringBuilder pythonCode = new StringBuilder();
+            pythonCode.AppendLine("from arm import Arm");
+            pythonCode.AppendLine("Arm.reset(1,{'z'})");
+
+            var rawZResetFlag = await _mainWidget.ScriptDebugAsync(pythonCode.ToString());//复位y
+            var zResetFlag = _mainWidget.ParseScriptDebugResponse(rawZResetFlag);
+            if (zResetFlag != null)
             {
-                MotorId = 2,
-                ActionType = 4,
-                Target = 0,
-                Speed = 300.0f,
-                Acc = 500.0f,
-                Dcc = 500.0f
-            });
-            var result = await _mainWidget.MotorActionAsync(motorActions);
-            if (result == 0)
-                _mainWidget.ShowNotification("设备复位成功", NotificationControl.NotificationType.Info);
+                if (zResetFlag.Result == "succeed")
+                {
+                    _mainWidget.ShowNotification(_mainWidget._res.SettingManualResetSucc, NotificationControl.NotificationType.Info);
+                }
+            }
+            else
+            {
+                _mainWidget.ShowNotification(_mainWidget._res.WindowGrpcComFail, NotificationControl.NotificationType.Error);
+            }
         }
         // 微调按钮点击事件
         private void JumpSizeRadio_Click(object sender, RoutedEventArgs e)
@@ -1066,36 +1129,50 @@ namespace OctoFixFlow
             JumpLeftButton.IsEnabled = false;
             JumpRightButton.IsEnabled = false;
         }
+        //Z2方向
+        private void JumpDirectionZ2_Click(object sender, RoutedEventArgs e)
+        {
+            JumpLeftButton.IsEnabled = false;
+            JumpRightButton.IsEnabled = false;
+        }
+        //Z3方向
+
+        private void JumpDirectionZ3_Click(object sender, RoutedEventArgs e)
+        {
+            JumpLeftButton.IsEnabled = false;
+            JumpRightButton.IsEnabled = false;
+        }
         //左(X减少)
         private async void JumpLeftButton_Click(object sender, RoutedEventArgs e)
         {
             if (float.TryParse(txtPlateX.Text, out float currentX))
             {
-                var motorActions = new List<MotorActionParams>();
-                motorActions.Add(new MotorActionParams
+                StringBuilder pythonCode = new StringBuilder();
+                pythonCode.AppendLine("from arm import Arm");
+                pythonCode.AppendLine($"Arm.by(1, {{'x': -{_currentJumpSize}}} )");
+                var rawLeftFlag = await _mainWidget.ScriptDebugAsync(pythonCode.ToString());//z轴上升
+                var leftMoveFlag = _mainWidget.ParseScriptDebugResponse(rawLeftFlag);
+                if (leftMoveFlag != null)
                 {
-                    MotorId = 0,
-                    ActionType = 1,
-                    Target = _currentJumpSize * -1,
-                    Speed = 300.0f,
-                    Acc = 300.0f,
-                    Dcc = 300.0f
-                });
-                var coordinates = await _mainWidget.MotorActionAsync(motorActions);
-                if (coordinates == 0)
-                {
-                    float newX = currentX - _currentJumpSize;
-                    txtPlateX.Text = newX.ToString("F2");
-                    _mainWidget.ShowNotification("设备移动成功", NotificationControl.NotificationType.Info);
+                    if (leftMoveFlag.Result == "succeed")
+                    {
+                        float newX = currentX - _currentJumpSize;
+                        txtPlateX.Text = newX.ToString("F2");
+                        _mainWidget.ShowNotification(_mainWidget._res.SettingManualMoveSucc, NotificationControl.NotificationType.Info);
+                    }
+                    else
+                    {
+                        _mainWidget.ShowNotification(_mainWidget._res.SettingManualMoveFail, NotificationControl.NotificationType.Error);
+                    }
                 }
                 else
                 {
-                    _mainWidget.ShowNotification("设备移动失败", NotificationControl.NotificationType.Warn);
+                    _mainWidget.ShowNotification(_mainWidget._res.WindowGrpcComFail, NotificationControl.NotificationType.Error);
                 }
             }
             else
             {
-                _mainWidget.ShowNotification("坐标格式错误，保存失败", NotificationControl.NotificationType.Error);
+                _mainWidget.ShowNotification(_mainWidget._res.SettingManualMoveCoordinate, NotificationControl.NotificationType.Warn);
             }
         }
         //上
@@ -1105,65 +1182,115 @@ namespace OctoFixFlow
             {
                 if (float.TryParse(txtPlateY.Text, out float currentY))
                 {
-                    var motorActions = new List<MotorActionParams>();
-                    motorActions.Add(new MotorActionParams
+                    StringBuilder pythonCode = new StringBuilder();
+                    pythonCode.AppendLine("from arm import Arm");
+                    pythonCode.AppendLine($"Arm.by(1, {{'y': -{_currentJumpSize}}} )");
+                    var rawUpMoveFlag = await _mainWidget.ScriptDebugAsync(pythonCode.ToString());//z轴上升
+                    var upMoveFlag = _mainWidget.ParseScriptDebugResponse(rawUpMoveFlag);
+                    if (upMoveFlag != null)
                     {
-                        MotorId = 1,
-                        ActionType = 1,
-                        Target = _currentJumpSize * -1,
-                        Speed = 300.0f,
-                        Acc = 300.0f,
-                        Dcc = 300.0f
-                    });
-                    var coordinates = await _mainWidget.MotorActionAsync(motorActions);
-                    if (coordinates == 0)
-                    {
-                        float newY = currentY - _currentJumpSize;
-                        txtPlateY.Text = newY.ToString("F2");
-                        _mainWidget.ShowNotification("设备移动成功", NotificationControl.NotificationType.Info);
+                        if (upMoveFlag.Result == "succeed")
+                        {
+                            float newY = currentY - _currentJumpSize;
+                            txtPlateY.Text = newY.ToString("F2");
+                            _mainWidget.ShowNotification(_mainWidget._res.SettingManualMoveSucc, NotificationControl.NotificationType.Info);
+                        }
+                        else
+                        {
+                            _mainWidget.ShowNotification(_mainWidget._res.SettingManualMoveFail, NotificationControl.NotificationType.Error);
+                        }
                     }
                     else
                     {
-                        _mainWidget.ShowNotification("设备移动失败", NotificationControl.NotificationType.Warn);
+                        _mainWidget.ShowNotification(_mainWidget._res.WindowGrpcComFail, NotificationControl.NotificationType.Error);
                     }
                 }
                 else
                 {
-                    _mainWidget.ShowNotification("坐标格式错误，保存失败", NotificationControl.NotificationType.Error);
+                    _mainWidget.ShowNotification(_mainWidget._res.SettingManualMoveCoordinate, NotificationControl.NotificationType.Warn);
                 }
             }
             else if (jumpZButton.IsChecked == true) //Z
             {
                 if (float.TryParse(txtPlateZ.Text, out float currentZ))
                 {
-                    var motorActions = new List<MotorActionParams>();
-                    motorActions.Add(new MotorActionParams
+                    StringBuilder pythonCode = new StringBuilder();
+                    pythonCode.AppendLine("from arm import Arm");
+                    pythonCode.AppendLine($"Arm.by(1, {{'z': -{_currentJumpSize}}} )");
+                    var rawUpMoveFlag = await _mainWidget.ScriptDebugAsync(pythonCode.ToString());//z轴上升
+                    var upMoveFlag = _mainWidget.ParseScriptDebugResponse(rawUpMoveFlag);
+                    if (upMoveFlag != null)
                     {
-                        MotorId = 2,
-                        ActionType = 1,
-                        Target = _currentJumpSize * -1,
-                        Speed = 120.0f,
-                        Acc = 300.0f,
-                        Dcc = 300.0f
-                    });
-                    var coordinates = await _mainWidget.MotorActionAsync(motorActions);
-                    if (coordinates == 0)
-                    {
-                        float newZ = currentZ - _currentJumpSize;
-                        txtPlateZ.Text = newZ.ToString("F2");
-                        _mainWidget.ShowNotification("设备移动成功", NotificationControl.NotificationType.Info);
+                        if (upMoveFlag.Result == "succeed")
+                        {
+                            float newZ = currentZ - _currentJumpSize;
+                            txtPlateZ.Text = newZ.ToString("F2");
+                            _mainWidget.ShowNotification(_mainWidget._res.SettingManualMoveSucc, NotificationControl.NotificationType.Info);
+                        }
+                        else
+                        {
+                            _mainWidget.ShowNotification(_mainWidget._res.SettingManualMoveFail, NotificationControl.NotificationType.Error);
+                        }
                     }
                     else
                     {
-                        _mainWidget.ShowNotification("设备移动失败", NotificationControl.NotificationType.Warn);
+                        _mainWidget.ShowNotification(_mainWidget._res.WindowGrpcComFail, NotificationControl.NotificationType.Error);
                     }
                 }
                 else
                 {
-                    _mainWidget.ShowNotification("坐标格式错误，保存失败", NotificationControl.NotificationType.Error);
+                    _mainWidget.ShowNotification(_mainWidget._res.SettingManualMoveCoordinate, NotificationControl.NotificationType.Warn);
                 }
             }
+            else if (jumpZ2Button.IsChecked == true) //Z2
+            {
 
+                StringBuilder pythonCode = new StringBuilder();
+                pythonCode.AppendLine("from arm import Arm");
+                pythonCode.AppendLine($"Arm.by(2, {{'z': -{_currentJumpSize}}} )");
+                var rawUpMoveFlag = await _mainWidget.ScriptDebugAsync(pythonCode.ToString());//z轴上升
+                var upMoveFlag = _mainWidget.ParseScriptDebugResponse(rawUpMoveFlag);
+                if (upMoveFlag != null)
+                {
+                    if (upMoveFlag.Result == "succeed")
+                    {
+                        _mainWidget.ShowNotification(_mainWidget._res.SettingManualMoveSucc, NotificationControl.NotificationType.Info);
+                    }
+                    else
+                    {
+                        _mainWidget.ShowNotification(_mainWidget._res.SettingManualMoveFail, NotificationControl.NotificationType.Error);
+                    }
+                }
+                else
+                {
+                    _mainWidget.ShowNotification(_mainWidget._res.WindowGrpcComFail, NotificationControl.NotificationType.Error);
+                }
+            }
+            else if (jumpZ3Button.IsChecked == true) //Z3
+            {
+
+                StringBuilder pythonCode = new StringBuilder();
+                pythonCode.AppendLine("from arm import Arm");
+                pythonCode.AppendLine($"Arm.by(3, {{'z': -{_currentJumpSize}}} )");
+                var rawUpMoveFlag = await _mainWidget.ScriptDebugAsync(pythonCode.ToString());//z轴上升
+                var upMoveFlag = _mainWidget.ParseScriptDebugResponse(rawUpMoveFlag);
+                if (upMoveFlag != null)
+                {
+                    if (upMoveFlag.Result == "succeed")
+                    {
+                        _mainWidget.ShowNotification(_mainWidget._res.SettingManualMoveSucc, NotificationControl.NotificationType.Info);
+                    }
+                    else
+                    {
+                        _mainWidget.ShowNotification(_mainWidget._res.SettingManualMoveFail, NotificationControl.NotificationType.Error);
+                    }
+                }
+                else
+                {
+                    _mainWidget.ShowNotification(_mainWidget._res.WindowGrpcComFail, NotificationControl.NotificationType.Error);
+                }
+
+            }
         }
         //下
         private async void JumpDownButton_Click(object sender, RoutedEventArgs e)
@@ -1172,63 +1299,114 @@ namespace OctoFixFlow
             {
                 if (float.TryParse(txtPlateY.Text, out float currentY))
                 {
-                    var motorActions = new List<MotorActionParams>();
-                    motorActions.Add(new MotorActionParams
+                    StringBuilder pythonCode = new StringBuilder();
+                    pythonCode.AppendLine("from arm import Arm");
+                    pythonCode.AppendLine($"Arm.by(1, {{'y': {_currentJumpSize}}} )");
+                    var rawDownMoveFlag = await _mainWidget.ScriptDebugAsync(pythonCode.ToString());//z轴下降
+                    var downMoveFlag = _mainWidget.ParseScriptDebugResponse(rawDownMoveFlag);
+                    if (downMoveFlag != null)
                     {
-                        MotorId = 1,
-                        ActionType = 1,
-                        Target = _currentJumpSize,
-                        Speed = 300.0f,
-                        Acc = 300.0f,
-                        Dcc = 300.0f
-                    });
-                    var coordinates = await _mainWidget.MotorActionAsync(motorActions);
-                    if (coordinates == 0)
-                    {
-                        float newY = currentY + _currentJumpSize;
-                        txtPlateY.Text = newY.ToString("F2");
-                        _mainWidget.ShowNotification("设备移动成功", NotificationControl.NotificationType.Info);
+                        if (downMoveFlag.Result == "succeed")
+                        {
+                            float newY = currentY + _currentJumpSize;
+                            txtPlateY.Text = newY.ToString("F2");
+                            _mainWidget.ShowNotification(_mainWidget._res.SettingManualMoveSucc, NotificationControl.NotificationType.Info);
+                        }
+                        else
+                        {
+                            _mainWidget.ShowNotification(_mainWidget._res.SettingManualMoveFail, NotificationControl.NotificationType.Error);
+                        }
                     }
                     else
                     {
-                        _mainWidget.ShowNotification("设备移动失败", NotificationControl.NotificationType.Warn);
+                        _mainWidget.ShowNotification(_mainWidget._res.WindowGrpcComFail, NotificationControl.NotificationType.Error);
                     }
                 }
                 else
                 {
-                    _mainWidget.ShowNotification("坐标格式错误，保存失败", NotificationControl.NotificationType.Error);
+                    _mainWidget.ShowNotification(_mainWidget._res.SettingManualMoveCoordinate, NotificationControl.NotificationType.Warn);
                 }
             }
             else if (jumpZButton.IsChecked == true)//Z
             {
                 if (float.TryParse(txtPlateZ.Text, out float currentZ))
                 {
-                    var motorActions = new List<MotorActionParams>();
-                    motorActions.Add(new MotorActionParams
+                    StringBuilder pythonCode = new StringBuilder();
+                    pythonCode.AppendLine("from arm import Arm");
+                    pythonCode.AppendLine($"Arm.by(1, {{'z': {_currentJumpSize}}} )");
+                    var rawDownMoveFlag = await _mainWidget.ScriptDebugAsync(pythonCode.ToString());//z轴下降
+                    var downMoveFlag = _mainWidget.ParseScriptDebugResponse(rawDownMoveFlag);
+                    if (downMoveFlag != null)
                     {
-                        MotorId = 2,
-                        ActionType = 1,
-                        Target = _currentJumpSize,
-                        Speed = 120.0f,
-                        Acc = 300.0f,
-                        Dcc = 300.0f
-                    });
-                    var coordinates = await _mainWidget.MotorActionAsync(motorActions);
-                    if (coordinates == 0)
-                    {
-                        float newZ = currentZ + _currentJumpSize;
-                        txtPlateZ.Text = newZ.ToString("F2");
-                        _mainWidget.ShowNotification("设备移动成功", NotificationControl.NotificationType.Info);
+                        if (downMoveFlag.Result == "succeed")
+                        {
+                            float newZ = currentZ + _currentJumpSize;
+                            txtPlateZ.Text = newZ.ToString("F2");
+                            _mainWidget.ShowNotification(_mainWidget._res.SettingManualMoveSucc, NotificationControl.NotificationType.Info);
+                        }
+                        else
+                        {
+                            _mainWidget.ShowNotification(_mainWidget._res.SettingManualMoveFail, NotificationControl.NotificationType.Error);
+                        }
                     }
                     else
                     {
-                        _mainWidget.ShowNotification("设备移动失败", NotificationControl.NotificationType.Warn);
+                        _mainWidget.ShowNotification(_mainWidget._res.WindowGrpcComFail, NotificationControl.NotificationType.Error);
                     }
                 }
                 else
                 {
-                    _mainWidget.ShowNotification("坐标格式错误，保存失败", NotificationControl.NotificationType.Error);
+                    _mainWidget.ShowNotification(_mainWidget._res.SettingManualMoveCoordinate, NotificationControl.NotificationType.Warn);
                 }
+            }
+            else if (jumpZ2Button.IsChecked == true) //Z2
+            {
+
+                StringBuilder pythonCode = new StringBuilder();
+                pythonCode.AppendLine("from arm import Arm");
+                pythonCode.AppendLine($"Arm.by(2, {{'z': {_currentJumpSize}}} )");
+                var rawUpMoveFlag = await _mainWidget.ScriptDebugAsync(pythonCode.ToString());//z轴上升
+                var upMoveFlag = _mainWidget.ParseScriptDebugResponse(rawUpMoveFlag);
+                if (upMoveFlag != null)
+                {
+                    if (upMoveFlag.Result == "succeed")
+                    {
+                        _mainWidget.ShowNotification(_mainWidget._res.SettingManualMoveSucc, NotificationControl.NotificationType.Info);
+                    }
+                    else
+                    {
+                        _mainWidget.ShowNotification(_mainWidget._res.SettingManualMoveFail, NotificationControl.NotificationType.Error);
+                    }
+                }
+                else
+                {
+                    _mainWidget.ShowNotification(_mainWidget._res.WindowGrpcComFail, NotificationControl.NotificationType.Error);
+                }
+            }
+            else if (jumpZ3Button.IsChecked == true) //Z3
+            {
+
+                StringBuilder pythonCode = new StringBuilder();
+                pythonCode.AppendLine("from arm import Arm");
+                pythonCode.AppendLine($"Arm.by(3, {{'z': {_currentJumpSize}}} )");
+                var rawUpMoveFlag = await _mainWidget.ScriptDebugAsync(pythonCode.ToString());//z轴上升
+                var upMoveFlag = _mainWidget.ParseScriptDebugResponse(rawUpMoveFlag);
+                if (upMoveFlag != null)
+                {
+                    if (upMoveFlag.Result == "succeed")
+                    {
+                        _mainWidget.ShowNotification(_mainWidget._res.SettingManualMoveSucc, NotificationControl.NotificationType.Info);
+                    }
+                    else
+                    {
+                        _mainWidget.ShowNotification(_mainWidget._res.SettingManualMoveFail, NotificationControl.NotificationType.Error);
+                    }
+                }
+                else
+                {
+                    _mainWidget.ShowNotification(_mainWidget._res.WindowGrpcComFail, NotificationControl.NotificationType.Error);
+                }
+
             }
         }
         //右
@@ -1236,66 +1414,55 @@ namespace OctoFixFlow
         {
             if (float.TryParse(txtPlateX.Text, out float currentX))
             {
-                var motorActions = new List<MotorActionParams>();
-                motorActions.Add(new MotorActionParams
+                StringBuilder pythonCode = new StringBuilder();
+                pythonCode.AppendLine("from arm import Arm");
+                pythonCode.AppendLine($"Arm.by(1, {{'x': {_currentJumpSize}}} )");
+                var rawRIghtMoveFlag = await _mainWidget.ScriptDebugAsync(pythonCode.ToString());//z轴下降
+                var rightMoveFlag = _mainWidget.ParseScriptDebugResponse(rawRIghtMoveFlag);
+                if (rightMoveFlag != null)
                 {
-                    MotorId = 0,
-                    ActionType = 1,
-                    Target = _currentJumpSize,
-                    Speed = 300.0f,
-                    Acc = 300.0f,
-                    Dcc = 300.0f
-                });
-                var coordinates = await _mainWidget.MotorActionAsync(motorActions);
-                if (coordinates == 0)
-                {
-                    float newX = currentX + _currentJumpSize;
-                    txtPlateX.Text = newX.ToString("F2");
-                    _mainWidget.ShowNotification("设备移动成功", NotificationControl.NotificationType.Info);
+                    if (rightMoveFlag.Result == "succeed")
+                    {
+                        float newX = currentX + _currentJumpSize;
+                        txtPlateX.Text = newX.ToString("F2");
+                        _mainWidget.ShowNotification(_mainWidget._res.SettingManualMoveSucc, NotificationControl.NotificationType.Info);
+                    }
+                    else
+                    {
+                        _mainWidget.ShowNotification(_mainWidget._res.SettingManualMoveFail, NotificationControl.NotificationType.Error);
+                    }
                 }
                 else
                 {
-                    _mainWidget.ShowNotification("设备移动失败", NotificationControl.NotificationType.Warn);
+                    _mainWidget.ShowNotification(_mainWidget._res.WindowGrpcComFail, NotificationControl.NotificationType.Error);
                 }
             }
             else
             {
-                _mainWidget.ShowNotification("坐标格式错误，保存失败", NotificationControl.NotificationType.Error);
+                _mainWidget.ShowNotification(_mainWidget._res.SettingManualMoveCoordinate, NotificationControl.NotificationType.Warn);
             }
         }
 
         #region 手动控制-模块添加
-        //添加移液器
-        private void AddPipette_Click(object sender, RoutedEventArgs e)
-        {
-            btnAddPipette.Visibility = Visibility.Collapsed;
-            pipetteContainer2.Visibility = Visibility.Visible;
 
-        }
-        //移除移液器
-        private void RemovePipette_Click(object sender, RoutedEventArgs e)
-        {
-            btnAddPipette.Visibility = Visibility.Visible;
-            pipetteContainer2.Visibility = Visibility.Collapsed;
-        }
         private void PipetteSettingOneBtn_Click(object sender, RoutedEventArgs e)
         {
-            TopSettingPopup.Show(0, "pipette_1");
+            TopSettingPopup.Show(0, "pipette_1", 1);
         }
         private void PipetteSettingTwoBtn_Click(object sender, RoutedEventArgs e)
         {
-            TopSettingPopup.Show(0, "pipette_2");
+            TopSettingPopup.Show(0, "pipette_2", 2);
         }
         private void GripperSettingBtn_Click(object sender, RoutedEventArgs e)
         {
-            TopSettingPopup.Show(3, "shift_1");
+            TopSettingPopup.Show(3, "shift_1", 1);
         }
 
-        //添加加热振荡模块
-        private void AddHeatingOscill_Click(object sender, RoutedEventArgs e)
+        private void PCRSettingBtn_Click(object sender, RoutedEventArgs e)
         {
-            AddHeatingOscillModule();
+            TopSettingPopup.Show(4, "PCR_1", 1);
         }
+
         private void AddHeatingOscillModule()
         {
             _heatingOscillCount++;
@@ -1344,42 +1511,26 @@ namespace OctoFixFlow
                 BorderThickness = new Thickness(0),
                 Cursor = Cursors.Hand
             };
+            var primaryColorBrush = Application.Current.Resources["PrimaryColor"] as SolidColorBrush;
+
             editBtn.Content = new System.Windows.Shapes.Path
             {
                 Data = Geometry.Parse("M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"),
-                Fill = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FA4616")),
+                //Fill = (SolidColorBrush)(new BrushConverter().ConvertFrom("#048B46")),
+                Fill = primaryColorBrush,
                 Stretch = Stretch.Uniform
             };
             editBtn.Click += (s, e) =>
             {
-                // 编辑按钮逻辑（打开编辑窗口等）
-                MessageBox.Show($"编辑加热振荡模块：shaker_{_heatingOscillCount}");
+                TopSettingPopup.Show(5, $"shaker_{_heatingOscillCount}", _heatingOscillCount);
             };
             rowPanel.Children.Add(editBtn);
-
-            // 4. 删除按钮
-            var deleteBtn = new Button
-            {
-                Width = 30,
-                Height = 30,
-                Margin = new Thickness(5, 0, 0, 0),
-                Content = "➖",
-                Style = (Style)FindResource("ActionButtonStyle")
-            };
-            deleteBtn.Click += (s, e) =>
-            {
-                // 从容器中移除当前行
-                heatingOscillContainer.Children.Remove(rowPanel);
-                // 从列表中移除模块数据
-                _heatingOscillModules.Remove(newModule);
-            };
-            rowPanel.Children.Add(deleteBtn);
 
             // 将行添加到容器
             heatingOscillContainer.Children.Add(rowPanel);
         }
         //磁吸模块添加
-        private void AddMagnet_Click(object sender, RoutedEventArgs e)
+        private void AddMagnetModule()
         {
             _magneticCount++;
             var newModule = new ModuleDatas { Name = $"magnetic_{_magneticCount}", Type = 6, PlatePosition = "P1" };
@@ -1428,42 +1579,25 @@ namespace OctoFixFlow
                 BorderThickness = new Thickness(0),
                 Cursor = Cursors.Hand
             };
+            var primaryColorBrush = Application.Current.Resources["PrimaryColor"] as SolidColorBrush;
+
             editBtn.Content = new System.Windows.Shapes.Path
             {
                 Data = Geometry.Parse("M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"),
-                Fill = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FA4616")),
+                Fill = primaryColorBrush,
                 Stretch = Stretch.Uniform
             };
             editBtn.Click += (s, e) =>
             {
-                // 编辑按钮逻辑（打开编辑窗口等）
-                MessageBox.Show($"编辑磁吸模块：magnetic_{_magneticCount}");
+                TopSettingPopup.Show(6, $"magnetic_{_magneticCount}", _magneticCount);
             };
             rowPanel.Children.Add(editBtn);
-
-            // 4. 删除按钮
-            var deleteBtn = new Button
-            {
-                Width = 30,
-                Height = 30,
-                Margin = new Thickness(5, 0, 0, 0),
-                Content = "➖",
-                Style = (Style)FindResource("ActionButtonStyle")
-            };
-            deleteBtn.Click += (s, e) =>
-            {
-                // 从容器中移除当前行
-                magnetContainer.Children.Remove(rowPanel);
-                // 从列表中移除模块数据
-                _magneticModules.Remove(newModule);
-            };
-            rowPanel.Children.Add(deleteBtn);
 
             // 将行添加到容器
             magnetContainer.Children.Add(rowPanel);
         }
         //温控模块添加
-        private void AddTempControl_Click(object sender, RoutedEventArgs e)
+        private void AddTempControlModule()
         {
             _tempCount++;
             var newModule = new ModuleDatas { Name = $"tempctrl_{_tempCount}", Type = 7, PlatePosition = "P1" };
@@ -1511,40 +1645,25 @@ namespace OctoFixFlow
                 BorderThickness = new Thickness(0),
                 Cursor = Cursors.Hand
             };
+            var primaryColorBrush = Application.Current.Resources["PrimaryColor"] as SolidColorBrush;
+
             editBtn.Content = new System.Windows.Shapes.Path
             {
                 Data = Geometry.Parse("M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"),
-                Fill = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FA4616")),
+                Fill = primaryColorBrush,
                 Stretch = Stretch.Uniform
             };
             editBtn.Click += (s, e) =>
             {
-                // 编辑按钮逻辑（打开编辑窗口等）
-                MessageBox.Show($"编辑温控模块：tempctrl_{_tempCount}");
+                TopSettingPopup.Show(7, $"tempctrl_{_tempCount}", _tempCount);
+
             };
             rowPanel.Children.Add(editBtn);
-
-            // 4. 删除按钮
-            var deleteBtn = new Button
-            {
-                Width = 30,
-                Height = 30,
-                Margin = new Thickness(5, 0, 0, 0),
-                Content = "➖",
-                Style = (Style)FindResource("ActionButtonStyle")
-            };
-            deleteBtn.Click += (s, e) =>
-            {
-                // 从容器中移除当前行
-                tempControlContainer.Children.Remove(rowPanel);
-                // 从列表中移除模块数据
-                _tempModules.Remove(newModule);
-            };
-            rowPanel.Children.Add(deleteBtn);
 
             // 将行添加到容器
             tempControlContainer.Children.Add(rowPanel);
         }
+
 
         #endregion
 

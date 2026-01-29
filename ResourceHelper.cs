@@ -51,6 +51,8 @@ namespace OctoFixFlow
         public string WindowActionTipOff => IsEnglish ? Resource.Resource_en.WindowActionTipOff : Resource.Resource_zh.WindowActionTipOff;
         public string WindowActionTipOn => IsEnglish ? Resource.Resource_en.WindowActionTipOn : Resource.Resource_zh.WindowActionTipOn;
         public string WindowActionUV => IsEnglish ? Resource.Resource_en.WindowActionUV : Resource.Resource_zh.WindowActionUV;
+        //摄像头 Camera
+        public string WindowActionCamera => IsEnglish ? Resource.Resource_en.WindowActionCamera : Resource.Resource_zh.WindowActionCamera;
         public string WindowActionWait => IsEnglish ? Resource.Resource_en.WindowActionWait : Resource.Resource_zh.WindowActionWait;
         //移载 /Transfer
         public string WindowActionTransfer => IsEnglish ? Resource.Resource_en.WindowActionTransfer : Resource.Resource_zh.WindowActionTransfer;
@@ -64,13 +66,19 @@ namespace OctoFixFlow
         public string WindowActionTemperature => IsEnglish ? Resource.Resource_en.WindowActionTemperature : Resource.Resource_zh.WindowActionTemperature;
         //热循环 /PCR
         public string WindowActionPCR => IsEnglish ? Resource.Resource_en.WindowActionPCR : Resource.Resource_zh.WindowActionPCR;
+        //循环 /Loop
+        public string WindowActionLoop => IsEnglish ? Resource.Resource_en.WindowActionLoop : Resource.Resource_zh.WindowActionLoop;
+        //结束循环 /endLoop
+        public string WindowActionEndLoop => IsEnglish ? Resource.Resource_en.WindowActionEndLoop : Resource.Resource_zh.WindowActionEndLoop;
         public string WindowBoardPosition => IsEnglish ? Resource.Resource_en.WindowBoardPosition : Resource.Resource_zh.WindowBoardPosition;
+        public string WindowBoardToopTip => IsEnglish ? Resource.Resource_en.WindowBoardToopTip : Resource.Resource_zh.WindowBoardToopTip;
         public string WindowConsumablesWarehouse => IsEnglish ? Resource.Resource_en.WindowConsumablesWarehouse : Resource.Resource_zh.WindowConsumablesWarehouse;
         public string WindowLoginCancel => IsEnglish ? Resource.Resource_en.WindowLoginCancel : Resource.Resource_zh.WindowLoginCancel;
         public string WindowLoginOK => IsEnglish ? Resource.Resource_en.WindowLoginOK : Resource.Resource_zh.WindowLoginOK;
         //自动加载仪器已配置设备/Auto load preconfigured devices in the instrument
         public string WindowLoginCheck => IsEnglish ? Resource.Resource_en.WindowLoginCheck : Resource.Resource_zh.WindowLoginCheck;
-
+        //记住用户名/Remember Username
+        public string WindowLoginRememberUser => IsEnglish ? Resource.Resource_en.WindowLoginRememberUser : Resource.Resource_zh.WindowLoginRememberUser;
         public string WindowLoginPass => IsEnglish ? Resource.Resource_en.WindowLoginPass : Resource.Resource_zh.WindowLoginPass;
         public string WindowLoginPassTitle => IsEnglish ? Resource.Resource_en.WindowLoginPassTitle : Resource.Resource_zh.WindowLoginPassTitle;
         public string WindowLoginUser => IsEnglish ? Resource.Resource_en.WindowLoginUser : Resource.Resource_zh.WindowLoginUser;
@@ -78,9 +86,19 @@ namespace OctoFixFlow
         public string WindowLogOut => IsEnglish ? Resource.Resource_en.WindowLogOut : Resource.Resource_zh.WindowLogOut;
         public string WindowOneclickdeletion => IsEnglish ? Resource.Resource_en.WindowOneclickdeletion : Resource.Resource_zh.WindowOneclickdeletion;
         public string WindowProcessList => IsEnglish ? Resource.Resource_en.WindowProcessList : Resource.Resource_zh.WindowProcessList;
+        //切换  Toggle
         public string Windowrapidgenerating => IsEnglish ? Resource.Resource_en.Windowrapidgenerating : Resource.Resource_zh.Windowrapidgenerating;
+        //设备运行信息	  Device Running Information
+        public string RunningTitle => IsEnglish ? Resource.Resource_en.RunningTitle : Resource.Resource_zh.RunningTitle;
+        //开始时间	  Start Time
+        public string RunningStartTime => IsEnglish ? Resource.Resource_en.RunningStartTime : Resource.Resource_zh.RunningStartTime;
+        //设备状态	  Device Status
+        public string RunningDeviceStatus => IsEnglish ? Resource.Resource_en.RunningDeviceStatus : Resource.Resource_zh.RunningDeviceStatus;
+        //运行时间	  Running Time
+        public string RunningRunningTime => IsEnglish ? Resource.Resource_en.RunningRunningTime : Resource.Resource_zh.RunningRunningTime;
+        //运行进度	  Running Progress
+        public string RunningRunningProgress => IsEnglish ? Resource.Resource_en.RunningRunningProgress : Resource.Resource_zh.RunningRunningProgress;
         public string WindowStepdetails => IsEnglish ? Resource.Resource_en.WindowStepdetails : Resource.Resource_zh.WindowStepdetails;
-        public string WindowStepdetails2 => IsEnglish ? Resource.Resource_en.WindowStepdetails2 : Resource.Resource_zh.WindowStepdetails2;
         public string WindowTitle => IsEnglish ? Resource.Resource_en.WindowTitle : Resource.Resource_zh.WindowTitle;
         public string WindowUser => IsEnglish ? Resource.Resource_en.WindowUser : Resource.Resource_zh.WindowUser;
         public string WindowUserName => IsEnglish ? Resource.Resource_en.WindowUserName : Resource.Resource_zh.WindowUserName;
@@ -88,7 +106,8 @@ namespace OctoFixFlow
         // 运行信息（Running Info）
         public string WindowRunningMessage => IsEnglish ? Resource.Resource_en.WindowRunningMessage : Resource.Resource_zh.WindowRunningMessage;
 
-
+        // 通信失败（gRPC communication failed）
+        public string WindowGrpcComFail => IsEnglish ? Resource.Resource_en.WindowGrpcComFail : Resource.Resource_zh.WindowGrpcComFail;
 
         public string SettingTitle => IsEnglish ? Resource.Resource_en.SettingTitle : Resource.Resource_zh.SettingTitle;
         public string SettingConsTitile => IsEnglish ? Resource.Resource_en.SettingConsTitile : Resource.Resource_zh.SettingConsTitile;
@@ -172,6 +191,18 @@ namespace OctoFixFlow
         public string SettingManualPlatePositionCalibration => IsEnglish ? Resource.Resource_en.SettingManualPlatePositionCalibration : Resource.Resource_zh.SettingManualPlatePositionCalibration;
         public string SettingManualSelectPlatePosition => IsEnglish ? Resource.Resource_en.SettingManualSelectPlatePosition : Resource.Resource_zh.SettingManualSelectPlatePosition;
         public string SettingManualCurrentPlateCoordinates => IsEnglish ? Resource.Resource_en.SettingManualCurrentPlateCoordinates : Resource.Resource_zh.SettingManualCurrentPlateCoordinates;
+        //板位信息获取 Retrieve plate position information
+        public string SettingManualGetPlate => IsEnglish ? Resource.Resource_en.SettingManualGetPlate : Resource.Resource_zh.SettingManualGetPlate;
+        //板位信息获取成功 Successfully retrieved plate position data
+        public string SettingManualGetPlateSucc => IsEnglish ? Resource.Resource_en.SettingManualGetPlateSucc : Resource.Resource_zh.SettingManualGetPlateSucc;
+        //板位信息获取失败 Failed to get plate position info
+        public string SettingManualGetPlateFail => IsEnglish ? Resource.Resource_en.SettingManualGetPlateFail : Resource.Resource_zh.SettingManualGetPlateFail;
+        //请先选择板位 Please select the plate position first
+        public string SettingManualSetPlateNull => IsEnglish ? Resource.Resource_en.SettingManualSetPlateNull : Resource.Resource_zh.SettingManualSetPlateNull;
+        //板位信息保存成功 Successfully saved plate position data
+        public string SettingManualSetPlateSucc => IsEnglish ? Resource.Resource_en.SettingManualSetPlateSucc : Resource.Resource_zh.SettingManualSetPlateSucc;
+        //板位信息保存失败 Failed to set plate position info
+        public string SettingManualSetPlateFail => IsEnglish ? Resource.Resource_en.SettingManualSetPlateFail : Resource.Resource_zh.SettingManualSetPlateFail;
         public string SettingManualXCoordinate => IsEnglish ? Resource.Resource_en.SettingManualXCoordinate : Resource.Resource_zh.SettingManualXCoordinate;
         public string SettingManualYCoordinate => IsEnglish ? Resource.Resource_en.SettingManualYCoordinate : Resource.Resource_zh.SettingManualYCoordinate;
         public string SettingManualZCoordinate => IsEnglish ? Resource.Resource_en.SettingManualZCoordinate : Resource.Resource_zh.SettingManualZCoordinate;
@@ -181,6 +212,14 @@ namespace OctoFixFlow
         public string SettingManualResetX => IsEnglish ? Resource.Resource_en.SettingManualResetX : Resource.Resource_zh.SettingManualResetX;
         public string SettingManualResetY => IsEnglish ? Resource.Resource_en.SettingManualResetY : Resource.Resource_zh.SettingManualResetY;
         public string SettingManualResetZ => IsEnglish ? Resource.Resource_en.SettingManualResetZ : Resource.Resource_zh.SettingManualResetZ;
+        //设备X轴复位 Reset the X-axis of the equipment
+        public string SettingManualStartResetX => IsEnglish ? Resource.Resource_en.SettingManualStartResetX : Resource.Resource_zh.SettingManualStartResetX;
+        //设备Y轴复位 Reset the Y-axis of the equipment
+        public string SettingManualStartResetY => IsEnglish ? Resource.Resource_en.SettingManualStartResetY : Resource.Resource_zh.SettingManualStartResetY;
+        //设备Z轴复位 Reset the Z-axis of the equipment
+        public string SettingManualStartResetZ => IsEnglish ? Resource.Resource_en.SettingManualStartResetZ : Resource.Resource_zh.SettingManualStartResetZ;
+        //设备复位成功 Device reset successful
+        public string SettingManualResetSucc => IsEnglish ? Resource.Resource_en.SettingManualResetSucc : Resource.Resource_zh.SettingManualResetSucc;
         public string SettingManualCoordinateFineAdjustment => IsEnglish ? Resource.Resource_en.SettingManualCoordinateFineAdjustment : Resource.Resource_zh.SettingManualCoordinateFineAdjustment;
         //方向控制
         public string SettingManualCoordinateDirectionControl => IsEnglish ? Resource.Resource_en.SettingManualCoordinateDirectionControl : Resource.Resource_zh.SettingManualCoordinateDirectionControl;
@@ -194,6 +233,16 @@ namespace OctoFixFlow
         public string SettingManualXAndY => IsEnglish ? Resource.Resource_en.SettingManualXAndY : Resource.Resource_zh.SettingManualXAndY;
         //Ｚ方向　Z－axis
         public string SettingManualZAxis => IsEnglish ? Resource.Resource_en.SettingManualZAxis : Resource.Resource_zh.SettingManualZAxis;
+        //Ｚ2方向　Z2－axis
+        public string SettingManualZ2Axis => IsEnglish ? Resource.Resource_en.SettingManualZ2Axis : Resource.Resource_zh.SettingManualZ2Axis;
+        //Ｚ3方向　Z3－axis
+        public string SettingManualZ3Axis => IsEnglish ? Resource.Resource_en.SettingManualZ3Axis : Resource.Resource_zh.SettingManualZ3Axis;
+        //设备移动成功　Arm moved successfully
+        public string SettingManualMoveSucc => IsEnglish ? Resource.Resource_en.SettingManualMoveSucc : Resource.Resource_zh.SettingManualMoveSucc;
+        //设备移动失败　Arm movement failed
+        public string SettingManualMoveFail => IsEnglish ? Resource.Resource_en.SettingManualMoveFail : Resource.Resource_zh.SettingManualMoveFail;
+        //数据格式错误　Data format error
+        public string SettingManualMoveCoordinate => IsEnglish ? Resource.Resource_en.SettingManualMoveCoordinate : Resource.Resource_zh.SettingManualMoveCoordinate;
         //方向键
         public string SettingManualArrowKeys => IsEnglish ? Resource.Resource_en.SettingManualArrowKeys : Resource.Resource_zh.SettingManualArrowKeys;
         //Shift＋方向键
@@ -217,6 +266,50 @@ namespace OctoFixFlow
         public string SettingManualGripperOpen => IsEnglish ? Resource.Resource_en.SettingManualGripperOpen : Resource.Resource_zh.SettingManualGripperOpen;
         // 关闭抓手 (Close the gripper）
         public string SettingManualGripperClose => IsEnglish ? Resource.Resource_en.SettingManualGripperClose : Resource.Resource_zh.SettingManualGripperClose;
+        //磁吸控制/Magnetic control
+        public string SettingManualMagneticControl => IsEnglish ? Resource.Resource_en.SettingManualMagneticControl : Resource.Resource_zh.SettingManualMagneticControl;
+        // 上升磁吸 (Up the magnetic）
+        public string SettingManualMagneticUp => IsEnglish ? Resource.Resource_en.SettingManualMagneticUp : Resource.Resource_zh.SettingManualMagneticUp;
+        // 下降磁吸 (Down the mnetic）
+        public string SettingManualMagneticDown => IsEnglish ? Resource.Resource_en.SettingManualMagneticDown : Resource.Resource_zh.SettingManualMagneticDown;
+        //加热振荡控制/Shaker control
+        public string SettingManualShakerControl => IsEnglish ? Resource.Resource_en.SettingManualShakerControl : Resource.Resource_zh.SettingManualShakerControl;
+        //温度控制/Temp control
+        public string SettingManualShakerTempControl => IsEnglish ? Resource.Resource_en.SettingManualShakerTempControl : Resource.Resource_zh.SettingManualShakerTempControl;
+        //当前温度（℃）：/Current Temperature (℃):
+        public string SettingManualShakerTempCurrent => IsEnglish ? Resource.Resource_en.SettingManualShakerTempCurrent : Resource.Resource_zh.SettingManualShakerTempCurrent;
+        //设定温度（℃）：/Set Temperature (℃):
+        public string SettingManualShakerTempSet => IsEnglish ? Resource.Resource_en.SettingManualShakerTempSet : Resource.Resource_zh.SettingManualShakerTempSet;
+        //开始温度/Start Temperature
+        public string SettingManualStartTemperature => IsEnglish ? Resource.Resource_en.SettingManualStartTemperature : Resource.Resource_zh.SettingManualStartTemperature;
+        //停止温度/Stop Temperature
+        public string SettingManualStopTemperature => IsEnglish ? Resource.Resource_en.SettingManualStopTemperature : Resource.Resource_zh.SettingManualStopTemperature;
+        //振荡控制/Shaking Control	
+        public string SettingManualShakerShakingControl => IsEnglish ? Resource.Resource_en.SettingManualShakerShakingControl : Resource.Resource_zh.SettingManualShakerShakingControl;
+        //当前转速（RPM）：/Current Speed (RPM):
+        public string SettingManualShakerShakingCurrent => IsEnglish ? Resource.Resource_en.SettingManualShakerShakingCurrent : Resource.Resource_zh.SettingManualShakerShakingCurrent;
+        //设定转速（RPM）：/Set Speed (RPM):
+        public string SettingManualShakerShakingSet => IsEnglish ? Resource.Resource_en.SettingManualShakerShakingSet : Resource.Resource_zh.SettingManualShakerShakingSet;
+        //设定时间（秒）：/Set Time (S):
+        public string SettingManualShakerShakingTimeSet => IsEnglish ? Resource.Resource_en.SettingManualShakerShakingTimeSet : Resource.Resource_zh.SettingManualShakerShakingTimeSet;
+        //开始振荡/Start Shaking
+        public string SettingManualStartShaking => IsEnglish ? Resource.Resource_en.SettingManualStartShaking : Resource.Resource_zh.SettingManualStartShaking;
+        //停止振荡/Stop Shaking
+        public string SettingManualStopShaking => IsEnglish ? Resource.Resource_en.SettingManualStopShaking : Resource.Resource_zh.SettingManualStopShaking;
+        //PCR控制/PCR control
+        public string SettingManualPCRControl => IsEnglish ? Resource.Resource_en.SettingManualPCRControl : Resource.Resource_zh.SettingManualPCRControl;
+        //运行脚本/Run Script
+        public string SettingManualPCRScriptRun => IsEnglish ? Resource.Resource_en.SettingManualPCRScriptRun : Resource.Resource_zh.SettingManualPCRScriptRun;
+        //开始运行/Start Run
+        public string SettingManualPCRStart => IsEnglish ? Resource.Resource_en.SettingManualPCRStart : Resource.Resource_zh.SettingManualPCRStart;
+        //停止运行/Stop Run
+        public string SettingManualPCRStop => IsEnglish ? Resource.Resource_en.SettingManualPCRStop : Resource.Resource_zh.SettingManualPCRStop;
+        //开盖/Open Lid
+        public string SettingManualPCROpen => IsEnglish ? Resource.Resource_en.SettingManualPCROpen : Resource.Resource_zh.SettingManualPCROpen;
+        //关盖/Close Lid
+        public string SettingManualPCRClose => IsEnglish ? Resource.Resource_en.SettingManualPCRClose : Resource.Resource_zh.SettingManualPCRClose;
+        //脚本选择/Script Selection
+        public string SettingManualPCRSelection => IsEnglish ? Resource.Resource_en.SettingManualPCRSelection : Resource.Resource_zh.SettingManualPCRSelection;
         public string SettingManualClose => IsEnglish ? Resource.Resource_en.SettingManualClose : Resource.Resource_zh.SettingManualClose;
         public string QuickTitile => IsEnglish ? Resource.Resource_en.QuickTitile : Resource.Resource_zh.QuickTitile;
         public string QuickSampleQty => IsEnglish ? Resource.Resource_en.QuickSampleQty : Resource.Resource_zh.QuickSampleQty;
@@ -234,6 +327,8 @@ namespace OctoFixFlow
         public string SettingManualSingleChannel => IsEnglish ? Resource.Resource_en.SettingManualSingleChannel : Resource.Resource_zh.SettingManualSingleChannel;
         //八通道  Eight Channel
         public string SettingManualEightChannel => IsEnglish ? Resource.Resource_en.SettingManualEightChannel : Resource.Resource_zh.SettingManualEightChannel;
+        //96通道  96-Channel
+        public string SettingManualNineSixChannel => IsEnglish ? Resource.Resource_en.SettingManualNineSixChannel : Resource.Resource_zh.SettingManualNineSixChannel;
         //抓手  Gripper
         public string SettingManualGripper => IsEnglish ? Resource.Resource_en.SettingManualGripper : Resource.Resource_zh.SettingManualGripper;
         //功能模块  Functional Modules
@@ -366,6 +461,12 @@ namespace OctoFixFlow
         public string StepDetailTransferFrom => IsEnglish ? Resource.Resource_en.StepDetailTransferFrom : Resource.Resource_zh.StepDetailTransferFrom;
         // （“终止板位：”/“To Slot:”）
         public string StepDetailTransferTo => IsEnglish ? Resource.Resource_en.StepDetailTransferTo : Resource.Resource_zh.StepDetailTransferTo;
+        // （“下压距离：”/“Press-Down Distance:”）
+        public string StepDetailTransferPosition => IsEnglish ? Resource.Resource_en.StepDetailTransferPosition : Resource.Resource_zh.StepDetailTransferPosition;
+        // （“温控动作”/“TempCtrl Action”）
+        public string StepDetailTempCtrlAction => IsEnglish ? Resource.Resource_en.StepDetailTempCtrlAction : Resource.Resource_zh.StepDetailTempCtrlAction;
+        // （“PCR动作”/“PCR procedure”）
+        public string StepDetailPCRprocedure => IsEnglish ? Resource.Resource_en.StepDetailPCRprocedure : Resource.Resource_zh.StepDetailPCRprocedure;
         #endregion
 
         #region 步骤详情 - 提示/通知类
@@ -399,8 +500,6 @@ namespace OctoFixFlow
         public string GrpcIniting => IsEnglish ? Resource.Resource_en.GrpcIniting : Resource.Resource_zh.GrpcIniting;
         // 设备复位成功（Device reset successful）
         public string GrpcInitSucc => IsEnglish ? Resource.Resource_en.GrpcInitSucc : Resource.Resource_zh.GrpcInitSucc;
-        // 设备门未关闭（Device door not closed）
-        public string GrpcFailDoor => IsEnglish ? Resource.Resource_en.GrpcFailDoor : Resource.Resource_zh.GrpcFailDoor;
         // 流程未停止（Process has not stopped）
         public string GrpcStartRunning => IsEnglish ? Resource.Resource_en.GrpcStartRunning : Resource.Resource_zh.GrpcStartRunning;
         // 选择要加载的脚本文件（Select Script File to Load）
@@ -409,6 +508,8 @@ namespace OctoFixFlow
         public string OpenFileDialog_Filter => IsEnglish ? Resource.Resource_en.OpenFileDialog_Filter : Resource.Resource_zh.OpenFileDialog_Filter;
         // 选择的文件为空 (The selected file is empty）
         public string OpenFileDialog_Empty => IsEnglish ? Resource.Resource_en.OpenFileDialog_Empty : Resource.Resource_zh.OpenFileDialog_Empty;
+        // 不支持的文件格式！ (Unsupported file format!）
+        public string OpenFileDialog_ErrFormal => IsEnglish ? Resource.Resource_en.OpenFileDialog_ErrFormal : Resource.Resource_zh.OpenFileDialog_ErrFormal;
         // 读取文件失败 (Failed to read the file）
         public string OpenFileDialog_Error => IsEnglish ? Resource.Resource_en.OpenFileDialog_Error : Resource.Resource_zh.OpenFileDialog_Error;
         // 脚本加载成功 (Script loading successful）
@@ -464,8 +565,6 @@ namespace OctoFixFlow
         // 操作成功 (Operate successfully）
         public string DeviceOperationSucc => IsEnglish ? Resource.Resource_en.DeviceOperationSucc : Resource.Resource_zh.DeviceOperationSucc;
 
-        // 等待时间提示（“Note: Waiting time will be auto-converted to milliseconds.”/“提示：等待时间将自动转换为毫秒执行”）
-        public string StepDetailWaitNote => IsEnglish ? Resource.Resource_en.StepDetailWaitNote : Resource.Resource_zh.StepDetailWaitNote;
         // 吸液/注液支持耗材提示（“Only supports microplates or reservoirs”/“吸液/注液步骤仅支持微孔板或储液槽”）
         public string StepDetailAspDispConsTip => IsEnglish ? Resource.Resource_en.StepDetailAspDispConsTip : Resource.Resource_zh.StepDetailAspDispConsTip;
         // 取头/退头支持耗材提示（“Only supports tip boxes or waste bins”/“取头/退头步骤仅支持TIP盒或垃圾桶”）

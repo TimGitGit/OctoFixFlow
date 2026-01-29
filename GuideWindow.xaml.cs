@@ -84,9 +84,15 @@ namespace OctoFixFlow
 
         private void GuideConfirmButton_Click(object sender, RoutedEventArgs e)
         {
-            AppGlobalConfig.Instance.GuideProtocolName = guideProtocolNameTextBox.Text;
+            if (guideProtocolNameTextBox.Text == "")
+                AppGlobalConfig.Instance.GuideProtocolName = "untitled";
+            else
+                AppGlobalConfig.Instance.GuideProtocolName = guideProtocolNameTextBox.Text;
+            if (guideProtocolAuthorTextBox.Text == "")
+                AppGlobalConfig.Instance.GuideProtocolAuthor = "User";
+            else
+                AppGlobalConfig.Instance.GuideProtocolAuthor = guideProtocolNameTextBox.Text;
             AppGlobalConfig.Instance.GuideProtocolDescription = guideProtocolDescriptionTextBox.Text;
-            AppGlobalConfig.Instance.GuideProtocolAuthor = guideProtocolAuthorTextBox.Text;
 
             AppGlobalConfig.Instance.RenameModulesByType();
             //判断一下移液器
@@ -95,6 +101,10 @@ namespace OctoFixFlow
             if (cmbPipette1.SelectedIndex == 1)
             {
                 pipetteType1 = 1;
+            }
+            else if (cmbPipette1.SelectedIndex == 2)
+            {
+                pipetteType1 = 2;
             }
             int pipetteVolume1 = 200;
             if (cmbPipetteVolume.SelectedIndex == 1)
@@ -105,7 +115,7 @@ namespace OctoFixFlow
             {
                 Name = "pipette_1",
                 Type = pipetteType1,
-                PlatePosition = "",
+                PlatePosition = "13",
                 PipetteVolume = pipetteVolume1,
                 ModuleImage = ""
             };
@@ -127,7 +137,7 @@ namespace OctoFixFlow
                 {
                     Name = "pipette_2",
                     Type = pipetteType2,
-                    PlatePosition = "",
+                    PlatePosition = "14",
                     PipetteVolume = pipetteVolume2,
                     ModuleImage = ""
                 };
@@ -155,10 +165,26 @@ namespace OctoFixFlow
             }
             else if (pipetteContainer2.Visibility == Visibility.Collapsed)
             {
+
                 pipetteContainer2.Visibility = Visibility.Visible;
             }
         }
+        private void cmbPipette1_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            bool is96ChannelSelected = cmbPipette1.SelectedItem is ComboBoxItem item &&
+                                       item.Content.ToString() == ResourceHelper.Instance.SettingManualNineSixChannel;
+            btnAddPipette.IsEnabled = !is96ChannelSelected;
 
+
+            if (is96ChannelSelected)
+            {
+
+                cmbPipette2.SelectedIndex = 0;
+                cmbPipetteVolume2.SelectedIndex = 0;
+                pipetteContainer2.Visibility = Visibility.Collapsed;
+            }
+
+        }
         private void RemovePipette1_Click(object sender, RoutedEventArgs e)
         {
             if (pipetteContainer2.Visibility == Visibility.Visible)
@@ -206,6 +232,7 @@ namespace OctoFixFlow
         private void EnableGripper_Click(object sender, RoutedEventArgs e)
         {
             AppGlobalConfig.Instance.IsGripperEnabled = !AppGlobalConfig.Instance.IsGripperEnabled;
+            string plateId = "15";
 
             if (AppGlobalConfig.Instance.IsGripperEnabled)
             {
@@ -213,10 +240,27 @@ namespace OctoFixFlow
                 {
                     Source = new BitmapImage(new Uri("/OctoFixFlow;component/images/gou.png", UriKind.Relative))
                 };
+                var gripperModule = new ModuleDatas
+                {
+                    Name = "gripper_1",
+                    Type = 3,
+                    PlatePosition = plateId,
+                    PipetteVolume = 0,
+                };
+                AppGlobalConfig.Instance.AddOrUpdateModule(plateId, gripperModule);
             }
             else
             {
                 btnToggleGripper.Content = "❌";
+                var newModule = new ModuleDatas
+                {
+                    Name = "",
+                    Type = -1,
+                    PlatePosition = plateId,
+                    PipetteVolume = 0,
+                    ModuleImage = ""
+                };
+                AppGlobalConfig.Instance.AddOrUpdateModule(plateId, newModule);
             }
         }
 
@@ -387,15 +431,17 @@ namespace OctoFixFlow
                     return;
                 }
                 ClearPlateContent(plateId);
-                var newModule = new ModuleDatas
-                {
-                    Name = "",
-                    Type = -1,
-                    PlatePosition = plateId, // 用传入的 plateId 赋值
-                    PipetteVolume = 0,
-                    ModuleImage = ""
-                };
-                AppGlobalConfig.Instance.AddOrUpdateModule(plateId, newModule);
+                //var newModule = new ModuleDatas
+                //{
+                //    Name = "",
+                //    Type = -1,
+                //    PlatePosition = plateId, // 用传入的 plateId 赋值
+                //    PipetteVolume = 0,
+                //    ModuleImage = ""
+                //};
+
+                //AppGlobalConfig.Instance.AddOrUpdateModule(plateId, newModule);
+                AppGlobalConfig.Instance.DeleteModule(plateId);
 
 
                 e.Handled = true;
@@ -445,5 +491,7 @@ namespace OctoFixFlow
             }
         }
         #endregion
+
+
     }
 }

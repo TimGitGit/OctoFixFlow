@@ -1,28 +1,23 @@
-﻿using CommonModel;
-using DataEngine;
-using Grpc.Core;
+﻿using Google.Protobuf.WellKnownTypes;
 using Grpc.Net.Client;
-using MotorModule;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using PipetteModule;
-using ScriptEngine;
+using QybotrunPkg;
 using Serilog;
 using System.Collections.ObjectModel;
+using System.Data;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using static CommonModel.CommonModel;
-using static DataEngine.DataEngine;
-using static MotorModule.MotorModule;
-using static PipetteModule.PipetteModule;
+using System.Windows.Threading;
+using static QybotrunPkg.qybotrun;
 using static ScriptEngine.ScriptEngine;
-using static ShiftModule.ShiftrModule;
 namespace OctoFixFlow
 {
     /// <summary>
@@ -31,59 +26,68 @@ namespace OctoFixFlow
     public partial class MainWidget : Window
     {
         public readonly ResourceHelper _res;
+        private SettingPopupControl TopSettingPopup;
 
-        public ObservableCollection<string> RunLogs { get; } = new ObservableCollection<string>();
         private DatabaseService databaseService;
         private const int MAX_NOTIFICATIONS = 3;//14.6  12.9
 
         // 耗材项数据集合（绑定到ItemsControl）
         public ObservableCollection<ConsumableItem> Consumables { get; set; }
         // 记录板位与耗材的关联（板位编号 -> 耗材）
-        private Dictionary<string, ConsumableItem> _plateConsumableMap = new Dictionary<string, ConsumableItem>();
+        public Dictionary<string, ConsumableItem> _plateConsumableMap = new Dictionary<string, ConsumableItem>();
         // 记录当前鼠标所在的板位
         private Border _currentHoveredPlate = null;
         // 流程步骤集合
         public ObservableCollection<FlowStep> FlowSteps { get; set; }
         private int _stepIndex = 1; // 步骤序号计数器
-        private string _currentSelectedPlateId;    // 记录当前选中的板位ID
+        private int _stepClickIndex = 1; // 步骤序号计数器
+        public string _currentSelectedPlateId;    // 记录当前选中的板位ID
+
+        private int _currentLevel = 0;
+        private Stack<int> _levelStack = new Stack<int>();
+
         //液体类
         public ObservableCollection<LiquidSettings> Liquids { get; set; }
 
         //grpc
+        public class ScriptDebugParsedResult
+        {
+            /// <summary>
+            /// 核心数据（对应JSON的data字段）
+            /// </summary>
+            public string Data { get; set; }
+
+            /// <summary>
+            /// 详情描述（对应JSON的details字段）
+            /// </summary>
+            public string Details { get; set; }
+
+            /// <summary>
+            /// 执行结果（对应JSON的result字段，如succeed/fail）
+            /// </summary>
+            public string Result { get; set; }
+        }
         private GrpcChannel _channel;
-        private CommonModelClient _commonClient;//通用模块
-        private DataEngineClient _dataEngineClient;//数据库
-        private MotorModuleClient _MotorClient;//电机
-        private PipetteModuleClient _pipetteClient;//移液器
         private ScriptEngineClient _ScriptClient;//数据通信
-        private ShiftrModuleClient _ShiftClient;//抓手
+        private qybotrunClient _qybotrunClient;//qypython通信
+
 
         private float UVFlag = 0;//0:close;1:open
         private float LightFlag = 0;//0:close;1:open
-        public float DoorFlag = 0;//1：当前未关上
         public bool runFlag = false;
         public bool pauseFlag = false;
-        //grpc
-        /// <summary>
-        /// 脚本监控事件（对应C++的monitorDataReceived信号）
-        /// </summary>
-        public event EventHandler<ScriptMonitorEventArgs> MonitorDataReceived;
-        private CancellationTokenSource _monitorCts;
-        // 添加私有变量记录上一次日志的步骤和状态，用于避免重复日志
-        private int _lastLoggedStep = -1;
-        private string _lastLoggedState = "";
+
+
+
         public MainWidget()
         {
             InitializeComponent();
             _res = ResourceHelper.Instance;
             databaseService = new DatabaseService();
-
             DataContext = this;
             InitializeLanguage();
             //GRPC
             InitializeGrpcClient();
-            _ = LoadDeviceStatus();
-
             //GRPC
             Consumables = new ObservableCollection<ConsumableItem>();
             _ = LoadConsumablesData();
@@ -96,19 +100,25 @@ namespace OctoFixFlow
                 Index = 1,
                 Type = "start",
                 IsSelected = false,
-                IsSystemStep = true
+                IsSystemStep = true,
+                Level = 0
             });
             FlowSteps.Add(new FlowStep
             {
                 Index = 2,
                 Type = "end",
                 IsSelected = false,
-                IsSystemStep = true
+                IsSystemStep = true,
+                Level = 0
             });
             FlowList.ItemsSource = FlowSteps;
+            _levelStack.Clear();
+            _levelStack.Push(0);
             _stepIndex = 3;
-            ActionSelectComboBox.SelectedIndex = 0;
+            RebuildStepIndexes();
 
+            ActionSelectComboBox.SelectedIndex = 0;
+            InitTopSettingPopup();
         }
         private void InitializeLanguage()
         {
@@ -122,7 +132,6 @@ namespace OctoFixFlow
         {
             try
             {
-                // 配置通道参数
                 var channelOptions = new GrpcChannelOptions
                 {
                     HttpHandler = new System.Net.Http.SocketsHttpHandler
@@ -135,16 +144,10 @@ namespace OctoFixFlow
                 var appPath = AppDomain.CurrentDomain.BaseDirectory;
                 var systemFolder = System.IO.Path.Combine(appPath, "system");
                 string address = LoadIP(systemFolder);
-                //string address = "http://192.168.1.247:8082";
-                //string address = "http://127.0.0.1:8082";
                 _channel = GrpcChannel.ForAddress(address, channelOptions);
-                // 创建客户端实例
-                _commonClient = new CommonModelClient(_channel);
-                _pipetteClient = new PipetteModuleClient(_channel);
-                _dataEngineClient = new DataEngineClient(_channel);
-                _MotorClient = new MotorModuleClient(_channel);
-                _ShiftClient = new ShiftrModuleClient(_channel);
+
                 _ScriptClient = new ScriptEngineClient(_channel);
+                _qybotrunClient = new qybotrunClient(_channel);
 
                 ShowNotification(_res.GrpcLoadSucc, NotificationControl.NotificationType.Info);
             }
@@ -154,6 +157,16 @@ namespace OctoFixFlow
 
                 Application.Current.Shutdown();
             }
+        }
+        private void InitTopSettingPopup()
+        {
+            TopSettingPopup = new SettingPopupControl(this);
+
+            Grid.SetColumn(TopSettingPopup, 0);
+            Grid.SetColumnSpan(TopSettingPopup, 6);
+            Panel.SetZIndex(TopSettingPopup, 100);
+            TopSettingPopup.Visibility = Visibility.Collapsed;
+            MainContentGrid.Children.Add(TopSettingPopup);
         }
         private string LoadIP(string systemFolder)
         {
@@ -165,6 +178,8 @@ namespace OctoFixFlow
                 }
 
                 var ipFilePath = System.IO.Path.Combine(systemFolder, "IP.ini");
+                //const string defaultIp = "http://192.168.100.10:8001"
+                //;http://192.168.100.10:8003  数据库  qybot   root qy123456
                 const string defaultIp = "http://192.168.100.10:8001";
 
                 if (!File.Exists(ipFilePath))
@@ -193,34 +208,7 @@ namespace OctoFixFlow
             catch (Exception ex)
             {
                 ShowNotification($"{_res.GrpcIPFail}: {ex.Message}", NotificationControl.NotificationType.Error);
-                return "http://192.168.1.247:8082";
-            }
-        }
-        private async Task LoadDeviceStatus()
-        {
-            try
-            {
-                var switchValues = await GetSwitchValuesAsync();
-
-                LightFlag = switchValues.GetValueOrDefault("fill_light", -1f);
-                UVFlag = switchValues.GetValueOrDefault("uv_lamp", -1f);
-
-                Dispatcher.Invoke(() =>
-                {
-                    UpdateLightButtonStyle((int)LightFlag);
-                    UpdateUVButtonStyle((int)UVFlag);
-                });
-                Dispatcher.Invoke(() =>
-                {
-                    ShowNotification(_res.GrpcDeviceLoadSucc, NotificationControl.NotificationType.Info);
-                });
-            }
-            catch (Exception ex)
-            {
-                Dispatcher.Invoke(() =>
-                {
-                    ShowNotification($"{_res.GrpcDeviceLoadFail}: {ex.Message}", NotificationControl.NotificationType.Error);
-                });
+                return "http://192.168.100.10:8001";
             }
         }
         //GRPC
@@ -308,14 +296,58 @@ namespace OctoFixFlow
                     Width = 300,
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
-                    // Background = Brushes.White,
                     Background = Brushes.Transparent,
                     PlateId = plateId
                 };
                 canvas.SelectedColumnsChanged += OnPlateColumnsSelected;
                 plateGrid.Children.Add(canvas);
+                string consumableName = consumable.Name;
+
+
+                string moduleName = string.Empty;
+                var nameLayer = plateGrid.Children.Cast<FrameworkElement>()
+                     .FirstOrDefault(child => child.Tag?.ToString() == "NameLayer");
+
+                //// 2. 若NameLayer存在，且里面包含模块名称的TextBlock → 判定有模块
+                if (nameLayer is StackPanel nameStack)
+                {
+                    var moduleNameText = nameStack.Children.Cast<TextBlock>().FirstOrDefault();
+                    if (moduleNameText != null && !string.IsNullOrEmpty(moduleNameText.Text))
+                    {
+                        moduleName = moduleNameText.Text;
+                    }
+                    plateGrid.Children.Remove(nameLayer);
+                }
+
+                var nameStack2 = new StackPanel
+                {
+                    Tag = "NameLayer",
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                };
+                var primaryBrush = (SolidColorBrush)FindResource("PrimaryColor");
+
+                nameStack2.Children.Add(new TextBlock
+                {
+                    Text = moduleName,
+                    FontSize = 20,
+                    FontWeight = FontWeights.Bold,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Foreground = primaryBrush
+                });
+                nameStack2.Children.Add(new TextBlock
+                {
+                    Text = consumableName,
+                    FontSize = 20,
+                    FontWeight = FontWeights.Bold,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Foreground = primaryBrush
+                });
+                plateGrid.Children.Add(nameStack2);
 
                 _plateConsumableMap[plateId] = consumable;
+
             }
         }
         // 新增：处理板位列选择事件，更新孔位输入框
@@ -360,7 +392,7 @@ namespace OctoFixFlow
             }
             return result;
         }
-        private List<(int Row, int Col)> _selectedCellsFromText(string text)
+        public List<(int Row, int Col)> _selectedCellsFromText(string text)
         {
             var result = new List<(int, int)>();
             if (string.IsNullOrEmpty(text))
@@ -463,7 +495,6 @@ namespace OctoFixFlow
                 {
                     _plateConsumableMap.Remove(plateId);
                 }
-
                 e.Handled = true; // 标记事件已处理，避免冒泡
             }
         }
@@ -488,14 +519,77 @@ namespace OctoFixFlow
 
             return null;
         }
+        //更新模块
         public void UpdateDeviceModule()
         {
             //判断垃圾桶
             if (AppGlobalConfig.Instance.IsTrashEnabled)
             {
+                //Grid.SetRow(PlateBorder12, 0);
+                //Grid.SetColumn(PlateBorder12, 2);
+                //Grid.SetRowSpan(PlateBorder12, 2);
+                //ConsSettings trash_bin = new ConsSettings();
+                //trash_bin.name = "trash_can";
+                //trash_bin.labW = (float)120.3;//138.00
+                //trash_bin.labL = (float)81.2;//140.00
+                //trash_bin.labH = (float)10.2;//110.00
+                //trash_bin.offsetX = (float)49.3;//0
+                //trash_bin.offsetY = (float)31.4;//0
+                //trash_bin.distanceRow = 9;//0
+                //trash_bin.distanceColumn = 9;//0
+                //trash_bin.distanceColumnX = (float)60.15;
+                //trash_bin.distanceRowY = (float)40.6;
+                //trash_bin.type = 3;
+                //trash_bin.labVolume = 2400;
+                //trash_bin.consMaxAvaiVol = 1800;
+                //trash_bin.consDep = 90;
+                //trash_bin.topShape = 1;
+                //trash_bin.topUpperX = (float)81.2;
+                //trash_bin.topUpperY = (float)120.3;
+                //trash_bin.numRows = 1;
+                //trash_bin.numColumns = 1;
+
                 Grid.SetRow(PlateBorder12, 0);
                 Grid.SetColumn(PlateBorder12, 2);
                 Grid.SetRowSpan(PlateBorder12, 2);
+                ConsSettings trash_bin = new ConsSettings();
+                trash_bin.name = "trash_can";
+                trash_bin.labW = (float)138.00;//
+                trash_bin.labL = (float)140.00;//140.00
+                trash_bin.labH = (float)0;//110.00
+                trash_bin.offsetX = (float)0;//0
+                trash_bin.offsetY = (float)36.4;//0
+                trash_bin.distanceRow = 9;//0
+                trash_bin.distanceColumn = 9;//0
+                trash_bin.distanceColumnX = (float)70;
+                trash_bin.distanceRowY = (float)69;
+                trash_bin.type = 3;
+                trash_bin.labVolume = 2400;
+                trash_bin.consMaxAvaiVol = 1800;
+                trash_bin.consDep = 90;
+                trash_bin.topShape = 1;
+                trash_bin.topUpperX = (float)140.00;
+                trash_bin.topUpperY = (float)138.00;
+                trash_bin.numRows = 1;
+                trash_bin.numColumns = 1;
+
+                var canvas = new ConsumableCanvas
+                {
+                    Tag = "TopConsumable",
+                    ConsData = trash_bin,
+                    Height = 300,
+                    Width = 300,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    // Background = Brushes.White,
+                    Background = Brushes.Transparent,
+                    PlateId = "12"
+                };
+                canvas.SelectedColumnsChanged += OnPlateColumnsSelected;
+                ConsumableItem trash_bin2 = new ConsumableItem();
+                trash_bin2.Name = "trash_can";
+                trash_bin2.Settings = trash_bin;
+                _plateConsumableMap["12"] = trash_bin2;
             }
             //判断抓手
             if (AppGlobalConfig.Instance.IsGripperEnabled)
@@ -546,6 +640,11 @@ namespace OctoFixFlow
             if (oldBottomLayer != null)
                 plateGrid.Children.Remove(oldBottomLayer);
 
+            var oldNameLayer = plateGrid.Children.Cast<FrameworkElement>()
+                   .FirstOrDefault(child => child.Tag?.ToString() == "NameLayer");
+            if (oldNameLayer != null)
+                plateGrid.Children.Remove(oldNameLayer);
+
             var imageUri = new Uri(plateModule.ModuleImage, UriKind.RelativeOrAbsolute);
             var moduleImage = new Image
             {
@@ -557,6 +656,26 @@ namespace OctoFixFlow
                 Margin = new Thickness(2)
             };
             plateGrid.Children.Add(moduleImage);
+
+            var nameStack = new StackPanel
+            {
+                Tag = "NameLayer",
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+
+            };
+
+            nameStack.Children.Add(new TextBlock
+            {
+                Text = plateModule.Name,
+                FontSize = 20,
+                FontWeight = FontWeights.Bold,
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Foreground = Brushes.White
+            });
+            plateGrid.Children.Add(nameStack);
+
         }
 
         // 清除板位内容的方法
@@ -577,6 +696,44 @@ namespace OctoFixFlow
             {
                 bottomTextBlock.Visibility = Visibility.Visible;
             }
+
+            var nameLayer = plateGrid.Children.Cast<FrameworkElement>()
+             .FirstOrDefault(child => child.Tag?.ToString() == "NameLayer");
+            string moduleName = "";
+            if (nameLayer is StackPanel nameStack)
+            {
+                var moduleNameText = nameStack.Children.Cast<TextBlock>().FirstOrDefault();
+                if (moduleNameText != null && !string.IsNullOrEmpty(moduleNameText.Text))
+                {
+
+                    moduleName = moduleNameText.Text;
+                }
+                plateGrid.Children.Remove(nameLayer);
+            }
+            if (moduleName != "")
+            {
+                var nameStack2 = new StackPanel
+                {
+                    Tag = "NameLayer",
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+
+                };
+
+                nameStack2.Children.Add(new TextBlock
+                {
+                    Text = moduleName,
+                    FontSize = 20,
+                    FontWeight = FontWeights.Bold,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Foreground = Brushes.White
+                });
+                plateGrid.Children.Add(nameStack2
+
+                    );
+            }
+
 
             if (_plateConsumableMap.ContainsKey(plateId))
                 _plateConsumableMap.Remove(plateId);
@@ -600,6 +757,7 @@ namespace OctoFixFlow
                     break;
                 case "Other"://其他
                     SetAllButtonsVisibility(Visibility.Collapsed);
+                    LoopButton.Visibility = Visibility.Visible;
                     break;
             }
         }
@@ -623,6 +781,9 @@ namespace OctoFixFlow
             ActionMagneticButton.Visibility = Visibility.Collapsed;
             ActionTemperatureButton.Visibility = Visibility.Collapsed;
             ActionPCRButton.Visibility = Visibility.Collapsed;
+            //其他按钮隐藏
+            LoopButton.Visibility = Visibility.Collapsed;
+
         }
         // 显示模块按钮，隐藏基础按钮
         private void ShowModuleButtons()
@@ -653,6 +814,8 @@ namespace OctoFixFlow
             ActionTransferButton.Visibility = Visibility.Collapsed;
             WaitButton.Visibility = Visibility.Collapsed;
             ActionMixButton.Visibility = Visibility.Collapsed;
+            //其他按钮隐藏
+            LoopButton.Visibility = Visibility.Collapsed;
         }
 
         // 批量设置所有按钮可见性
@@ -669,6 +832,7 @@ namespace OctoFixFlow
             ActionPCRButton.Visibility = visibility;
             WaitButton.Visibility = visibility;
             ActionMixButton.Visibility = visibility;
+            LoopButton.Visibility = visibility;
 
             if (visibility == Visibility.Visible)
             {
@@ -676,6 +840,47 @@ namespace OctoFixFlow
             }
         }
         // 点击动作功能区按钮时添加流程步骤
+        //private void AddFlowStep(string type)
+        //{
+        //    int endStepIndex = FlowSteps.Count - 1;
+
+        //    var step = new FlowStep
+        //    {
+        //        Index = _stepIndex++,
+        //        Type = type,
+        //        Volume = 50,
+        //        TransferPosition = 0,
+        //        Position = "P1",
+        //        SelectedPipetteName = "pipette_1",
+        //        IsSelected = false,
+        //        IsSystemStep = false,
+        //        Level = 0
+        //    };
+        //    FlowSteps.Insert(_stepClickIndex, step);
+        //    _stepClickIndex++;
+        //    // 重新编号所有步骤（确保序号连续）
+        //    RebuildStepIndexes();
+        //    if (type.Equals("loop", StringComparison.OrdinalIgnoreCase))
+        //    {
+        //        var stepLoop = new FlowStep
+        //        {
+        //            Index = _stepIndex++,
+        //            Type = "endLoop",
+        //            Volume = 50,
+        //            TransferPosition = 0,
+        //            Position = "P1",
+        //            SelectedPipetteName = "pipette_1",
+        //            IsSelected = false,
+        //            IsSystemStep = false,
+        //            Level = 1
+        //        };
+        //        FlowSteps.Insert(_stepClickIndex, stepLoop);
+        //        _stepClickIndex++;
+        //        // 重新编号所有步骤（确保序号连续）
+        //        RebuildStepIndexes();
+        //    }
+        //}
+
         private void AddFlowStep(string type)
         {
             int endStepIndex = FlowSteps.Count - 1;
@@ -685,14 +890,38 @@ namespace OctoFixFlow
                 Index = _stepIndex++,
                 Type = type,
                 Volume = 50,
+                TransferPosition = 0,
                 Position = "P1",
                 SelectedPipetteName = "pipette_1",
                 IsSelected = false,
-                IsSystemStep = false
+                IsSystemStep = false,
+                Level = _currentLevel // 用当前层级
             };
-            FlowSteps.Insert(endStepIndex, step);
+            FlowSteps.Insert(_stepClickIndex, step);
+            _stepClickIndex++;
 
-            // 重新编号所有步骤（确保序号连续）
+            if (type.Equals(_res.WindowActionLoop, StringComparison.OrdinalIgnoreCase))
+            {
+                // 插入 Loop 后，层级+1
+                _currentLevel++;
+                var stepLoop = new FlowStep
+                {
+                    Index = _stepIndex++,
+                    Type = _res.WindowActionEndLoop,
+                    Volume = 50,
+                    TransferPosition = 0,
+                    Position = "P1",
+                    SelectedPipetteName = "pipette_1",
+                    IsSelected = false,
+                    IsSystemStep = false,
+                    Level = _currentLevel - 1 // End Loop 和 Loop 同层级
+                };
+                FlowSteps.Insert(_stepClickIndex, stepLoop);
+                //_stepClickIndex++;
+                // 插入 End Loop 后，层级-1
+                //_currentLevel--;
+            }
+
             RebuildStepIndexes();
         }
 
@@ -705,12 +934,15 @@ namespace OctoFixFlow
                 {
                     return;
                 }
+                _stepClickIndex = step.Index;
+                _currentLevel = step.Level;
                 foreach (var s in FlowSteps)
                     s.IsSelected = false;
 
                 // 选中当前步骤
                 step.IsSelected = true;
-                ShowStepDetail(step);
+                TopSettingPopup.setStepDetail(step);
+                TopSettingPopup.Show(-1, ResourceHelper.Instance.WindowStepdetails, -1);
             }
             foreach (var plateId in _plateConsumableMap.Keys)
             {
@@ -727,948 +959,6 @@ namespace OctoFixFlow
             }
         }
 
-        // 显示步骤详情（后续可扩展为不同步骤类型的布局）
-        // 显示步骤详情（修改后）
-        private void ShowStepDetail(FlowStep step)
-        {
-            // 清空现有详情
-            StepDetailPanel.Children.Clear();
-            var res = ResourceHelper.Instance;
-            string stepTypeText = step.Type switch
-            {
-                "Wait" => res.FlowStepWaitContent,
-                "Aspirate" => res.WindowActionAspirate,
-                "Dispense" => res.WindowActionDispense,
-                "TipOn" => res.WindowActionTipOn,
-                "TipOff" => res.WindowActionTipOff,
-                "Shake" => res.WindowActionShake,
-                "Magnetic" => res.WindowActionMagnetic,
-                "Temp Ctrl" => res.WindowActionTemperature,
-                "PCR" => res.WindowActionPCR,
-                "Transfer" => res.WindowActionTransfer,
-                "Mix" => res.WindowActionMix,
-                _ => step.Type // 未知类型默认显示原始值
-            };
-            // 添加通用详情标题
-            StepDetailPanel.Children.Add(new TextBlock
-            {
-                Text = $"{stepTypeText} {res.StepDetailDetails}",
-                FontWeight = FontWeights.Bold,
-                Margin = new Thickness(0, 0, 0, 10)
-            });
-            if (step.Type == "Wait")
-            {
-                // 等待时间输入（秒）
-                var waitTimeTextBox = new TextBox
-                {
-                    Style = (Style)FindResource("InputTextBoxStyle"),
-                    Width = 140,
-                    VerticalAlignment = VerticalAlignment.Center
-                };
-                waitTimeTextBox.SetBinding(TextBox.TextProperty, new Binding
-                {
-                    Source = step,
-                    Path = new PropertyPath("WaitTime"),
-                    Mode = BindingMode.TwoWay,
-                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-                });
-                StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailWaitTime, waitTimeTextBox));
-                // 等待内容描述
-                var waitContentTextBox = new TextBox
-                {
-                    Style = (Style)FindResource("InputTextBoxStyle"),
-                    Width = 140,
-                    Height = 80,
-                    AcceptsReturn = true, // 允许换行
-                    VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-                    VerticalAlignment = VerticalAlignment.Center
-                };
-                waitContentTextBox.SetBinding(TextBox.TextProperty, new Binding
-                {
-                    Source = step,
-                    Path = new PropertyPath("WaitContent"),
-                    Mode = BindingMode.TwoWay,
-                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-                });
-                StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailWaitDesc, waitContentTextBox));
-                // 添加提示文本
-                StepDetailPanel.Children.Add(new TextBlock
-                {
-                    //Text = "提示: 等待时间将自动转换为毫秒执行",
-                    Text = res.StepDetailWaitNote,
-                    FontSize = 11,
-                    Foreground = Brushes.Gray,
-                    Margin = new Thickness(0, 5, 0, 0)
-                });
-                return;
-            }
-            else if (step.Type == "Shake")//加热振荡
-            {
-                // 振荡位置
-                var actualPlatePositions = AppGlobalConfig.Instance.PlateModuleMap
-                    .Values
-                    .Where(module =>
-                        !string.IsNullOrEmpty(module.PlatePosition) &&
-                        int.TryParse(module.PlatePosition, out _) &&
-                        module.Type == 5)
-                    .Select(module => int.Parse(module.PlatePosition))
-                    .Distinct()
-                    .OrderBy(num => num)
-                    .Select(num => $"P{num}")
-                    .ToList();
-                var posiShakeCombo = new ComboBox
-                {
-                    Style = (Style)FindResource("InputComboBoxStyle"),
-                    ItemsSource = actualPlatePositions,
-                    Width = 140,
-                    VerticalAlignment = VerticalAlignment.Center
-                };
-
-                var posiShakeBinding = new Binding
-                {
-                    Source = step,
-                    Path = new PropertyPath("Position"),
-                    Mode = BindingMode.TwoWay,
-                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-                };
-                posiShakeCombo.SetBinding(ComboBox.SelectedItemProperty, posiShakeBinding);
-                // 位置下拉框选择变更时校验耗材类型
-                posiShakeCombo.SelectionChanged += (s, e) =>
-                {
-                    if (posiShakeCombo.SelectedItem is string newPosition)
-                    {
-                        string selectedPlatePosition = newPosition.Replace("P", "");
-                        var matchedModule = AppGlobalConfig.Instance.PlateModuleMap
-        .Values
-        .FirstOrDefault(module =>
-            module.Type == 5 &&
-            module.PlatePosition == selectedPlatePosition);
-                        step.ModuleName = matchedModule.Name;
-                    }
-                };
-                StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailOperationPosition, posiShakeCombo));
-                // 振荡时间输入（秒）
-                var shakeTimeTextBox = new TextBox
-                {
-                    Style = (Style)FindResource("InputTextBoxStyle"),
-                    Width = 140,
-                    VerticalAlignment = VerticalAlignment.Center
-                };
-                shakeTimeTextBox.SetBinding(TextBox.TextProperty, new Binding
-                {
-                    Source = step,
-                    Path = new PropertyPath("WaitTime"),
-                    Mode = BindingMode.TwoWay,
-                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-                });
-                StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailWaitTime, shakeTimeTextBox));
-                // 振荡转速输入
-                var shakeRPMTextBox = new TextBox
-                {
-                    Style = (Style)FindResource("InputTextBoxStyle"),
-                    Width = 140,
-                    VerticalAlignment = VerticalAlignment.Center
-                };
-                shakeRPMTextBox.SetBinding(TextBox.TextProperty, new Binding
-                {
-                    Source = step,
-                    Path = new PropertyPath("ShakeRPM"),
-                    Mode = BindingMode.TwoWay,
-                    UpdateSourceTrigger = UpdateSourceTrigger.LostFocus
-                });
-                StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailShakeSpeed, shakeRPMTextBox));
-                // 振荡温度输入
-                var shakeTempTextBox = new TextBox
-                {
-                    Style = (Style)FindResource("InputTextBoxStyle"),
-                    Width = 140,
-                    VerticalAlignment = VerticalAlignment.Center
-                };
-                shakeTempTextBox.SetBinding(TextBox.TextProperty, new Binding
-                {
-                    Source = step,
-                    Path = new PropertyPath("ShakeTemp"),
-                    Mode = BindingMode.TwoWay,
-                    UpdateSourceTrigger = UpdateSourceTrigger.LostFocus
-                });
-                StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailShakeTemp, shakeTempTextBox));
-
-                // 预热
-                var shakePreHeatCheckBox = new CheckBox
-                {
-                    Content = res.StepDetailShakePreHeat,
-                    HorizontalAlignment = HorizontalAlignment.Left,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    FontSize = 14,
-                    Margin = new Thickness(5, 0, 0, 0)
-                };
-                shakePreHeatCheckBox.SetBinding(CheckBox.IsCheckedProperty, new Binding
-                {
-                    Source = step,
-                    Path = new PropertyPath("IsPreHeat"),
-                    Mode = BindingMode.TwoWay,
-                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-                });
-
-                StepDetailPanel.Children.Add(shakePreHeatCheckBox);
-                // 振荡结束前解锁下一动作
-                var shakeUnlockNextCheckBox = new CheckBox
-                {
-                    Content = res.StepDetailShakeUnlockNext,
-                    HorizontalAlignment = HorizontalAlignment.Left,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    FontSize = 14,
-                    Margin = new Thickness(5, 0, 0, 0)
-                };
-                shakeUnlockNextCheckBox.SetBinding(CheckBox.IsCheckedProperty, new Binding
-                {
-                    Source = step,
-                    Path = new PropertyPath("IsUnlockNext"),
-                    Mode = BindingMode.TwoWay,
-                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-                });
-
-                StepDetailPanel.Children.Add(shakeUnlockNextCheckBox);
-                return;
-            }
-            else if (step.Type == "Magnetic")//磁吸
-            {
-                // 磁吸位置
-                var actualPlatePositions = AppGlobalConfig.Instance.PlateModuleMap
-                    .Values
-                    .Where(module =>
-                        !string.IsNullOrEmpty(module.PlatePosition) &&
-                        int.TryParse(module.PlatePosition, out _) &&
-                        module.Type == 6)
-                    .Select(module => int.Parse(module.PlatePosition))
-                    .Distinct()
-                    .OrderBy(num => num)
-                    .Select(num => $"P{num}")
-                    .ToList();
-                var posiMagneticCombo = new ComboBox
-                {
-                    Style = (Style)FindResource("InputComboBoxStyle"),
-                    ItemsSource = actualPlatePositions,
-                    Width = 140,
-                    VerticalAlignment = VerticalAlignment.Center
-                };
-
-                var posiMagneticBinding = new Binding
-                {
-                    Source = step,
-                    Path = new PropertyPath("Position"),
-                    Mode = BindingMode.TwoWay,
-                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-                };
-                posiMagneticCombo.SetBinding(ComboBox.SelectedItemProperty, posiMagneticBinding);
-                posiMagneticCombo.SelectionChanged += (s, e) =>
-                {
-                    if (posiMagneticCombo.SelectedItem is string newPosition)
-                    {
-                        string selectedPlatePosition = newPosition.Replace("P", "");
-                        var matchedModule = AppGlobalConfig.Instance.PlateModuleMap
-                        .Values
-                        .FirstOrDefault(module =>
-                        module.Type == 6 &&
-                        module.PlatePosition == selectedPlatePosition);
-                        step.ModuleName = matchedModule.Name;
-                    }
-                };
-                StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailOperationPosition, posiMagneticCombo));
-                // 上升
-                var magneticUpCheckBox = new CheckBox
-                {
-                    Content = res.StepDetailMagnetUp,
-                    HorizontalAlignment = HorizontalAlignment.Left,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    FontSize = 14,
-                    Margin = new Thickness(5, 0, 20, 0)
-                };
-                magneticUpCheckBox.SetBinding(CheckBox.IsCheckedProperty, new Binding
-                {
-                    Source = step,
-                    Path = new PropertyPath("IsMagnetUp"),
-                    Mode = BindingMode.TwoWay,
-                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-                });
-
-                // 下降
-                var magneticDownCheckBox = new CheckBox
-                {
-                    Content = res.StepDetailMagnetDown,
-                    HorizontalAlignment = HorizontalAlignment.Left,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    FontSize = 14,
-                    Margin = new Thickness(5, 0, 0, 0)
-                };
-                magneticDownCheckBox.SetBinding(CheckBox.IsCheckedProperty, new Binding
-                {
-                    Source = step,
-                    Path = new PropertyPath("IsMagnetDown"),
-                    Mode = BindingMode.TwoWay,
-                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-                });
-                magneticUpCheckBox.Checked += (s, e) =>
-                {
-                    step.IsMagnetUp = true;
-                    step.IsMagnetDown = false;
-
-                };
-                magneticDownCheckBox.Checked += (s, e) =>
-                {
-                    step.IsMagnetDown = true;
-
-                    step.IsMagnetUp = false;
-                };
-                var magnetDirectionPanel = new StackPanel
-                {
-                    Orientation = Orientation.Horizontal,
-                    Margin = new Thickness(0, 5, 0, 5)
-                };
-                magnetDirectionPanel.Children.Add(magneticUpCheckBox);
-                magnetDirectionPanel.Children.Add(magneticDownCheckBox);
-                StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailMagnetLiftDrop, magnetDirectionPanel));
-                // 创建磁吸距离输入框并绑定
-                var magnetDisTextBox = new TextBox
-                {
-                    Style = (Style)FindResource("InputTextBoxStyle"),
-                    Width = 150,
-                    VerticalAlignment = VerticalAlignment.Center
-                };
-                magnetDisTextBox.SetBinding(TextBox.TextProperty, new Binding
-                {
-                    Source = step,
-                    Path = new PropertyPath("MagnetDistance"),
-                    Mode = BindingMode.TwoWay,
-                    UpdateSourceTrigger = UpdateSourceTrigger.LostFocus
-                });
-                StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailMagnetDistance, magnetDisTextBox));
-                return;
-            }
-            else if (step.Type == "Temp Ctrl")//温控
-            {
-                // 温控位置
-                var actualPlatePositions = AppGlobalConfig.Instance.PlateModuleMap
-                    .Values
-                    .Where(module =>
-                        !string.IsNullOrEmpty(module.PlatePosition) &&
-                        int.TryParse(module.PlatePosition, out _) &&
-                        module.Type == 7)
-                    .Select(module => int.Parse(module.PlatePosition))
-                    .Distinct()
-                    .OrderBy(num => num)
-                    .Select(num => $"P{num}")
-                    .ToList();
-                var posiTempCtrlCombo = new ComboBox
-                {
-                    Style = (Style)FindResource("InputComboBoxStyle"),
-                    ItemsSource = actualPlatePositions,
-                    Width = 140,
-                    VerticalAlignment = VerticalAlignment.Center
-                };
-
-                var posiTempCtrlBinding = new Binding
-                {
-                    Source = step,
-                    Path = new PropertyPath("Position"),
-                    Mode = BindingMode.TwoWay,
-                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-                };
-                posiTempCtrlCombo.SetBinding(ComboBox.SelectedItemProperty, posiTempCtrlBinding);
-                posiTempCtrlCombo.SelectionChanged += (s, e) =>
-                {
-                    if (posiTempCtrlCombo.SelectedItem is string newPosition)
-                    {
-                        string selectedPlatePosition = newPosition.Replace("P", "");
-                        var matchedModule = AppGlobalConfig.Instance.PlateModuleMap
-                        .Values
-                        .FirstOrDefault(module =>
-                        module.Type == 7 &&
-                        module.PlatePosition == selectedPlatePosition);
-                        step.ModuleName = matchedModule.Name;
-                    }
-                };
-                StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailOperationPosition, posiTempCtrlCombo));
-                // 温控温度输入
-                var tempCtrlTempTextBox = new TextBox
-                {
-                    Style = (Style)FindResource("InputTextBoxStyle"),
-                    Width = 140,
-                    VerticalAlignment = VerticalAlignment.Center
-                };
-                tempCtrlTempTextBox.SetBinding(TextBox.TextProperty, new Binding
-                {
-                    Source = step,
-                    Path = new PropertyPath("TempCtrlTemp"),
-                    Mode = BindingMode.TwoWay,
-                    UpdateSourceTrigger = UpdateSourceTrigger.LostFocus
-                });
-                StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailShakeTemp, tempCtrlTempTextBox));
-                return;
-            }
-            else if (step.Type == "PCR")//PCR
-            {
-                return;
-            }
-            else if (step.Type == "Transfer")//抓手
-            {
-                // 起始板位
-                var posFromCombo = new ComboBox
-                {
-                    Style = (Style)FindResource("InputComboBoxStyle"),
-                    ItemsSource = new List<string> { "P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "P11", "P12" },
-                    Width = 140,
-                    VerticalAlignment = VerticalAlignment.Center
-                };
-                var posFromBinding = new Binding
-                {
-                    Source = step,
-                    Path = new PropertyPath("FromPos"),
-                    Mode = BindingMode.TwoWay,
-                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-                };
-                posFromCombo.SetBinding(ComboBox.SelectedItemProperty, posFromBinding);
-
-                StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailTransferFrom, posFromCombo));
-                // 终止板位
-                var posToCombo = new ComboBox
-                {
-                    Style = (Style)FindResource("InputComboBoxStyle"),
-                    ItemsSource = new List<string> { "P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "P11", "P12" },
-                    Width = 140,
-                    VerticalAlignment = VerticalAlignment.Center
-                };
-                var posToBinding = new Binding
-                {
-                    Source = step,
-                    Path = new PropertyPath("ToPos"),
-                    Mode = BindingMode.TwoWay,
-                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-                };
-                posToCombo.SetBinding(ComboBox.SelectedItemProperty, posToBinding);
-
-                StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailTransferTo, posToCombo));
-                return;
-            }
-            // -------------------------- 通用控件（吸液/注液/取头/退头） --------------------------
-            // 创建位置下拉框并绑定
-            var positionCombo = new ComboBox
-            {
-                Style = (Style)FindResource("InputComboBoxStyle"),
-                ItemsSource = new List<string> { "P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "P11", "P12" },
-                Width = 140,
-                VerticalAlignment = VerticalAlignment.Center
-            };
-            // 绑定到step.Position（双向）
-            var positionBinding = new Binding
-            {
-                Source = step,
-                Path = new PropertyPath("Position"),
-                Mode = BindingMode.TwoWay,
-                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-            };
-            positionCombo.SetBinding(ComboBox.SelectedItemProperty, positionBinding);
-            // 定义专用孔位选择画布
-            ConsumableCanvas wellSelectionCanvas = new ConsumableCanvas
-            {
-                Height = 220,
-                Width = 310,
-                Margin = new Thickness(0, 5, 0, 5),
-                Background = Brushes.AliceBlue,
-                IsInteractive = true,
-                HorizontalAlignment = HorizontalAlignment.Left,
-                PlateId = step.Position.Replace("P", "")
-            };
-            // 绑定画布的选中列变更事件
-            wellSelectionCanvas.SelectedColumnsChanged += (plateId, columnText) =>
-            {
-                step.WellPosition = columnText;
-                //var columns = _selectedColumnsFromText(columnText);
-                //step.SelectedColumns = string.Join(",", columns);
-                var selectedCells = _selectedCellsFromText(columnText);
-                step.SelectedCells = string.Join(";", selectedCells.Select(c => $"{c.Row},{c.Col}"));
-
-            };
-            // 耗材名称显示控件
-            TextBlock consumableNameText = new TextBlock
-            {
-                FontSize = 14,
-                Margin = new Thickness(5, 5, 0, 5),
-                Foreground = Brushes.DarkSlateGray,
-                Text = step.ConsName
-            };
-            // 位置下拉框选择变更时校验耗材类型
-            positionCombo.SelectionChanged += (s, e) =>
-            {
-                if (positionCombo.SelectedItem is string newPosition)
-                {
-                    // 更新当前选中的板位ID
-                    _currentSelectedPlateId = newPosition.Replace("P", "");
-                    wellSelectionCanvas.PlateId = _currentSelectedPlateId;
-                    wellSelectionCanvas.ClearSelection();                    // 清空之前的选择
-                    wellSelectionCanvas.IsInteractive = false;
-
-                    // 绑定画布的耗材数据（从板位映射中获取）
-                    if (_plateConsumableMap.TryGetValue(_currentSelectedPlateId, out var consumable))
-                    {
-                        // 显示当前耗材名称
-                        step.ConsName = string.Format(res.StepDetailCurrentCons, consumable.Name);
-                        consumableNameText.Text = step.ConsName;
-                        wellSelectionCanvas.ConsData = consumable.Settings;  // 关联当前板位的耗材数据
-                        int consType = consumable.Settings.type;
-                        if ((step.Type == "Aspirate" || step.Type == "Dispense" || step.Type == "Mix"))
-                        {
-                            // 吸液/注液允许：0（微孔板）、1（储液槽）
-                            if (consType == 0 || consType == 1)
-                            {
-                                wellSelectionCanvas.IsInteractive = true;
-                            }
-                            else
-                            {
-                                ShowNotification(res.StepDetailAspDispConsTip, NotificationControl.NotificationType.Warn); // 替换通知
-                            }
-                        }
-                        else if ((step.Type == "TipOn" || step.Type == "TipOff"))
-                        {
-                            // 取头/退头允许：2（TIP盒）
-                            if (consType == 2 || consType == 3)
-                            {
-                                wellSelectionCanvas.IsInteractive = true;
-                            }
-                            else
-                            {
-                                ShowNotification(res.StepDetailTipOnOffConsTip, NotificationControl.NotificationType.Warn); // 替换通知
-                            }
-                        }
-                    }
-                    else
-                    {
-                        wellSelectionCanvas.ConsData = null;  // 无耗材时清空
-                        step.WellPosition = "";
-                        step.SelectedColumns = "";
-                        step.ConsName = "";
-                        consumableNameText.Text = step.ConsName;
-                    }
-                }
-            };
-            StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailOperationPosition, positionCombo));
-            //移液器选择
-            var availablePipettes = AppGlobalConfig.Instance.PlateModuleMap
-    .Values
-    .Where(module =>
-        (module.Name == "pipette_1" || module.Name == "pipette_2")
-    )
-    .Select(module => module.Name)
-    .ToList();
-            var pipetteCombo = new ComboBox
-            {
-                Style = (Style)FindResource("InputComboBoxStyle"),
-                ItemsSource = availablePipettes, // 仅显示已配置的移液器
-                Width = 140,
-                VerticalAlignment = VerticalAlignment.Center,
-                SelectedItem = string.IsNullOrEmpty(step.SelectedPipetteName)
-           ? availablePipettes.FirstOrDefault() // 默认选中第一个
-           : step.SelectedPipetteName
-            };
-            pipetteCombo.SetBinding(ComboBox.SelectedItemProperty, new Binding
-            {
-                Source = step,
-                Path = new PropertyPath("SelectedPipetteName"),
-                Mode = BindingMode.TwoWay,
-                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-            });
-            pipetteCombo.SelectionChanged += (s, e) =>
-            {
-
-                if (pipetteCombo.SelectedItem is string pipetteName && wellSelectionCanvas != null)
-                {
-                    var selectedPipette = AppGlobalConfig.Instance.PlateModuleMap
-                        .Values
-                        .FirstOrDefault(module => module.Name == pipetteName);
-
-                    if (selectedPipette != null)
-                    {
-                        wellSelectionCanvas.CurrentSelectionMode = selectedPipette.Type == 0
-                            ? CanvasSelectionMode.SingleCell
-                            : CanvasSelectionMode.EntireColumn;
-                        wellSelectionCanvas.ClearSelection();
-                    }
-                }
-            };
-            StepDetailPanel.Children.Add(CreateDetailRow(
-res.StepDetailSelectedPipette,
-pipetteCombo));
-            if (wellSelectionCanvas != null && pipetteCombo.SelectedItem is string initPipetteName)
-            {
-                // 根据名称查找对应的ModuleDatas对象
-                var initPipette = AppGlobalConfig.Instance.PlateModuleMap
-                    .Values
-                    .FirstOrDefault(module => module.Name == initPipetteName);
-
-                if (initPipette != null)
-                {
-                    wellSelectionCanvas.CurrentSelectionMode = initPipette.Type == 0
-                        ? CanvasSelectionMode.SingleCell
-                        : CanvasSelectionMode.EntireColumn;
-                }
-                // 兜底：若未找到，默认设为单通道模式
-                else
-                {
-                    wellSelectionCanvas.CurrentSelectionMode = CanvasSelectionMode.SingleCell;
-                }
-            }
-            // 孔位选择（所有步骤通用）
-            var wellPositionTextBox = new TextBox
-            {
-                Style = (Style)FindResource("InputTextBoxStyle"),
-                Width = 140,
-                VerticalAlignment = VerticalAlignment.Center
-            };
-            wellPositionTextBox.SetBinding(TextBox.TextProperty, new Binding
-            {
-                Source = step,
-                Path = new PropertyPath("WellPosition"),
-                Mode = BindingMode.TwoWay,
-                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-            });
-            wellPositionTextBox.IsReadOnly = true;
-            StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailWellPosition, wellPositionTextBox));
-
-            StepDetailPanel.Children.Add(new TextBlock
-            {
-                Text = res.StepDetailWellSelectionArea, // “孔位选择区：”/“Well Position Selection Area:”
-                FontSize = 14,
-                HorizontalAlignment = HorizontalAlignment.Left,
-                Margin = new Thickness(0, 5, 0, 2)
-            });
-            StepDetailPanel.Children.Add(consumableNameText);
-
-            StepDetailPanel.Children.Add(wellSelectionCanvas);
-
-            // 移液器选择、体积输入（吸液/注液特有）
-            if (step.Type == "Aspirate" || step.Type == "Dispense" || step.Type == "Mix")
-            {
-                if (step.Type == "Aspirate" || step.Type == "Dispense")
-                {
-                    // 创建体积输入框并绑定
-                    var volumeTextBox = new TextBox
-                    {
-                        Style = (Style)FindResource("InputTextBoxStyle"),
-                        Width = 150
-                    };
-
-                    volumeTextBox.SetBinding(TextBox.ToolTipProperty, new Binding
-                    {
-                        Source = step,
-                        Mode = BindingMode.OneWay
-                    });
-
-                    var volumeBinding = new Binding
-                    {
-                        Source = step,
-                        Path = new PropertyPath("Volume"),
-                        Mode = BindingMode.TwoWay,
-                        UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-                    };
-
-                    volumeTextBox.SetBinding(TextBox.TextProperty, volumeBinding);
-
-                    StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailVolume, volumeTextBox));
-                }
-                else if (step.Type == "Mix")
-                {
-                    // --------------- 1. 混合容量 + 混合次数 同一行 ---------------
-                    var volumeMixAllVolumeTextBox = new TextBox
-                    {
-                        Style = (Style)FindResource("InputTextBoxStyle"),
-                        Width = 150
-                    };
-
-                    volumeMixAllVolumeTextBox.SetBinding(TextBox.ToolTipProperty, new Binding
-                    {
-                        Source = step,
-                        Path = new PropertyPath("SelectedPipetteMaxVolume"),
-                        Mode = BindingMode.OneWay
-                    });
-
-                    var volumeMixAllVolumeBinding = new Binding
-                    {
-                        Source = step,
-                        Path = new PropertyPath("MixVolume"),
-                        Mode = BindingMode.TwoWay,
-                        UpdateSourceTrigger = UpdateSourceTrigger.LostFocus
-                    };
-
-                    volumeMixAllVolumeTextBox.SetBinding(TextBox.TextProperty, volumeMixAllVolumeBinding);
-
-                    StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailMixVolume, volumeMixAllVolumeTextBox));
-                    var volumeMixAllCountTextBox = new TextBox
-                    {
-                        Style = (Style)FindResource("InputTextBoxStyle"),
-                        Width = 150
-                    };
-
-                    volumeMixAllCountTextBox.SetBinding(TextBox.ToolTipProperty, new Binding
-                    {
-                        Source = step,
-                        Path = new PropertyPath("SelectedPipetteMaxVolume"),
-                        Mode = BindingMode.OneWay
-                    });
-
-                    var volumeMixAllCountBinding = new Binding
-                    {
-                        Source = step,
-                        Path = new PropertyPath("MixCount"),
-                        Mode = BindingMode.TwoWay,
-                        UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-                    };
-
-                    volumeMixAllCountTextBox.SetBinding(TextBox.TextProperty, volumeMixAllCountBinding);
-
-                    StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailMixCount, volumeMixAllCountTextBox));
-
-                    // 最后一轮混吸参数
-                    var mixFinalMixCheckBox = new CheckBox
-                    {
-                        Content = res.StepDetailMixFinalCheck,
-                        HorizontalAlignment = HorizontalAlignment.Left,
-                        VerticalAlignment = VerticalAlignment.Center,
-                        FontSize = 14
-                    };
-                    mixFinalMixCheckBox.SetBinding(CheckBox.IsCheckedProperty, new Binding
-                    {
-                        Source = step,
-                        Path = new PropertyPath("IsFinalMix"),
-                        Mode = BindingMode.TwoWay,
-                        UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-                    });
-
-                    StepDetailPanel.Children.Add(mixFinalMixCheckBox);
-                    var volumeMixFinalAisTextBox = new TextBox
-                    {
-                        Style = (Style)FindResource("InputTextBoxStyle"),
-                        Width = 150,
-                        IsEnabled = false
-                    };
-
-                    volumeMixFinalAisTextBox.SetBinding(TextBox.IsEnabledProperty, new Binding
-                    {
-                        Source = step,
-                        Path = new PropertyPath("IsFinalMix"),
-                        Mode = BindingMode.OneWay
-                    });
-
-                    var volumeMixFinalAisBinding = new Binding
-                    {
-                        Source = step,
-                        Path = new PropertyPath("MixFinalAisSpeed"),
-                        Mode = BindingMode.TwoWay,
-                        UpdateSourceTrigger = UpdateSourceTrigger.LostFocus
-                    };
-
-                    volumeMixFinalAisTextBox.SetBinding(TextBox.TextProperty, volumeMixFinalAisBinding);
-
-                    StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailAspSpeed, volumeMixFinalAisTextBox));
-                    var volumeMixFinalDisTextBox = new TextBox
-                    {
-                        Style = (Style)FindResource("InputTextBoxStyle"),
-                        Width = 150,
-
-                        IsEnabled = false
-                    };
-
-                    volumeMixFinalDisTextBox.SetBinding(TextBox.IsEnabledProperty, new Binding
-                    {
-                        Source = step,
-                        Path = new PropertyPath("IsFinalMix"),
-                        Mode = BindingMode.OneWay
-                    });
-
-                    var volumeMixFinalDisBinding = new Binding
-                    {
-                        Source = step,
-                        Path = new PropertyPath("MixFinalDisSpeed"),
-                        Mode = BindingMode.TwoWay,
-                        UpdateSourceTrigger = UpdateSourceTrigger.LostFocus
-                    };
-
-                    volumeMixFinalDisTextBox.SetBinding(TextBox.TextProperty, volumeMixFinalDisBinding);
-
-                    StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailDispSpeed, volumeMixFinalDisTextBox));
-                }
-
-                // #################### 新增：液体参数选择与显示 ####################
-                var liquidHeaderRow = new StackPanel
-                {
-                    Orientation = Orientation.Horizontal,
-                    Margin = new Thickness(0, 5, 0, 5),
-                    VerticalAlignment = VerticalAlignment.Center
-                };
-
-                // 液体参数标题
-                liquidHeaderRow.Children.Add(new TextBlock
-                {
-                    Text = res.StepDetailLiquidParams,
-                    Width = 140,
-                    FontWeight = FontWeights.SemiBold,
-                    FontSize = 14,
-                    VerticalAlignment = VerticalAlignment.Center
-                });
-
-                // 液体选择下拉框（无标签，直接放在标题右侧）
-                var liquidCombo = new ComboBox
-                {
-                    Style = (Style)FindResource("InputComboBoxStyle"),
-                    ItemsSource = Liquids,
-                    DisplayMemberPath = "name",
-                    Width = 100,
-                    Margin = new Thickness(5, 0, 0, 0), // 与标题保持间距
-                    VerticalAlignment = VerticalAlignment.Center
-                };
-                liquidCombo.SetBinding(ComboBox.SelectedItemProperty, new Binding
-                {
-                    Source = step,
-                    Path = new PropertyPath("SelectedLiquid"),
-                    Mode = BindingMode.TwoWay,
-                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-                });
-                liquidHeaderRow.Children.Add(liquidCombo);
-
-                StepDetailPanel.Children.Add(liquidHeaderRow);
-
-                // 液体参数总容器（与下拉框左对齐，保持同一列）
-                StackPanel liquidParamsContainer = new StackPanel
-                {
-                    HorizontalAlignment = HorizontalAlignment.Stretch // 拉伸填满父容器宽度
-                };
-
-                // 吸液参数组
-                liquidParamsContainer.Children.Add(new TextBlock
-                {
-                    Text = res.StepDetailAspirationParams,
-                    FontWeight = FontWeights.SemiBold,
-                    FontSize = 12
-                });
-
-                // 吸液参数面板（2+2+1布局）
-                StackPanel aspirateParams = new StackPanel
-                {
-                    HorizontalAlignment = HorizontalAlignment.Stretch // 确保参数面板能扩展宽度
-                };
-
-                // 第一行：Air Aspiration Before Aspiration
-                var aspirateRow1 = new Grid { Margin = new Thickness(0, 2, 0, 2) };
-                aspirateRow1.RowDefinitions.Add(new RowDefinition());
-                var paramControl1 = CreateParamRow(res.StepDetailAspAirB, nameof(LiquidSettings.aisAirB), step);
-                Grid.SetRow(paramControl1, 0);
-                aspirateRow1.Children.Add(paramControl1);
-                aspirateParams.Children.Add(aspirateRow1);
-
-                // 第二行：Air Aspiration After Aspiration
-                var aspirateRow2 = new Grid { Margin = new Thickness(0, 2, 0, 2) };
-                aspirateRow2.RowDefinitions.Add(new RowDefinition());
-                var paramControl2 = CreateParamRow(res.StepDetailAspAirA, nameof(LiquidSettings.aisAirA), step);
-                Grid.SetRow(paramControl2, 0);
-                aspirateRow2.Children.Add(paramControl2);
-                aspirateParams.Children.Add(aspirateRow2);
-                // 第三行：Aspiration Speed
-                var aspirateRow3 = new Grid { Margin = new Thickness(0, 2, 0, 2) };
-                aspirateRow3.RowDefinitions.Add(new RowDefinition());
-                var paramControl3 = CreateParamRow(res.StepDetailAspSpeed, nameof(LiquidSettings.aisSpeed), step);
-                Grid.SetRow(paramControl3, 0);
-                aspirateRow3.Children.Add(paramControl3);
-                aspirateParams.Children.Add(aspirateRow3);
-                // 第四行：Aspiration Delay
-                var aspirateRow4 = new Grid { Margin = new Thickness(0, 2, 0, 2) };
-                aspirateRow4.RowDefinitions.Add(new RowDefinition());
-                var paramControl4 = CreateParamRow(res.StepDetailAspDelay, nameof(LiquidSettings.aisDelay), step);
-                Grid.SetRow(paramControl4, 0);
-                aspirateRow4.Children.Add(paramControl4);
-                aspirateParams.Children.Add(aspirateRow4);
-                // 第五行：Aspiration Distance
-                var aspirateRow5 = new Grid { Margin = new Thickness(0, 2, 0, 2) };
-                aspirateRow5.RowDefinitions.Add(new RowDefinition());
-                var paramControl5 = CreateParamRow(res.StepDetailAspDist, nameof(LiquidSettings.aisDistance), step);
-                Grid.SetRow(paramControl5, 0);
-                aspirateRow5.Children.Add(paramControl5);
-                aspirateParams.Children.Add(aspirateRow5);
-
-                liquidParamsContainer.Children.Add(aspirateParams);
-
-                // 注液参数组
-                liquidParamsContainer.Children.Add(new TextBlock
-                {
-                    Text = res.StepDetailDispensingParams,
-                    FontWeight = FontWeights.SemiBold,
-                    Margin = new Thickness(0, 5, 0, 3),
-                    FontSize = 12
-                });
-
-                // 注液参数面板（2+2+1布局）
-                StackPanel dispenseParams = new StackPanel();
-
-                // 第一行：2个参数
-                // 第一行：注液前吸空气
-                var dispenseRow1 = new Grid { Margin = new Thickness(0, 2, 0, 2) };
-                dispenseRow1.RowDefinitions.Add(new RowDefinition());
-                var paramDisControl1 = CreateParamRow(res.StepDetailDispAirB, nameof(LiquidSettings.disAirB), step);
-                Grid.SetRow(paramDisControl1, 0);
-                dispenseRow1.Children.Add(paramDisControl1);
-                dispenseParams.Children.Add(dispenseRow1);
-                // 第二行：注液后吸空气
-                var dispenseRow2 = new Grid { Margin = new Thickness(0, 2, 0, 2) };
-                dispenseRow2.RowDefinitions.Add(new RowDefinition());
-                var paramDisControl2 = CreateParamRow(res.StepDetailDispAirA, nameof(LiquidSettings.disAirA), step);
-                Grid.SetRow(paramDisControl2, 0);
-                dispenseRow2.Children.Add(paramDisControl2);
-                dispenseParams.Children.Add(dispenseRow2);
-                // 第二行：2个参数
-                var dispenseRow3 = new Grid { Margin = new Thickness(0, 2, 0, 2) };
-                dispenseRow3.RowDefinitions.Add(new RowDefinition());
-                var paramDisControl3 = CreateParamRow(res.StepDetailDispSpeed, nameof(LiquidSettings.disSpeed), step);
-                Grid.SetRow(paramDisControl3, 0);
-                dispenseRow3.Children.Add(paramDisControl3);
-                dispenseParams.Children.Add(dispenseRow3);
-                var dispenseRow4 = new Grid { Margin = new Thickness(0, 2, 0, 2) };
-                dispenseRow4.RowDefinitions.Add(new RowDefinition());
-                var paramDisControl4 = CreateParamRow(res.StepDetailDispDelay, nameof(LiquidSettings.disDelay), step);
-                Grid.SetRow(paramDisControl4, 0);
-                dispenseRow4.Children.Add(paramDisControl4);
-                dispenseParams.Children.Add(dispenseRow4);
-                // 第三行：1个参数
-                var dispenseRow5 = new Grid { Margin = new Thickness(0, 2, 0, 2) };
-                dispenseRow5.RowDefinitions.Add(new RowDefinition());
-                var paramDisControl5 = CreateParamRow(res.StepDetailDispDist, nameof(LiquidSettings.disDistance), step);
-                Grid.SetRow(paramDisControl5, 0);
-                dispenseRow5.Children.Add(paramDisControl5);
-                dispenseParams.Children.Add(dispenseRow5);
-
-                liquidParamsContainer.Children.Add(dispenseParams);
-
-                StepDetailPanel.Children.Add(liquidParamsContainer);
-            }
-
-            // 初始化画布数据（首次加载时）
-            _currentSelectedPlateId = step.Position.Replace("P", "");
-            wellSelectionCanvas.PlateId = _currentSelectedPlateId;
-            if (_plateConsumableMap.TryGetValue(_currentSelectedPlateId, out var initConsumable))
-            {
-                wellSelectionCanvas.ConsData = initConsumable.Settings;
-            }
-            if (!string.IsNullOrEmpty(step.SelectedCells))
-            {
-                var cells = step.SelectedCells.Split(';')
-                    .Select(s => s.Split(','))
-                    .Where(parts => parts.Length == 2 &&
-                                    int.TryParse(parts[0], out int row) &&
-                                    int.TryParse(parts[1], out int col))
-                    .Select(parts => (Row: int.Parse(parts[0]), Col: int.Parse(parts[1])))
-                    .ToList();
-
-                wellSelectionCanvas.SetSelectedCells(cells);
-            }
-
-        }
         private void ClearAllPlateSelections()
         {
             foreach (var plateId in _plateConsumableMap.Keys)
@@ -1680,54 +970,7 @@ pipetteCombo));
                 }
             }
         }
-        // 创建液体参数显示行（只读）
-        private Grid CreateParamRow(string label, string propertyName, FlowStep step)
-        {
-            // 用Grid替代StackPanel，布局更灵活（避免水平StackPanel的宽度限制）
-            var grid = new Grid();
-            // 定义两列：标签列（自适应内容宽度）、参数值列（占剩余空间）
-            grid.ColumnDefinitions.Add(new ColumnDefinition
-            {
-                Width = GridLength.Auto,       // 标签列宽度跟随文本内容自动调整
-                MinWidth = 175                 // 保留最小宽度（避免过窄，可根据需要调整）
-            });
-            grid.ColumnDefinitions.Add(new ColumnDefinition
-            {
-                Width = new GridLength(1, GridUnitType.Star)  // 参数值列占剩余全部空间
-            });
 
-            // 标签文本（允许换行，避免超长截断）
-            var labelText = new TextBlock
-            {
-                Text = label,
-                FontSize = 13,
-                Margin = new Thickness(0, 2, 5, 2),  // 右侧留间距，与参数值分开
-                TextWrapping = TextWrapping.Wrap,    // 核心：文本超长时自动换行
-                VerticalAlignment = VerticalAlignment.Center
-            };
-            Grid.SetColumn(labelText, 0);  // 放在第一列
-            grid.Children.Add(labelText);
-
-            // 参数值文本（占剩余空间，避免固定宽度限制）
-            var paramValueText = new TextBlock
-            {
-                FontSize = 13,
-                Margin = new Thickness(5, 2, 0, 2),
-                VerticalAlignment = VerticalAlignment.Center
-                // 去掉固定Width=175，改为随列宽自适应
-            };
-            // 保持原有的数据绑定逻辑
-            paramValueText.SetBinding(TextBlock.TextProperty, new Binding
-            {
-                Source = step,
-                Path = new PropertyPath($"SelectedLiquid.{propertyName}"),
-                StringFormat = "{0:F2}"
-            });
-            Grid.SetColumn(paramValueText, 1);  // 放在第二列
-            grid.Children.Add(paramValueText);
-
-            return grid;  // 返回Grid容器
-        }
         private void UpdatePlateInteractivity(string targetPlateId)
         {
             // 遍历所有可能的板位（1-12）
@@ -1746,22 +989,6 @@ pipetteCombo));
                     }
                 }
             }
-        }
-        // 辅助方法：创建详情行（Label + 输入控件）
-        private StackPanel CreateDetailRow(string labelText, UIElement inputControl)
-        {
-            return new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                Margin = new Thickness(0, 5, 0, 5),
-                Children =
-        {
-            new TextBlock { Text = labelText ,
-                VerticalAlignment = VerticalAlignment.Center,
-                FontSize = 14},
-            inputControl
-        }
-            };
         }
 
 
@@ -1816,6 +1043,10 @@ pipetteCombo));
         {
             AddFlowStep("Mix");
         }
+        private void LoopButton_Click(object sender, RoutedEventArgs e)
+        {
+            AddFlowStep("Loop");
+        }
         private void LogoutButton_Click(object sender, RoutedEventArgs e)
         {
 
@@ -1825,29 +1056,8 @@ pipetteCombo));
         {
             Application.Current.Shutdown();
         }
-        private void AddLogEntry(string message)
-        {
-            // 添加时间戳
-            string logEntry = $"{DateTime.Now:HH:mm:ss} | {message}";
 
-            // 添加到集合开头（最新日志在顶部）
-            RunLogs.Insert(RunLogs.Count, logEntry);
-            ScrollToBottom();
-        }
-        private void ScrollToBottom()
-        {
-            if (RunLogListBox.Items.Count > 0)
-            {
-                // 获取最后一项
-                var lastItem = RunLogListBox.Items[RunLogListBox.Items.Count - 1];
 
-                // 滚动到该项
-                RunLogListBox.ScrollIntoView(lastItem);
-
-                // 确保完全可见（处理虚拟化）
-                RunLogListBox.UpdateLayout();
-            }
-        }
         //设置界面
         private void SettingsButton_Click(object sender, RoutedEventArgs e)
         {
@@ -1941,19 +1151,64 @@ pipetteCombo));
 
             RebuildStepIndexes();
 
-            StepDetailPanel.Children.Clear();
-
             e.Handled = true;
         }
 
         // 重新编号步骤（删除后保持序号连续）
         private void RebuildStepIndexes()
         {
-            for (int i = 0; i < FlowSteps.Count; i++)
+            //for (int i = 0; i < FlowSteps.Count; i++)
+            //{
+            //    FlowSteps[i].Index = i + 1;
+            //}
+            //_stepIndex = FlowSteps.Count + 1;
+
+            // 局部栈：仅用于本次重建序号，每次重建都重新初始化
+            Stack<int> levelCounters = new Stack<int>();
+            // 初始压入0（外层层级的计数器），确保栈永远不为空
+            levelCounters.Push(0);
+
+            foreach (var step in FlowSteps)
             {
-                FlowSteps[i].Index = i + 1;
+                // 先获取当前层级的计数器（用Peek()，只看不取，避免栈空）
+                int currentCounter = levelCounters.Peek();
+
+                if (step.Type.Equals("loop", StringComparison.OrdinalIgnoreCase))
+                {
+                    // 遇到Loop：当前层级计数器+1，然后压入新的内层计数器（初始0）
+                    levelCounters.Pop(); // 取出当前层级计数器
+                    levelCounters.Push(currentCounter + 1); // +1后放回
+                    levelCounters.Push(0); // 新增内层计数器（Loop内部的步骤从0开始）
+                }
+                else if (step.Type.Equals("endLoop", StringComparison.OrdinalIgnoreCase))
+                {
+                    // 遇到EndLoop：弹出内层计数器，回到上一层
+                    if (levelCounters.Count > 1) // 保留最外层的0，避免栈空
+                    {
+                        levelCounters.Pop();
+                    }
+                    // EndLoop本身用上层的序号，不需要+1
+                    currentCounter = levelCounters.Peek();
+                }
+                else
+                {
+                    // 普通步骤：当前层级计数器+1
+                    levelCounters.Pop(); // 取出当前计数器
+                    levelCounters.Push(currentCounter + 1); // +1后放回
+                    currentCounter = currentCounter + 1; // 更新当前计数器值
+                }
+
+                // 生成嵌套显示序号（过滤掉0，比如[0,4,1] → "4-1"）
+                var counterList = levelCounters.Reverse().ToList();
+                step.DisplayIndex = string.Join("-", counterList.Where(n => n > 0));
+
+                // 全局Index仍保持连续（内部逻辑用）
+                step.Index = FlowSteps.IndexOf(step) + 1;
             }
+
+            // 更新全局计数器，避免新增步骤时索引重复
             _stepIndex = FlowSteps.Count + 1;
+
         }
         //创建板位脚本
         private JArray BuildCreaList()
@@ -2036,212 +1291,412 @@ pipetteCombo));
 
             return creaList;
         }
-        //创建脚本
+
         /// <summary>
-        /// 创建脚本JSON（对应C++的creaScript方法）
+        /// 创建脚本python
         /// </summary>
-        /// <returns>生成的脚本JSON字符串</returns>
-        private string CreateScriptJson()
+        /// <returns>生成的脚本Python字符串</returns>
+        private string CreateScriptPython()
         {
-            // 清空之前的步骤名称记录（对应C++的m_stepNames.clear()）
-            var stepNames = new Dictionary<int, string>();
-            int nowStepName = 0;
-            float emptyVolume = 0; // 跟踪吸液/注液体积（对应C++的emptyVolume）
+            StringBuilder pythonCode = new StringBuilder();
+            // 1. 写入 Python 导入语句
+            pythonCode.AppendLine("from typing import Tuple");
+            pythonCode.AppendLine("from qyrobot import Robot");
+            pythonCode.AppendLine("from plate import Plate");
+            pythonCode.AppendLine("from arm import Arm");
+            pythonCode.AppendLine("from pipe import Pipe");
+            pythonCode.AppendLine("from gripper import Gripper");
+            pythonCode.AppendLine("from shaker import Shaker");
+            pythonCode.AppendLine("from magnetic import Magnetic");
+            pythonCode.AppendLine("from cool import Cool");
+            pythonCode.AppendLine("from pcr import Pcr");
+            pythonCode.AppendLine("from consumables import consumables");
+            pythonCode.AppendLine("from baseaction import (tipon, tipoff, aspirate, dispense, mixing , movePlate, wait)");
+            pythonCode.AppendLine();
+            string protocolName = AppGlobalConfig.Instance.GuideProtocolName;
+            string author = AppGlobalConfig.Instance.GuideProtocolAuthor;
+            string description = AppGlobalConfig.Instance.GuideProtocolDescription;
+            AppGlobalConfig.Instance.GuideProtocolStartTime = DateTime.UtcNow.ToString("yyyy-MM-dd HH_mm_ss");
+            string stepsNum = FlowSteps.Count().ToString();
 
-            // 创建脚本根对象
-            var script = new JObject();
-            script["creator"] = AppGlobalConfig.Instance.GuideProtocolAuthor;
-            script["description"] = AppGlobalConfig.Instance.GuideProtocolDescription;
-            script["script_name"] = AppGlobalConfig.Instance.GuideProtocolName;
-            script["script_steps"] = FlowSteps.Count;
+            // 2. 写入 metadata 字典
+            pythonCode.AppendLine("metadata = {");
+            pythonCode.AppendLine($"    \"protocolName\": \"{protocolName}\",");
+            pythonCode.AppendLine($"    \"author\": \"{author}\",");
+            pythonCode.AppendLine($"    \"description\": \"{description}\",");
+            pythonCode.AppendLine($"    \"created\": \"{AppGlobalConfig.Instance.GuideProtocolStartTime}\",");
+            pythonCode.AppendLine($"    \"steps\": \"{stepsNum}\",");
+            pythonCode.AppendLine("}");
+            List<string> moduleList = new List<string>(new string[15]);
+            for (int plateIndex = 0; plateIndex < 15; plateIndex++)
+            {
+                string plateId = (plateIndex + 1).ToString();
+                var plateModule = AppGlobalConfig.Instance.PlateModuleMap.Values
+                    .FirstOrDefault(module =>
+                        !string.IsNullOrEmpty(module.PlatePosition) &&
+                        module.PlatePosition == plateId);
+                if (plateId == "13" || plateId == "14")
+                {
+                    if (plateModule != null)
+                    {
+                        string pipetteStr = $"{plateModule.Name}|{plateModule.Type}|{plateModule.PipetteVolume}";
+                        moduleList[plateIndex] = pipetteStr;
+                    }
+                    else
+                    {
+                        moduleList[plateIndex] = ""; // 无模块时仍存空字符串
+                    }
 
-            // 创建步骤列表（对应C++的stepList）
-            var stepList = new JArray();
+                }
+                else
+                {
+                    moduleList[plateIndex] = plateModule?.Name ?? "";
+                }
+            }
+            List<string> consumableList = new List<string>(new string[12]);
+            for (int plateIndex = 0; plateIndex < 12; plateIndex++)
+            {
+                string plateId = (plateIndex + 1).ToString();
+                string plateName = $"P{plateId}";
+
+                _plateConsumableMap.TryGetValue(plateId, out var plateConsumable);
+                consumableList[plateIndex] = plateConsumable?.Name ?? "";
+            }
+            string moduleListStr = string.Join(", ", moduleList.Select(m => $"\"{m}\""));
+            pythonCode.AppendLine($"plate_modules = [{moduleListStr}]");
+            string consumableListStr = string.Join(", ", consumableList.Select(c => $"\"{c}\""));
+            pythonCode.AppendLine($"plate_consumables = [{consumableListStr}]");
+            pythonCode.AppendLine();
+
+            // 3. 写入耗材
+            List<string> writtenConsNames = new List<string>();
+            foreach (var plateConsumable in _plateConsumableMap)
+            {
+                string plateId = plateConsumable.Key; // 板位编号（如P1、P10）
+                var consumable = plateConsumable.Value; // 耗材信息
+                var settings = consumable.Settings; // 耗材详细参数
+                if (writtenConsNames.Contains(settings.name))
+                {
+                    continue;
+                }
+                writtenConsNames.Add(settings.name);
+                string rawVarName = string.IsNullOrWhiteSpace(settings.name) ? plateId : settings.name;
+                string validVarName = System.Text.RegularExpressions.Regex.Replace(rawVarName, @"[^a-zA-Z0-9_]", "_");
+                if (!char.IsLetter(validVarName[0]))
+                {
+                    validVarName = $"cons_{validVarName}";
+                }
+                // 1. 初始化consumables实例
+                pythonCode.AppendLine($"{validVarName} = consumables()");
+
+                // 2. 基础尺寸（对应示例的length/width/height）
+                pythonCode.AppendLine($"{validVarName}.length = {settings.labL:F2}");
+                pythonCode.AppendLine($"{validVarName}.width = {settings.labW:F2}");
+                pythonCode.AppendLine($"{validVarName}.height = {settings.labH:F2}");
+
+                // 3. 孔深度（well_depth → consDep）
+                pythonCode.AppendLine($"{validVarName}.well_depth = {settings.consDep:F2}");
+                // 3. 下压深度（tip_take_depth → TIPDepthOFComp）
+                pythonCode.AppendLine($"{validVarName}.tip_take_depth = {settings.TIPDepthOFComp:F2}");
+                // 3. TIP高度度（tip_height → TIPConeLength）枪身总长度
+                pythonCode.AppendLine($"{validVarName}.tip_height = {settings.TIPConeLength:F2}");
+                // 4. offset偏移（元组：(offsetX, offsetY)）#耗材中心点距离A1孔的距离
+                float offsetX = settings.offsetX;
+                float offsetY = settings.offsetY;
+                pythonCode.AppendLine($"{validVarName}.offset = ({offsetX:F2}, {offsetY:F2})"); // 保留1位小数，匹配示例格式
+
+                // 5. pitch间距（元组：(distanceRow, distanceColumn) → 行/列间距）#行间距、列间距
+                float pitchRow = settings.distanceColumn;
+                float pitchCol = settings.distanceRow;
+                pythonCode.AppendLine($"{validVarName}.pitch = ({pitchRow:F2}, {pitchCol:F2})");
+
+
+                // 6. cath_offset（元组：(RobotX, RobotY, RobotZ)）
+                float cathX = settings.RobotX;
+                float cathY = settings.RobotY;
+                float cathZ = settings.RobotZ;
+                pythonCode.AppendLine($"{validVarName}.cath_offset = ({cathX:F2}, {cathY:F2}, {cathZ:F2})");
+                //绘图用，剩余参数
+                pythonCode.AppendLine($"{validVarName}.name = \"{settings.name ?? string.Empty}\"");
+                pythonCode.AppendLine($"{validVarName}.id = {settings.id}");
+                pythonCode.AppendLine($"{validVarName}.type = {settings.type}");
+                pythonCode.AppendLine($"{validVarName}.description = \"{settings.description ?? string.Empty}\"");
+                pythonCode.AppendLine($"{validVarName}.NW = {settings.NW}");
+                pythonCode.AppendLine($"{validVarName}.SW = {settings.SW}");
+                pythonCode.AppendLine($"{validVarName}.NE = {settings.NE}");
+                pythonCode.AppendLine($"{validVarName}.SE = {settings.SE}");
+                pythonCode.AppendLine($"{validVarName}.numRows = {settings.numRows}"); // 行数
+                pythonCode.AppendLine($"{validVarName}.numColumns = {settings.numColumns}"); // 列数
+                pythonCode.AppendLine($"{validVarName}.distanceRowY = {settings.distanceRowY:F2}"); // A1孔距离X
+                pythonCode.AppendLine($"{validVarName}.distanceColumnX = {settings.distanceColumnX:F2}"); // A1孔距离Y
+                pythonCode.AppendLine($"{validVarName}.labVolume = {settings.labVolume:F2}"); // 最大容量
+                pythonCode.AppendLine($"{validVarName}.consMaxAvaiVol = {settings.consMaxAvaiVol:F2}"); // 可用最大容量
+                pythonCode.AppendLine($"{validVarName}.topShape = {settings.topShape}"); // 孔顶部形状（int类型）
+                pythonCode.AppendLine($"{validVarName}.topRadius = {settings.topRadius:F2}"); // 孔顶部半径
+                pythonCode.AppendLine($"{validVarName}.topUpperX = {settings.topUpperX:F2}"); // 孔顶部上沿X尺寸
+                pythonCode.AppendLine($"{validVarName}.topUpperY = {settings.topUpperY:F2}"); // 孔顶部上沿Y尺寸
+                pythonCode.AppendLine($"{validVarName}.TIPMAXCapacity = {settings.TIPMAXCapacity:F2}"); // 枪头最大容量
+                pythonCode.AppendLine($"{validVarName}.TIPMAXAvailable = {settings.TIPMAXAvailable:F2}"); // 枪头最大可用容量
+                pythonCode.AppendLine($"{validVarName}.TIPTotalLength = {settings.TIPTotalLength:F2}"); // 枪头总长度
+                pythonCode.AppendLine($"{validVarName}.TIPHeadHeight = {settings.TIPHeadHeight:F2}"); // 枪头头部高度
+                pythonCode.AppendLine($"{validVarName}.TIPConeLength = {settings.TIPConeLength:F2}"); // 枪头锥体长
+                pythonCode.AppendLine($"{validVarName}.TIPMAXRadius = {settings.TIPMAXRadius:F2}"); // 枪头最大半径
+                pythonCode.AppendLine($"{validVarName}.TIPMINRadius = {settings.TIPMINRadius:F2}"); // 枪头最小半径
+                //pythonCode.AppendLine($"{validVarName}.TIPDepthOFComp = {settings.TIPDepthOFComp:F2}"); // 枪头压缩深度
+                pythonCode.AppendLine();
+            }
+            Dictionary<string, string> moduleIdDict = new Dictionary<string, string>();
+            foreach (var kvp in AppGlobalConfig.Instance.PlateModuleMap)
+            {
+                int type = kvp.Value.Type;
+                string moduleName = kvp.Value.Name;
+                switch (type)
+                {
+                    case 0://单通道
+                        string[] PIPETTEparts = moduleName.Split('_', StringSplitOptions.RemoveEmptyEntries);
+                        //moduleIdDict.Add(moduleName, "PIPETTE_ID_" + kvp.Key);
+                        moduleIdDict.Add(moduleName, PIPETTEparts.Last());
+                        pythonCode.AppendLine("PIPETTE_ID_" + kvp.Key + "=" + PIPETTEparts.Last());
+                        break;
+                    case 1://8通道
+                        string[] PIPETTEparts2 = moduleName.Split('_', StringSplitOptions.RemoveEmptyEntries);
+                        //moduleIdDict.Add(moduleName, "PIPETTE_ID_" + kvp.Key);
+                        moduleIdDict.Add(moduleName, PIPETTEparts2.Last());
+                        pythonCode.AppendLine("PIPETTE_ID_" + kvp.Key + "=" + PIPETTEparts2.Last());
+                        break;
+                    case 2://96通道
+                        string[] PIPETTEparts96 = moduleName.Split('_', StringSplitOptions.RemoveEmptyEntries);
+                        //moduleIdDict.Add(moduleName, "PIPETTE_ID_" + kvp.Key);
+                        moduleIdDict.Add(moduleName, PIPETTEparts96.Last());
+                        pythonCode.AppendLine("PIPETTE_ID_" + kvp.Key + "=" + PIPETTEparts96.Last());
+                        break;
+                    case 3://抓手
+                        string[] GRIPPERparts = moduleName.Split('_', StringSplitOptions.RemoveEmptyEntries);
+                        //moduleIdDict.Add(moduleName, "GRIPPER_ID_" + kvp.Key);
+                        moduleIdDict.Add(moduleName, GRIPPERparts.Last());
+                        pythonCode.AppendLine("GRIPPER_ID_" + kvp.Key + "=" + GRIPPERparts.Last());
+                        break;
+                    case 4://PCR
+                        moduleIdDict.Add(moduleName, "1");
+                        pythonCode.AppendLine("PCR_ID_10 = 1");
+                        break;
+                    case 5://SHAKER
+                        string[] SHAKERparts = moduleName.Split('_', StringSplitOptions.RemoveEmptyEntries);
+                        //moduleIdDict.Add(moduleName, "SHAKER_ID_" + kvp.Key);
+                        moduleIdDict.Add(moduleName, SHAKERparts.Last());
+                        pythonCode.AppendLine("SHAKER_ID_" + kvp.Key + "=" + SHAKERparts.Last());
+                        break;
+                    case 6://MAGNETIC
+                        string[] MAGNETICparts = moduleName.Split('_', StringSplitOptions.RemoveEmptyEntries);
+                        //moduleIdDict.Add(moduleName, "MAGNETIC_ID_" + kvp.Key);
+                        moduleIdDict.Add(moduleName, MAGNETICparts.Last());
+                        pythonCode.AppendLine("MAGNETIC_ID_" + kvp.Key + "=" + MAGNETICparts.Last());
+                        break;
+                    case 7://TEMPCTRL
+                        string[] TEMPCTRLparts = moduleName.Split('_', StringSplitOptions.RemoveEmptyEntries);
+                        //moduleIdDict.Add(moduleName, "TEMPCTRL_ID_" + kvp.Key);
+                        moduleIdDict.Add(moduleName, TEMPCTRLparts.Last());
+                        pythonCode.AppendLine("TEMPCTRL_ID_" + kvp.Key + "=" + TEMPCTRLparts.Last());
+                        break;
+                }
+            }
+            pythonCode.AppendLine();
+            pythonCode.AppendLine("def run():");
+            pythonCode.AppendLine($"    Robot.reset()");
             foreach (var flowStep in FlowSteps)
             {
-                var step = new JObject();
-                string stepType = MapStepType(flowStep.Type); // 映射步骤类型（吸液→aspirate等）
-                step["type"] = stepType;
-                stepNames[nowStepName] = stepType;
-                nowStepName++;
+                string stepType = MapStepType(flowStep.Type);
+                var pipperName = flowStep.SelectedPipetteName;
+                var moduleName = flowStep.ModuleName;
 
-                // 根据步骤类型处理不同参数
+
                 switch (stepType)
                 {
-                    case "start":
-                        step["start_step"] = 1;
-                        break;
-
-                    case "end":
-                        step["is_reset"] = "false";
-                        break;
-
                     case "aspirate":
-                        // 处理板位
-                        step["plate"] = MapPlatePosition(flowStep.Position);
-
-                        // 构建吸液参数
-                        var aspirateParams = new JObject();
-                        aspirateParams["row"] = 1; // 固定行=1（8通道）
-                        aspirateParams["col"] = ExtractColumnFromWellPosition(flowStep.WellPosition); // 从孔位提取列
-                        aspirateParams["pipette"] = flowStep.SelectedPipetteName;
-                        aspirateParams["volume"] = flowStep.Volume;
-                        aspirateParams["liquid_dete"] = "off";
-                        aspirateParams["liquid_follow"] = "true";
-                        step["aspirate_param"] = aspirateParams;
-
-                        // 累加吸液体积（对应C++的emptyVolume +=）
-                        emptyVolume += flowStep.Volume;
-
-                        // 添加耗材信息（labcons_info）
-                        step["labcons_info"] = CreateLabconsInfo(flowStep.Position);
-
-                        // 添加液体信息（liquid_info）
-                        step["liquid_info"] = CreateLiquidInfo(flowStep, 1);
+                        string aspirateCons = GetConsumableVarNameByPlate(flowStep.Position);
+                        if (moduleIdDict.TryGetValue(pipperName, out string aisPipetteId))
+                        {
+                            var (aisRowNum, aisColNum) = ParsePipettePosition(flowStep.SelectedCells);
+                            pythonCode.AppendLine($"    # 吸液（{flowStep.Position} {flowStep.WellPosition}，{flowStep.Volume}μL）");
+                            pythonCode.AppendLine($"    aspirate(pipe_id={aisPipetteId}, plate=\"{MapPlatePosition(flowStep.Position)}\",  cons={aspirateCons},row={aisRowNum}, col={aisColNum}, depth={aspirateCons}.bottom({flowStep.LiquidAisDistance:F2}), vol={flowStep.Volume:F2}, speed={flowStep.LiquidAisSpeed:F2})");
+                        }
                         break;
 
                     case "dispense":
-                        // 处理板位
-                        step["plate"] = MapPlatePosition(flowStep.Position);
-
-                        // 构建注液参数（对应C++的dispense_param）
-                        var dispenseParams = new JObject();
-                        dispenseParams["row"] = 1;
-                        dispenseParams["col"] = ExtractColumnFromWellPosition(flowStep.WellPosition);
-                        dispenseParams["pipette"] = flowStep.SelectedPipetteName;
-                        dispenseParams["volume"] = flowStep.Volume;
-
-                        // 处理体积（支持排空功能，对应C++的empty_the_gun逻辑）
-                        //if (flowStep.IsEmptyGun && emptyVolume > 0)
-                        //{
-                        //    dispenseParams["volume"] = emptyVolume;
-                        //    emptyVolume = 0;
-                        //}
-                        //else
-                        //{
-                        //    dispenseParams["volume"] = flowStep.Volume;
-                        //    emptyVolume -= flowStep.Volume;
-                        //}
-                        dispenseParams["liquid_dete"] = "off";
-
-
-                        //dispenseParams["is_liquid_follow"] = "false";//边排液边上升
-                        //dispenseParams["follow_psition"] = 10;//边排液边上升
-                        //dispenseParams["follow_speed"] = 1;//边排液边上升
-
-                        dispenseParams["empty_the_gun"] = 0;
-                        //dispenseParams["empty_the_gun"] = flowStep.IsEmptyGun ? 1 : 0;
-                        step["dispense_param"] = dispenseParams;
-
-                        // 添加耗材信息和液体信息
-                        step["labcons_info"] = CreateLabconsInfo(flowStep.Position);
-                        step["liquid_info"] = CreateLiquidInfo(flowStep, 2);
+                        string dispenseCons = GetConsumableVarNameByPlate(flowStep.Position);
+                        var (disRowNum, disColNum) = ParsePipettePosition(flowStep.SelectedCells);
+                        if (moduleIdDict.TryGetValue(pipperName, out string disPipetteId))
+                        {
+                            pythonCode.AppendLine($"    # 注液（{flowStep.Position} {flowStep.WellPosition}，{flowStep.Volume}μL）");
+                            pythonCode.AppendLine($"    dispense(pipe_id={disPipetteId}, plate=\"{MapPlatePosition(flowStep.Position)}\",  cons={dispenseCons},row={disRowNum},  col={disColNum}, depth={dispenseCons}.bottom({flowStep.LiquidDisDistance:F2}), vol={flowStep.Volume:F2}, speed={flowStep.LiquidDisSpeed:F2})");
+                        }
                         break;
-
+                    case "mix":
+                        string mixingCons = GetConsumableVarNameByPlate(flowStep.Position);
+                        var (misRowNum, misColNum) = ParsePipettePosition(flowStep.SelectedCells);
+                        if (moduleIdDict.TryGetValue(pipperName, out string mixPipetteId))
+                        {
+                            pythonCode.AppendLine($"    # 混合（{flowStep.MixVolume}μL，{flowStep.MixCount}轮）");
+                            pythonCode.AppendLine($"    mixing(pipe_id={mixPipetteId}, plate=\"{MapPlatePosition(flowStep.Position)}\", cons={mixingCons},row={misRowNum}, col={misColNum}, vol={flowStep.MixVolume:F2}, rounds={flowStep.MixCount}, speed={flowStep.LiquidAisSpeed:F2}, depth={mixingCons}.bottom({flowStep.LiquidAisDistance:F2}))");
+                        }
+                        break;
                     case "tipon": // 取头
+                        string tiponCons = GetConsumableVarNameByPlate(flowStep.Position); // 根据板位获取耗材变量名
+                        var (tipOnRowNum, tipOnColNum) = ParsePipettePosition(flowStep.SelectedCells);
+                        if (moduleIdDict.TryGetValue(pipperName, out string tipOnPipetteId))
+                        {
+                            pythonCode.AppendLine($"    # 取头（{flowStep.Position} {flowStep.WellPosition}）");
+                            pythonCode.AppendLine($"    tipon(pipe_id={tipOnPipetteId}, plate=\"{MapPlatePosition(flowStep.Position)}\",  cons={tiponCons},row={tipOnRowNum},  col={tipOnColNum})");
+                        }
+
+                        break;
                     case "tipoff": // 退头
-                                   // 处理板位
-                        step["plate"] = MapPlatePosition(flowStep.Position);
+                        string tipoffCons = GetConsumableVarNameByPlate(flowStep.Position);
+                        var (tipOffRowNum, tipOffColNum) = ParsePipettePosition(flowStep.SelectedCells);
+                        if (moduleIdDict.TryGetValue(pipperName, out string tipOffPipetteId))
+                        {
+                            pythonCode.AppendLine($"    # 退头（{flowStep.Position} {flowStep.WellPosition}）");
+                            pythonCode.AppendLine($"    tipoff(pipe_id={tipOffPipetteId}, plate=\"{MapPlatePosition(flowStep.Position)}\",   cons={tipoffCons},row={tipOffRowNum},  col={tipOffColNum})");
+                        }
 
-                        // 构建取头/退头参数
-                        var tipParams = new JObject();
-                        tipParams["row"] = 1;
-                        tipParams["col"] = ExtractColumnFromWellPosition(flowStep.WellPosition);
-                        tipParams["pipette"] = flowStep.SelectedPipetteName;
-                        step[$"{stepType}_param"] = tipParams;
-
-                        // 添加耗材信息（对应C++的labcons_info）
-                        step["labcons_info"] = CreateTipLabconsInfo(flowStep.Position);
                         break;
 
                     case "wait":
-                        // 构建等待参数（对应C++的wait_param）
-                        var waitParams = new JObject();
-
-                        // 转换秒为毫秒（处理0值情况，默认24小时）
-                        int waitTimeMs = flowStep.WaitTime * 1000;
-                        if (waitTimeMs <= 0)
-                        {
-                            waitTimeMs = 86400 * 1000; // 24小时默认值
-                        }
-                        waitParams["time_ms"] = waitTimeMs;
-
-                        // 等待内容描述
-                        waitParams["contents"] = flowStep.WaitContent;
-
-                        step["wait_param"] = waitParams;
+                        int waitTimeS = flowStep.WaitTime > 0 ? flowStep.WaitTime : 0;
+                        pythonCode.AppendLine($"    # 等待（{flowStep.WaitContent}）");
+                        pythonCode.AppendLine($"    wait(s={waitTimeS})");
                         break;
-                    case "shaker":
-                        var shakerParams = new JObject();
-
-                        string shakerName = flowStep.ModuleName;
-                        int shakerTemp = flowStep.ShakeTemp;
-                        int shakerRPM = flowStep.ShakeRPM;
-                        bool shakerPreHeat = flowStep.IsPreHeat;
-                        bool shakerUnlockNext = flowStep.IsUnlockNext;
-                        int shakerTimeMs = flowStep.WaitTime * 1000;
-                        if (shakerTimeMs <= 0)
+                    case "shake":
+                        if (moduleIdDict.TryGetValue(moduleName, out string shakeModuleId))
                         {
-                            waitTimeMs = 86400 * 1000; // 24小时默认值
+                            pythonCode.AppendLine($"    # 混匀振荡（{flowStep.ShakeRPM}rpm，{flowStep.WaitTime}秒）");
+                            pythonCode.AppendLine($"    Shaker.start_temp(id={shakeModuleId}, temp={flowStep.ShakeTemp:F1})");
+                            pythonCode.AppendLine($"    Shaker.start_shaker(id={shakeModuleId}, rpm={flowStep.ShakeRPM}, time={flowStep.WaitTime})");
                         }
-                        shakerParams["shaker"] = shakerName;
-                        shakerParams["temp"] = shakerTemp;
-                        shakerParams["rpm"] = shakerRPM;
-                        shakerParams["ms"] = shakerTimeMs;
-                        shakerParams["is_wait_temp"] = shakerPreHeat;
-                        shakerParams["is_wait_shaker_end"] = shakerUnlockNext;
 
-                        step["shaker_param"] = shakerParams;
                         break;
                     case "magnetic":
-                        var magneticParams = new JObject();
+                        if (moduleIdDict.TryGetValue(moduleName, out string magneticModuleId))
+                        {
+                            string magneticAction = flowStep.IsMagnetUp ? "on" : "off";
+                            pythonCode.AppendLine($"    # 磁吸{(flowStep.IsMagnetUp ? "上升" : "下降")}");
+                            pythonCode.AppendLine($"    Magnetic.{magneticAction}(id={magneticModuleId})");
+                        }
 
-                        string magneticName = flowStep.ModuleName;
-                        int magneticAction = flowStep.ShakeTemp;
-                        if (flowStep.IsMagnetUp)
-                            magneticParams["ms"] = 1;
-                        else
-                            magneticParams["ms"] = 0;
-
-                        int magneticPostion = flowStep.MagnetDistance;
-
-                        magneticParams["magnetic"] = magneticName;
-                        magneticParams["postion"] = magneticPostion;
-
-
-                        step["magnetic_param"] = magneticParams;
                         break;
-                    case "tempctrl":
-                        var tempctrlParams = new JObject();
+                    case "temp ctrl":
+                        if (moduleIdDict.TryGetValue(moduleName, out string tempModuleId))
+                        {
+                            if (flowStep.IsTempCtrlOpen)
+                            {
+                                pythonCode.AppendLine($"    # 温控（{flowStep.ModuleName}，{flowStep.TempCtrlTemp}℃）");
+                                pythonCode.AppendLine($"    Cool.start(id={tempModuleId}, temp={flowStep.TempCtrlTemp})");
+                            }
+                            else
+                            {
+                                pythonCode.AppendLine($"    # 温控（{flowStep.ModuleName}，{flowStep.TempCtrlTemp}℃）");
+                                pythonCode.AppendLine($"    Cool.stop(id={tempModuleId})");
+                            }
 
-                        string tempctrlName = flowStep.ModuleName;
-                        int tempctrlrTemp = flowStep.TempCtrlTemp;
-                        tempctrlParams["tempctrl"] = tempctrlName;
-                        tempctrlParams["temp"] = tempctrlrTemp;
-
-                        step["tempctrl_param"] = tempctrlParams;
+                        }
                         break;
-                    case "shift":
-                        var shiftParams = new JObject();
+                    case "transfer":
+                        if (moduleIdDict.TryGetValue("gripper_1", out string shiftModuleId))
+                        {
+                            string shiftCons = GetConsumableVarNameByPlate(flowStep.FromPos);
+                            pythonCode.AppendLine($"    # 移板（{flowStep.FromPos} → {flowStep.ToPos}）");
+                            pythonCode.AppendLine($"    movePlate(id={shiftModuleId},cons={shiftCons}, from_plate=\"{MapPlatePosition(flowStep.FromPos)}\", to_plate=\"{MapPlatePosition(flowStep.ToPos)}\", pushing={flowStep.TransferPosition})");
+                        }
 
-                        shiftParams["shift"] = "shift_1";
-                        shiftParams["from"] = flowStep.FromPos;
-                        shiftParams["to"] = flowStep.ToPos;
+                        break;
+                    case "pcr":
+                        if (flowStep.PcrStep == _res.SettingManualPCRStart)
+                        {
+                            pythonCode.AppendLine($"    # PCR（{flowStep.PcrStep}）");
+                            pythonCode.AppendLine($"    Pcr.run(id={1},data=\"{flowStep.PcrScriptAdress}\")");
+                        }
+                        else if (flowStep.PcrStep == _res.SettingManualPCRStop)
+                        {
+                            pythonCode.AppendLine($"    # PCR（{flowStep.PcrStep}）");
+                            pythonCode.AppendLine($"    Pcr.stop(id={1})");
+                        }
+                        else if (flowStep.PcrStep == _res.SettingManualPCROpen)
+                        {
+                            pythonCode.AppendLine($"    # PCR（{flowStep.PcrStep}）");
+                            pythonCode.AppendLine($"    Pcr.opendoor(id={1})");
+                        }
+                        else if (flowStep.PcrStep == _res.SettingManualPCRClose)
+                        {
+                            pythonCode.AppendLine($"    # PCR（{flowStep.PcrStep}）");
+                            pythonCode.AppendLine($"    Pcr.closedoor(id={1})");
 
-                        step["shift_param"] = shiftParams;
+                        }
+
                         break;
                 }
-
-                stepList.Add(step);
+                pythonCode.AppendLine();
             }
 
-            // 将步骤列表添加到脚本
-            script["step_list"] = stepList;
-            script["crea_list"] = BuildCreaList();
 
-            // 转换为格式化的JSON字符串
-            return JsonConvert.SerializeObject(script, Newtonsoft.Json.Formatting.Indented);
+
+            string fullPythonCode = pythonCode.ToString();
+            return fullPythonCode;
         }
+        // ========== 辅助函数（需根据你的业务逻辑实现） ==========
+        /// <summary>
+        /// 根据板位获取耗材变量名（如P1 → tipbox_1000）
+        /// </summary>
+        private string GetConsumableVarNameByPlate(string plateId)
+        {
+            string plateIdNum = plateId.Replace("P", "");
+
+            // 需根据_plateConsumableMap映射，示例逻辑：
+            if (_plateConsumableMap.TryGetValue(plateIdNum, out var consumable))
+            {
+                string rawName = string.IsNullOrWhiteSpace(consumable.Settings.name) ? plateId : consumable.Settings.name;
+                string validName = System.Text.RegularExpressions.Regex.Replace(rawName, @"[^a-zA-Z0-9_]", "_");
+                if (!char.IsLetter(validName[0])) validName = $"cons_{validName}";
+                return validName;
+            }
+            return "";
+        }
+        public void ExportGridToPngFile(Grid grid, string saveFolderPath, double dpi = 91.5, string fileName = "grid_export.png")
+        {
+            // 1. 确保 Grid 已经完成布局和渲染
+            grid.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            grid.Arrange(new Rect(grid.DesiredSize));
+            grid.UpdateLayout();
+
+            // 2. 创建 RenderTargetBitmap 来渲染 Grid
+            var renderBitmap = new RenderTargetBitmap(
+                (int)grid.ActualWidth,
+                (int)grid.ActualHeight,
+                95.5, 91.5, // DPI 设置
+                PixelFormats.Pbgra32);
+
+
+            // 3. 渲染 Grid
+            renderBitmap.Render(grid);
+
+            // 7. 拼接完整的图片保存路径
+            string fullImagePath = Path.Combine(saveFolderPath, fileName);
+            // 处理文件名后缀（确保是.png）
+            if (Path.GetExtension(fullImagePath).ToLower() != ".png")
+            {
+                fullImagePath = Path.ChangeExtension(fullImagePath, ".png");
+            }
+
+            // 8. 创建BitmapEncoder并保存为PNG文件
+            var encoder = new PngBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(renderBitmap));
+
+            // 9. 写入文件（使用using确保文件流释放，避免文件被占用）
+            using (var fileStream = new FileStream(fullImagePath, FileMode.Create, FileAccess.Write, FileShare.None))
+            {
+                encoder.Save(fileStream);
+            }
+        }
+
         private string MapStepType(string flowStepType)
         {
             return flowStepType switch
@@ -2253,35 +1708,224 @@ pipetteCombo));
                 "等待" => "wait",
                 "开始" => "start",
                 "结束" => "end",
-                "震荡" => "shaker",
-                "磁分离" => "magnetic",
+                "振荡" => "shaker",
+                "磁吸" => "magnetic",
                 "温控" => "tempctrl",
-                "转移" => "shift",
+                "转载" => "shift",
+                "混合" => "mixing",
+                "循环" => "loop",
+                "结束循环" => "endloop",
                 _ => flowStepType.ToLower()
             };
         }
+
         //映射板位
         private string MapPlatePosition(string position)
         {
             // 假设position格式为"P3"、"P9"、"P1"等
+            //string plateId = position.Replace("P", "");
+            //if (plateId == "3") return "magnetic_1"; // 假设P3对应magnetic_1
+            //if (plateId == "9") return "shaker_1";   // 假设P9对应shaker_1
+            //return "p" + plateId;
             string plateId = position.Replace("P", "");
-            if (plateId == "3") return "magnetic_1"; // 假设P3对应magnetic_1
-            if (plateId == "9") return "shaker_1";   // 假设P9对应shaker_1
             return "p" + plateId;
         }
-        // 辅助方法：从孔位文本提取列号（对应C++的正则解析）
-        private int ExtractColumnFromWellPosition(string wellPosition)
+        /// <summary>
+        /// 解析移液器孔位字符串（支持单孔位/8通道两种格式）
+        /// 格式1："2,5" → row=2，col=5
+        /// 格式2："1,4;2,4;3,4;4,4;5,4;6,4;7,4;8,4" → row=1，col=4（8通道取首行+公共列）
+        /// </summary>
+        /// <param name="positionStr">待解析字符串</param>
+        /// <returns>解析后的(row, col)，解析失败返回(0,0)</returns>
+        /// <exception cref="ArgumentException">格式非法时抛出</exception>
+        /// 
+        /* private Tuple<int, int> ParsePipettePosition(string positionStr)
+         {
+
+             if (positionStr.Contains(";"))
+             {
+                 // 8通道格式解析
+                 string[] channelParts = positionStr.Split(';', StringSplitOptions.RemoveEmptyEntries);
+
+                 if (channelParts.Length != 8)
+                 {
+                     throw new ArgumentException($"8通道格式必须包含8组孔位，当前仅{channelParts.Length}组", nameof(positionStr));
+                 }
+
+                 int? commonCol = null;
+                 int firstRow = 0;
+
+                 // 遍历解析每一组，校验列是否一致
+                 for (int i = 0; i < channelParts.Length; i++)
+                 {
+                     string[] rowCol = channelParts[i].Split(',', StringSplitOptions.RemoveEmptyEntries);
+
+                     // 单组格式校验（必须是"行,列"）
+                     if (rowCol.Length != 2 || !int.TryParse(rowCol[0], out int row) || !int.TryParse(rowCol[1], out int col))
+                     {
+                         throw new ArgumentException($"8通道第{i + 1}组格式错误：{channelParts[i]}，正确格式应为\"行,列\"", nameof(positionStr));
+                     }
+
+                     // 记录第一行，校验所有列是否一致
+                     if (i == 0)
+                     {
+                         firstRow = row;
+                         commonCol = col;
+                     }
+                     else
+                     {
+                         if (col != commonCol)
+                         {
+                             throw new ArgumentException($"8通道列号不一致，第1组列={commonCol}，第{i + 1}组列={col}", nameof(positionStr));
+                         }
+                     }
+                 }
+
+                 // 返回8通道结果：首行 + 公共列
+                 return Tuple.Create(firstRow, commonCol.Value);
+             }
+             else
+             {
+                 // 单孔位格式解析
+                 string[] rowCol = positionStr.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                 if (rowCol.Length != 2 || !int.TryParse(rowCol[0], out int row) || !int.TryParse(rowCol[1], out int col))
+                 {
+                     throw new ArgumentException($"单孔位格式错误：{positionStr}，正确格式应为\"行,列\"", nameof(positionStr));
+                 }
+
+                 // 返回单孔位结果
+                 return Tuple.Create(row, col);
+             }
+
+
+         }
+         */
+
+        /// <summary>
+        /// 解析移液器孔位字符串（支持单孔位/8通道/96通道三种格式）
+        /// 格式1（单通道）："2,5" → row=2，col=5
+        /// 格式2（8通道）："1,4;2,4;3,4;4,4;5,4;6,4;7,4;8,4" → row=1，col=4（8通道取首行+公共列）
+        /// 格式3（96通道）：包含96组「行,列」（用;分隔），覆盖整板所有孔位 → 返回(1,1)（约定1,1代表整板）
+        /// </summary>
+        /// <param name="positionStr">待解析字符串</param>
+        /// <returns>解析后的(row, col)：
+        /// 单通道/8通道返回对应行列表；96通道返回(0,0)；解析失败返回(0,0)
+        /// </returns>
+        /// <exception cref="ArgumentException">格式非法时抛出</exception>
+        private Tuple<int, int> ParsePipettePosition(string positionStr)
         {
-            if (string.IsNullOrEmpty(wellPosition)) return 1;
+            // 空值/空字符串校验
+            if (string.IsNullOrWhiteSpace(positionStr))
+            {
+                throw new ArgumentException("孔位字符串不能为空", nameof(positionStr));
+            }
 
-            // 示例："列：2~4" → 提取2；"列：6" → 提取6
-            string columnPrefix = ResourceHelper.Instance.StepDetailColumnPrefix;
-            string escapedPrefix = System.Text.RegularExpressions.Regex.Escape(columnPrefix);
+            string[] allParts = positionStr.Split(';', StringSplitOptions.RemoveEmptyEntries);
 
-            var regex = new System.Text.RegularExpressions.Regex(@"{escapedPrefix}\s*(\d+)");
-            var match = regex.Match(wellPosition);
-            return match.Success ? int.Parse(match.Groups[1].Value) : 1;
+            // 分支1：96通道格式解析（96组孔位）
+            if (allParts.Length == 96)
+            {
+                // 存储所有解析后的(row, col)
+                var cellList = new List<(int Row, int Col)>();
+
+                // 遍历解析每一组孔位
+                for (int i = 0; i < allParts.Length; i++)
+                {
+                    string[] rowCol = allParts[i].Split(',', StringSplitOptions.RemoveEmptyEntries);
+
+                    // 单组格式校验（必须是"行,列"）
+                    if (rowCol.Length != 2 || !int.TryParse(rowCol[0], out int row) || !int.TryParse(rowCol[1], out int col))
+                    {
+                        throw new ArgumentException($"96通道第{i + 1}组格式错误：{allParts[i]}，正确格式应为\"行,列\"", nameof(positionStr));
+                    }
+
+                    // 校验行列有效性（适配标准96孔板：行1~8，列1~12）
+                    if (row < 1 || row > 8 || col < 1 || col > 12)
+                    {
+                        throw new ArgumentException($"96通道第{i + 1}组行列值非法：行={row}，列={col}，标准96孔板行范围1~8，列范围1~12", nameof(positionStr));
+                    }
+
+                    cellList.Add((row, col));
+                }
+
+                // 校验是否覆盖整板（可选：确保行1~8、列1~12都存在）
+                var distinctRows = cellList.Select(c => c.Row).Distinct().OrderBy(r => r).ToList();
+                var distinctCols = cellList.Select(c => c.Col).Distinct().OrderBy(c => c).ToList();
+                bool isFullPlate = distinctRows.SequenceEqual(Enumerable.Range(1, 8)) && distinctCols.SequenceEqual(Enumerable.Range(1, 12));
+                if (!isFullPlate)
+                {
+                    throw new ArgumentException("96通道格式包含96组孔位，但未覆盖标准96孔板所有行（1~8）和列（1~12）", nameof(positionStr));
+                }
+
+                // 96通道返回约定值(0,0)代表整板
+                return Tuple.Create(1, 1);
+            }
+            // 分支2：8通道格式解析（8组孔位）
+            else if (allParts.Length == 8)
+            {
+                int? commonCol = null;
+                int firstRow = 0;
+
+                // 遍历解析每一组，校验列是否一致
+                for (int i = 0; i < allParts.Length; i++)
+                {
+                    string[] rowCol = allParts[i].Split(',', StringSplitOptions.RemoveEmptyEntries);
+
+                    // 单组格式校验（必须是"行,列"）
+                    if (rowCol.Length != 2 || !int.TryParse(rowCol[0], out int row) || !int.TryParse(rowCol[1], out int col))
+                    {
+                        throw new ArgumentException($"8通道第{i + 1}组格式错误：{allParts[i]}，正确格式应为\"行,列\"", nameof(positionStr));
+                    }
+
+                    // 校验行列有效性（可选：适配96孔板行范围）
+                    if (row < 1 || row > 8 || col < 1 || col > 12)
+                    {
+                        throw new ArgumentException($"8通道第{i + 1}组行列值非法：行={row}，列={col}，标准96孔板行范围1~8，列范围1~12", nameof(positionStr));
+                    }
+
+                    // 记录第一行，校验所有列是否一致
+                    if (i == 0)
+                    {
+                        firstRow = row;
+                        commonCol = col;
+                    }
+                    else
+                    {
+                        if (col != commonCol)
+                        {
+                            throw new ArgumentException($"8通道列号不一致，第1组列={commonCol}，第{i + 1}组列={col}", nameof(positionStr));
+                        }
+                    }
+                }
+
+                // 返回8通道结果：首行 + 公共列
+                return Tuple.Create(firstRow, commonCol.Value);
+            }
+            // 分支3：单通道格式解析（仅1组孔位）
+            else if (allParts.Length == 1)
+            {
+                string[] rowCol = allParts[0].Split(',', StringSplitOptions.RemoveEmptyEntries);
+                if (rowCol.Length != 2 || !int.TryParse(rowCol[0], out int row) || !int.TryParse(rowCol[1], out int col))
+                {
+                    throw new ArgumentException($"单孔位格式错误：{positionStr}，正确格式应为\"行,列\"", nameof(positionStr));
+                }
+
+                // 校验行列有效性（可选）
+                if (row < 1 || row > 8 || col < 1 || col > 12)
+                {
+                    throw new ArgumentException($"单孔位行列值非法：行={row}，列={col}，标准96孔板行范围1~8，列范围1~12", nameof(positionStr));
+                }
+
+                // 返回单孔位结果
+                return Tuple.Create(row, col);
+            }
+            // 格式不匹配（既不是1/8/96组）
+            else
+            {
+                throw new ArgumentException($"孔位字符串格式错误：{positionStr}，仅支持单孔位（1组）、8通道（8组）、96通道（96组）格式", nameof(positionStr));
+            }
         }
+
         // 辅助方法：创建耗材信息（labcons_info）
         private JObject CreateLabconsInfo(string position)
         {
@@ -2445,78 +2089,40 @@ pipetteCombo));
         //初始化
         private async void InitButton_Click(object sender, RoutedEventArgs e)
         {
-            var switchValues = await GetSwitchValuesAsync();
             ShowNotification(_res.GrpcInitStart, NotificationControl.NotificationType.Info);
 
-            DoorFlag = switchValues.GetValueOrDefault("door_lock", -1f);
-            if (DoorFlag == 0)
+            if (!runFlag && !pauseFlag)
             {
-                if (!runFlag && !pauseFlag)
+
+                StringBuilder pythonCode = new StringBuilder();
+                pythonCode.AppendLine("from qyrobot import Robot");
+                pythonCode.AppendLine("Robot.reset()");
+
+                var rawInitFlag = await ScriptDebugAsync(pythonCode.ToString());//open
+                var initFlag = ParseScriptDebugResponse(rawInitFlag);
+                if (initFlag != null)
                 {
-                    ShowNotification(_res.GrpcIniting, NotificationControl.NotificationType.Info);
-                    var motorActionsX = new List<MotorActionParams>();
-                    motorActionsX.Add(new MotorActionParams
+                    if (initFlag.Result == "succeed")
                     {
-                        MotorId = 0,
-                        ActionType = 4,
-                        Target = 0,
-                        Speed = 300.0f,
-                        Acc = 500.0f,
-                        Dcc = 500.0f
-                    });
-                    var motorActionsY = new List<MotorActionParams>();
-                    motorActionsY.Add(new MotorActionParams
-                    {
-                        MotorId = 1,
-                        ActionType = 4,
-                        Target = 0,
-                        Speed = 300.0f,
-                        Acc = 500.0f,
-                        Dcc = 500.0f
-                    });
-                    var motorActionsZ = new List<MotorActionParams>();
-                    motorActionsZ.Add(new MotorActionParams
-                    {
-                        MotorId = 2,
-                        ActionType = 4,
-                        Target = 0,
-                        Speed = 25.0f,
-                        Acc = 100.0f,
-                        Dcc = 100.0f
-                    });
-                    // 并行执行前两个动作
-                    var resetX = await MotorActionAsync(motorActionsZ);
-                    var resetY = await MotorActionAsync(motorActionsX);
-                    var resetZ = await MotorActionAsync(motorActionsY);
-                    //LXQ 初始化
-                    //var breakTIP = await BreakPipeAsync();
-                    //var resetTIP = await ResetPipeAsync();
-
-                    //if (resetX == 0 && resetY == 0 && resetZ == 0 && resetTIP == 0 && breakTIP == 0)
-                    //{
-                    //    RunInfoView.Visibility = Visibility.Collapsed;
-                    //    StepDetailView.Visibility = Visibility.Visible;
-                    //    ShowNotification(_res.GrpcInitSucc, NotificationControl.NotificationType.Info);
-                    //}
-                    //LXQ 初始化
-
+                        ShowNotification(_res.GrpcInitSucc, NotificationControl.NotificationType.Info);
+                    }
                 }
                 else
                 {
-                    ShowNotification(_res.GrpcStartRunning, NotificationControl.NotificationType.Warn);
+                    ShowNotification(_res.WindowGrpcComFail, NotificationControl.NotificationType.Error);
                 }
 
             }
-            else if (DoorFlag == 1)
+            else
             {
-                await Task.Delay(100);
-                ShowNotification(_res.GrpcFailDoor, NotificationControl.NotificationType.Warn);
+                ShowNotification(_res.GrpcStartRunning, NotificationControl.NotificationType.Warn);
             }
 
         }
         //加载脚本
         private void LoadButton_Click(object sender, RoutedEventArgs e)
         {
+
             // 创建文件对话框
             var openFileDialog = new Microsoft.Win32.OpenFileDialog
             {
@@ -2532,19 +2138,27 @@ pipetteCombo));
                 try
                 {
                     // 读取文件内容
+                    string fileExtension = System.IO.Path.GetExtension(openFileDialog.FileName).ToLowerInvariant();
                     string scriptJson = File.ReadAllText(openFileDialog.FileName);
                     if (string.IsNullOrEmpty(scriptJson))
                     {
                         ShowNotification(_res.OpenFileDialog_Empty, NotificationControl.NotificationType.Warn);
                         return;
                     }
-
-                    // 加载脚本数据
-                    LoadScriptFromJson(scriptJson);
-
-                    // 切换到步骤详情视图
-                    StepDetailView.Visibility = Visibility.Visible;
-                    RunInfoView.Visibility = Visibility.Collapsed;
+                    switch (fileExtension)
+                    {
+                        case ".py":
+                            LoadScriptFromPython(scriptJson);
+                            break;
+                        case ".xlsx":
+                        case ".xls":
+                        case ".csv":
+                            Debug.WriteLine(fileExtension);
+                            break;
+                        default:
+                            ShowNotification(_res.OpenFileDialog_ErrFormal, NotificationControl.NotificationType.Warn);
+                            return;
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -2552,249 +2166,761 @@ pipetteCombo));
                 }
             }
         }
-        /// <summary>
-        /// 从JSON字符串加载流程数据
-        /// </summary>
-        /// <param name="scriptJson">导出的脚本JSON字符串</param>
-        private void LoadScriptFromJson(string scriptJson)
+        private async void LoadScriptFromPython(string scriptContent)
         {
             try
             {
-                // 解析JSON根对象
-                var script = JObject.Parse(scriptJson);
-
-                // 1. 清空现有数据
                 FlowSteps.Clear();
                 _plateConsumableMap.Clear();
-                StepDetailPanel.Children.Clear();
-                _stepIndex = 3; // 重置步骤计数器
+                _stepIndex = 3;
+                int isLeftSigna = -1;//0:单通道；1：八通道；2：96通道
+                int isRightSigna = -1;//0:单通道；1：八通道；2：96通道
 
-                // 2. 恢复基础信息（可选：显示创建者和描述）
-                string creator = script["creator"]?.ToString() ?? "未知用户";
-                string description = script["description"]?.ToString() ?? "无描述";
-
-                // 3. 恢复耗材配置（crea_list）
-                var creaList = script["crea_list"] as JArray;
-                if (creaList != null)
+                #region metadata
+                Match metadataMatch = Regex.Match(
+     scriptContent,
+     @"metadata = \{([\s\S]*?)\}",
+     RegexOptions.Multiline | RegexOptions.IgnoreCase
+ );
+                if (metadataMatch.Success)
                 {
-                    foreach (var creaItem in creaList)
+                    string metadataContent = metadataMatch.Groups[1].Value;
+
+                    Match protoNameMatch = Regex.Match(metadataContent, @"\""protocolName\""\s*:\s*\""(.*?)\""");
+                    if (protoNameMatch.Success)
                     {
-                        string plateId = creaItem["plate"]?.ToString();
-                        if (string.IsNullOrEmpty(plateId)) continue;
+                        AppGlobalConfig.Instance.GuideProtocolName = protoNameMatch.Groups[1].Value;
+                    }
 
-                        var creaParam = creaItem["crea_param"] as JObject;
-                        if (creaParam == null) continue;
+                    // 解析author
+                    Match authorMatch = Regex.Match(metadataContent, @"\""author\""\s*:\s*\""(.*?)\""");
+                    if (authorMatch.Success)
+                    {
+                        AppGlobalConfig.Instance.GuideProtocolAuthor = authorMatch.Groups[1].Value;
+                    }
 
-                        // 查找匹配的耗材（从现有Consumables中匹配名称）
-                        string consName = creaParam["name"]?.ToString();
-                        var matchedConsumable = Consumables.FirstOrDefault(c => c.Name == consName);
-
-                        if (matchedConsumable != null)
+                    // 解析description
+                    Match descMatch = Regex.Match(metadataContent, @"\""description\""\s*:\s*\""(.*?)\""");
+                    if (descMatch.Success)
+                    {
+                        AppGlobalConfig.Instance.GuideProtocolDescription = descMatch.Groups[1].Value;
+                    }
+                }
+                #endregion
+                #region plate_modules 模块列表
+                Match moduleListMatch = Regex.Match(scriptContent, @"plate_modules = \[(.*?)\]", RegexOptions.Singleline);
+                List<string> plateModules = new List<string>();
+                if (moduleListMatch.Success)
+                {
+                    string moduleItems = moduleListMatch.Groups[1].Value;
+                    plateModules = moduleItems.Split(',')
+                        .Select(item => item.Trim().Trim('"'))
+                        .ToList();
+                }
+                for (int i = 0; i < plateModules.Count; i++)
+                {
+                    string moduleItem = plateModules[i];
+                    int plateIndex = i + 1;
+                    string platePosition = plateIndex.ToString();
+                    if (moduleItem.Contains("PCR"))
+                    {
+                        AppGlobalConfig.Instance.IsPCREnabled = true;
+                        var pcrModule = new ModuleDatas
                         {
-                            // 记录板位与耗材的关联
-                            _plateConsumableMap[plateId] = matchedConsumable;
+                            Name = "PCR",
+                            Type = 4,
+                            PlatePosition = "10",
+                            PipetteVolume = 0,
+                            ModuleImage = "/OctoFixFlow;component/images/PCR.png"
+                        };
+                        AppGlobalConfig.Instance.AddOrUpdateModule("10", pcrModule);
+                    }
+                    else if (moduleItem.Contains("tempctrl"))//温控
+                    {
+                        var moduleData = new ModuleDatas
+                        {
+                            Name = moduleItem,
+                            Type = 7,
+                            PlatePosition = platePosition,
+                            PipetteVolume = 0,
+                            ModuleImage = "/OctoFixFlow;component/images/Temp.png"
+                        };
 
-                            // 恢复板位显示
-                            Dispatcher.Invoke(() =>
+                        AppGlobalConfig.Instance.AddOrUpdateModule(platePosition, moduleData);
+                    }
+                    else if (moduleItem.Contains("shaker"))//加热振荡
+                    {
+                        var moduleData = new ModuleDatas
+                        {
+                            Name = moduleItem,
+                            Type = 5,
+                            PlatePosition = platePosition,
+                            PipetteVolume = 0,
+                            ModuleImage = "/OctoFixFlow;component/images/MixedHeating.png"
+                        };
+
+                        AppGlobalConfig.Instance.AddOrUpdateModule(platePosition, moduleData);
+                    }
+                    else if (moduleItem.Contains("magnetic"))//磁吸
+                    {
+                        var moduleData = new ModuleDatas
+                        {
+                            Name = moduleItem,
+                            Type = 6,
+                            PlatePosition = platePosition,
+                            PipetteVolume = 0,
+                            ModuleImage = "/OctoFixFlow;component/images/Magnet.png"
+                        };
+
+                        AppGlobalConfig.Instance.AddOrUpdateModule(platePosition, moduleData);
+                    }
+                    else if (moduleItem.Contains("gripper"))//抓手
+                    {
+                        AppGlobalConfig.Instance.IsGripperEnabled = true;
+                        var gripperModule = new ModuleDatas
+                        {
+                            Name = "gripper_1",
+                            Type = 3,
+                            PlatePosition = "15",
+                            PipetteVolume = 0,
+                        };
+                        AppGlobalConfig.Instance.AddOrUpdateModule("15", gripperModule);
+                    }
+                    else if (moduleItem.Contains("pipette"))//移液器
+                    {
+                        string[] pipetteParams = moduleItem.Split('|');
+                        string pipetteName = pipetteParams[0]; // pipette_1/pipette_2
+                        int pipetteType = int.Parse(pipetteParams[1]); // 0：单通道移液器；1：八通道移液器；2：96通道移液器
+                        if (pipetteName == "pipette_1")
+                            isLeftSigna = pipetteType;
+                        else if (pipetteName == "pipette_2")
+                            isRightSigna = pipetteType;
+                        int pipetteVolume = int.Parse(pipetteParams[2]);//200/1000
+                        var pipetteModule = new ModuleDatas
+                        {
+                            Name = pipetteName,
+                            Type = pipetteType,
+                            PlatePosition = platePosition,
+                            PipetteVolume = pipetteVolume,
+                            ModuleImage = ""
+                        };
+                        AppGlobalConfig.Instance.AddOrUpdateModule(platePosition, pipetteModule);
+                    }
+                }
+                UpdateDeviceModule();
+                var plateModuleMap = AppGlobalConfig.Instance.PlateModuleMap;
+
+                foreach (var (plateId, moduleDatas) in plateModuleMap)
+                {
+                    Border targetBorder = FindPlateBorderByPlateId(plateId);
+
+                    UpdatePlateDisplay(targetBorder, moduleDatas);
+                }
+                #endregion
+                #region //耗材列表
+                // 步骤1：先提取Python中的plate_consumables列表（板位索引→耗材名称）
+                List<string> plateConsumables = new List<string>();
+                Match plateConsumablesMatch = Regex.Match(
+                    scriptContent,
+                    @"plate_consumables\s*=\s*\[(.*?)\]",
+                    RegexOptions.Singleline | RegexOptions.IgnoreCase
+                );
+                if (plateConsumablesMatch.Success)
+                {
+                    string consumableItemsStr = plateConsumablesMatch.Groups[1].Value;
+                    // 分割并清理每个耗材名称（去除引号、空格，兼容写入时的字符串格式）
+                    plateConsumables = consumableItemsStr.Split(',')
+                        .Select(item => item.Trim().Trim('"', '\'')) // 兼容双引号/单引号，与写入格式一致
+                        .ToList();
+                }
+
+                // 步骤2：提取Python中所有耗材对象的参数，建立「耗材名称→参数字典」的映射（完全对齐:F2格式化的写入格式）
+                Dictionary<string, Dictionary<string, object>> consumableParamMap = new Dictionary<string, Dictionary<string, object>>();
+
+                // 2.1 匹配所有耗材初始化语句（如：cons_1_0mLDeep_hole_plate = consumables()）
+                MatchCollection consumableVarMatches = Regex.Matches(
+                    scriptContent,
+                    @"(\w+)\s*=\s*consumables\(\)",
+                    RegexOptions.Multiline | RegexOptions.IgnoreCase
+                );
+
+                foreach (Match varMatch in consumableVarMatches)
+                {
+                    string consumableVarName = varMatch.Groups[1].Value; // Python中的耗材变量名（如cons_1_0mLDeep_hole_plate）
+                    Dictionary<string, object> paramDict = new Dictionary<string, object>(); // 存储当前耗材的所有参数
+
+                    // 2.2 优化正则匹配规则：精准捕获保留2位小数的属性赋值（解决换行/空格导致的匹配遗漏）
+                    // 匹配格式：变量名.属性名 = 值（支持换行、空格、2位小数浮点值）
+                    string paramPattern = $@"{Regex.Escape(consumableVarName)}\.(\w+)\s*=\s*(.*?)(?=\r?\n|{Regex.Escape("\n")}|$)";
+                    MatchCollection paramMatches = Regex.Matches(
+                        scriptContent,
+                        paramPattern,
+                        RegexOptions.Multiline | RegexOptions.Singleline
+                    );
+
+                    foreach (Match paramMatch in paramMatches)
+                    {
+                        string propName = paramMatch.Groups[1].Value; // 属性名（length/width/well_depth等，与写入一致）
+                        string propValueStr = paramMatch.Groups[2].Value.Trim(); // 属性值字符串（支持140.00、127.76等2位小数格式）
+
+                        // 2.3 解析属性值（兼容int/float(2位小数)/string/元组类型，完全对齐写入格式）
+                        object propValue = null;
+                        if (propValueStr.StartsWith("(") && propValueStr.EndsWith(")"))
+                        {
+                            // 解析元组类型（如offset=(14.20, 12.50)、cath_offset=(63.00, 42.00, 14.00)，兼容2位小数）
+                            string tupleContent = propValueStr.Trim('(', ')');
+                            List<float> tupleValues = tupleContent.Split(',')
+                                .Select(item =>
+                                {
+                                    // 精准解析元组内的2位小数浮点值，失败给0.0f
+                                    float.TryParse(item.Trim(), out float val);
+                                    return val;
+                                })
+                                .ToList();
+                            propValue = tupleValues;
+                        }
+                        else if (int.TryParse(propValueStr, out int intVal))
+                        {
+                            // 解析整数类型（id/type/numRows等，与写入一致）
+                            propValue = intVal;
+                        }
+                        else if (float.TryParse(propValueStr, out float floatVal))
+                        {
+                            // 解析浮点类型（支持140.00、127.76等2位小数格式，float.TryParse可直接识别）
+                            propValue = floatVal;
+                        }
+                        else if ((propValueStr.StartsWith("\"") && propValueStr.EndsWith("\"")) || (propValueStr.StartsWith("'") && propValueStr.EndsWith("'")))
+                        {
+                            // 解析字符串类型（name/description等，去除引号，与写入格式一致）
+                            propValue = propValueStr.Trim('"', '\'');
+                        }
+                        else
+                        {
+                            // 默认按字符串存储，兼容未知属性
+                            propValue = propValueStr;
+                        }
+
+                        // 存入当前耗材的参数字典（去重，避免重复赋值覆盖）
+                        if (!paramDict.ContainsKey(propName))
+                        {
+                            paramDict.Add(propName, propValue);
+                        }
+                    }
+
+                    // 2.4 以耗材的name属性为key，建立全局参数映射（匹配plate_consumables中的名称，与写入一致）
+                    if (paramDict.ContainsKey("name") && paramDict["name"] is string consumableName && !string.IsNullOrEmpty(consumableName))
+                    {
+                        if (consumableParamMap.ContainsKey(consumableName))
+                        {
+                            consumableParamMap[consumableName] = paramDict; // 覆盖重复名称的耗材参数
+                        }
+                        else
+                        {
+                            consumableParamMap.Add(consumableName, paramDict);
+                        }
+                    }
+                }
+
+                // 步骤3：遍历plateConsumables，匹配参数并构造ConsumableItem，存入_plateConsumableMap+更新界面
+                for (int plateIndex = 0; plateIndex < 11; plateIndex++) // 对应12个板位
+                {
+                    string plateId = (plateIndex + 1).ToString(); // 板位ID：1→P1，12→P12
+                    if (plateIndex >= plateConsumables.Count) break; // 若plateConsumables不足12个，终止循环
+
+                    string targetConsumableName = plateConsumables[plateIndex]; // 获取当前板位对应的耗材名称
+                    if (string.IsNullOrEmpty(targetConsumableName)) continue; // 空名称跳过
+
+                    // 匹配当前耗材名称对应的参数（精准匹配写入时的耗材名称）
+                    if (!consumableParamMap.TryGetValue(targetConsumableName, out Dictionary<string, object> targetParamDict))
+                    {
+                        System.Diagnostics.Debug.WriteLine($"未找到耗材「{targetConsumableName}」对应的参数，板位{plateId}跳过");
+                        continue;
+                    }
+
+                    // 3.1 构造ConsumableSettings（完全对齐写入时的属性映射，兼容2位小数浮点值）
+                    ConsSettings consumableSettings = new ConsSettings();
+                    // 基础属性赋值（一一对应写入逻辑）
+                    consumableSettings.name = targetParamDict.ContainsKey("name") ? targetParamDict["name"] as string : targetConsumableName;
+                    consumableSettings.id = targetParamDict.ContainsKey("id") ? (targetParamDict["id"] is int idVal ? idVal : 0) : 0;
+                    consumableSettings.type = targetParamDict.ContainsKey("type") ? (targetParamDict["type"] is int typeVal ? typeVal : 0) : 0;
+                    consumableSettings.description = targetParamDict.ContainsKey("description") ? targetParamDict["description"] as string : string.Empty;
+
+                    // 尺寸属性（length→labL、width→labW、height→labH、well_depth→consDep，兼容2位小数浮点值）
+                    consumableSettings.labL = targetParamDict.ContainsKey("length") ? (targetParamDict["length"] is float labLVal ? labLVal : 0.0f) : 0.0f;
+                    consumableSettings.labW = targetParamDict.ContainsKey("width") ? (targetParamDict["width"] is float labWVal ? labWVal : 0.0f) : 0.0f;
+                    consumableSettings.labH = targetParamDict.ContainsKey("height") ? (targetParamDict["height"] is float labHVal ? labHVal : 0.0f) : 0.0f;
+                    Debug.WriteLine("21");
+                    consumableSettings.consDep = targetParamDict.ContainsKey("well_depth") ? (targetParamDict["well_depth"] is float consDepVal ? consDepVal : 0.0f) : 0.0f;
+
+                    // 偏移和间距属性（元组解析，兼容2位小数浮点值，优化冗余代码）
+                    List<float> offsetList = targetParamDict.ContainsKey("offset") && targetParamDict["offset"] is List<float> ? (List<float>)targetParamDict["offset"] : new List<float>();
+                    consumableSettings.offsetX = offsetList.Count >= 2 ? offsetList[0] : 0.0f;
+                    consumableSettings.offsetY = offsetList.Count >= 2 ? offsetList[1] : 0.0f;
+
+                    List<float> pitchList = targetParamDict.ContainsKey("pitch") && targetParamDict["pitch"] is List<float> ? (List<float>)targetParamDict["pitch"] : new List<float>();
+                    consumableSettings.distanceRow = pitchList.Count >= 2 ? pitchList[1] : 0.0f;
+                    consumableSettings.distanceColumn = pitchList.Count >= 2 ? pitchList[0] : 0.0f;
+
+                    List<float> cathList = targetParamDict.ContainsKey("cath_offset") && targetParamDict["cath_offset"] is List<float> ? (List<float>)targetParamDict["cath_offset"] : new List<float>();
+                    consumableSettings.RobotX = cathList.Count >= 3 ? cathList[0] : 0.0f;
+                    consumableSettings.RobotY = cathList.Count >= 3 ? cathList[1] : 0.0f;
+                    consumableSettings.RobotZ = cathList.Count >= 3 ? cathList[2] : 0.0f;
+
+                    // 方位和行列属性（int类型，与写入一致）
+                    consumableSettings.NW = targetParamDict.ContainsKey("NW") ? (targetParamDict["NW"] is int nwVal ? nwVal : 0) : 0;
+                    consumableSettings.SW = targetParamDict.ContainsKey("SW") ? (targetParamDict["SW"] is int swVal ? swVal : 0) : 0;
+                    consumableSettings.NE = targetParamDict.ContainsKey("NE") ? (targetParamDict["NE"] is int neVal ? neVal : 0) : 0;
+                    consumableSettings.SE = targetParamDict.ContainsKey("SE") ? (targetParamDict["SE"] is int seVal ? seVal : 0) : 0;
+                    consumableSettings.numRows = targetParamDict.ContainsKey("numRows") ? (targetParamDict["numRows"] is int numRowsVal ? numRowsVal : 0) : 0;
+                    consumableSettings.numColumns = targetParamDict.ContainsKey("numColumns") ? (targetParamDict["numColumns"] is int numColumnsVal ? numColumnsVal : 0) : 0;
+
+                    // 剩余绘图/功能参数（一一对应写入逻辑，兼容2位小数浮点值）
+                    consumableSettings.distanceRowY = targetParamDict.ContainsKey("distanceRowY") ? (targetParamDict["distanceRowY"] is float distanceRowYVal ? distanceRowYVal : 0.0f) : 0.0f;
+                    consumableSettings.distanceColumnX = targetParamDict.ContainsKey("distanceColumnX") ? (targetParamDict["distanceColumnX"] is float distanceColumnXVal ? distanceColumnXVal : 0.0f) : 0.0f;
+                    consumableSettings.labVolume = targetParamDict.ContainsKey("labVolume") ? (targetParamDict["labVolume"] is float labVolumeVal ? labVolumeVal : 0.0f) : 0.0f;
+                    consumableSettings.consMaxAvaiVol = targetParamDict.ContainsKey("consMaxAvaiVol") ? (targetParamDict["consMaxAvaiVol"] is float consMaxAvaiVolVal ? consMaxAvaiVolVal : 0.0f) : 0.0f;
+                    consumableSettings.topShape = targetParamDict.ContainsKey("topShape") ? (targetParamDict["topShape"] is int topShapeVal ? topShapeVal : 0) : 0;
+                    consumableSettings.topRadius = targetParamDict.ContainsKey("topRadius") ? (targetParamDict["topRadius"] is float topRadiusVal ? topRadiusVal : 0.0f) : 0.0f;
+                    consumableSettings.topUpperX = targetParamDict.ContainsKey("topUpperX") ? (targetParamDict["topUpperX"] is float topUpperXVal ? topUpperXVal : 0.0f) : 0.0f;
+                    consumableSettings.topUpperY = targetParamDict.ContainsKey("topUpperY") ? (targetParamDict["topUpperY"] is float topUpperYVal ? topUpperYVal : 0.0f) : 0.0f;
+                    consumableSettings.TIPMAXCapacity = targetParamDict.ContainsKey("TIPMAXCapacity") ? (targetParamDict["TIPMAXCapacity"] is float tipMaxCapVal ? tipMaxCapVal : 0.0f) : 0.0f;
+                    consumableSettings.TIPMAXAvailable = targetParamDict.ContainsKey("TIPMAXAvailable") ? (targetParamDict["TIPMAXAvailable"] is float tipMaxAvaVal ? tipMaxAvaVal : 0.0f) : 0.0f;
+                    consumableSettings.TIPTotalLength = targetParamDict.ContainsKey("TIPTotalLength") ? (targetParamDict["TIPTotalLength"] is float tipTotalLenVal ? tipTotalLenVal : 0.0f) : 0.0f;
+                    consumableSettings.TIPHeadHeight = targetParamDict.ContainsKey("TIPHeadHeight") ? (targetParamDict["TIPHeadHeight"] is float tipHeadHVal ? tipHeadHVal : 0.0f) : 0.0f;
+                    consumableSettings.TIPConeLength = targetParamDict.ContainsKey("tip_height") ? (targetParamDict["tip_height"] is float tipConeLenVal ? tipConeLenVal : 0.0f) : 0.0f;
+                    consumableSettings.TIPMAXRadius = targetParamDict.ContainsKey("TIPMAXRadius") ? (targetParamDict["TIPMAXRadius"] is float tipMaxRadVal ? tipMaxRadVal : 0.0f) : 0.0f;
+                    consumableSettings.TIPMINRadius = targetParamDict.ContainsKey("TIPMINRadius") ? (targetParamDict["TIPMINRadius"] is float tipMinRadVal ? tipMinRadVal : 0.0f) : 0.0f;
+                    consumableSettings.TIPDepthOFComp = targetParamDict.ContainsKey("tip_take_depth") ? (targetParamDict["tip_take_depth"] is float tipDepthCompVal ? tipDepthCompVal : 0.0f) : 0.0f;
+
+                    // 3.2 构造ConsumableItem（与写入逻辑一致）
+                    ConsumableItem consumableItem = new ConsumableItem();
+                    consumableItem.Name = targetConsumableName;
+                    consumableItem.Settings = consumableSettings;
+
+                    // 3.3 存入_plateConsumableMap并更新界面（UI操作需在Dispatcher中执行，逻辑不变）
+                    Dispatcher.Invoke(() =>
+                    {
+                        // 清空当前板位原有耗材
+                        ClearPlateContent(plateId);
+
+                        // 查找板位Grid和Border
+                        Grid plateGrid = this.FindName($"PlateGrid{plateId}") as Grid;
+                        if (plateGrid == null) return;
+                        Border plateBorder = FindParentBorder(plateGrid);
+                        if (plateBorder == null) return;
+
+                        // 隐藏底部TextBlock（与拖拽/恢复逻辑一致）
+                        var bottomTextBlock = plateGrid.Children.Cast<FrameworkElement>()
+                            .OfType<TextBlock>()
+                            .FirstOrDefault(t => t.Tag?.ToString() == "BottomLayer");
+                        if (bottomTextBlock != null)
+                            bottomTextBlock.Visibility = Visibility.Collapsed;
+
+                        // 创建并添加ConsumableCanvas（显示耗材，兼容2位小数参数）
+                        var canvas = new ConsumableCanvas
+                        {
+                            Tag = "TopConsumable",
+                            ConsData = consumableSettings,
+                            Height = 300,
+                            Width = 300,
+                            HorizontalAlignment = HorizontalAlignment.Center,
+                            VerticalAlignment = VerticalAlignment.Center,
+                            Background = Brushes.Transparent,
+                            PlateId = plateId
+                        };
+                        canvas.SelectedColumnsChanged += OnPlateColumnsSelected;
+                        plateGrid.Children.Add(canvas);
+
+                        // 设置板位ToolTip（与拖拽逻辑一致）
+                        //string boardTipPrefix = ResourceHelper.Instance.WindowBoardToopTip;
+                        //plateBorder.ToolTip = $"{boardTipPrefix}{plateId}：{targetConsumableName}";
+
+                        string moduleName = string.Empty;
+                        var nameLayer = plateGrid.Children.Cast<FrameworkElement>()
+                             .FirstOrDefault(child => child.Tag?.ToString() == "NameLayer");
+
+                        //// 2. 若NameLayer存在，且里面包含模块名称的TextBlock → 判定有模块
+                        if (nameLayer is StackPanel nameStack)
+                        {
+                            var moduleNameText = nameStack.Children.Cast<TextBlock>().FirstOrDefault();
+                            if (moduleNameText != null && !string.IsNullOrEmpty(moduleNameText.Text))
                             {
-                                // 清空板位原有内容
-                                ClearPlateContent(plateId);
-
-                                // 重新添加耗材到板位
-                                if (this.FindName($"PlateGrid{plateId}") is Grid plateGrid)
-                                {
-                                    plateGrid.Children.Clear();
-                                    var plateText = new TextBlock
-                                    {
-                                        Text = $"P{plateId}", // 显示板位编号（如P1、P2）
-                                        FontSize = 16,
-                                        FontWeight = FontWeights.Bold,
-                                        HorizontalAlignment = HorizontalAlignment.Center,
-                                        VerticalAlignment = VerticalAlignment.Top, // 顶部对齐
-                                        Margin = new Thickness(0, 5, 0, 0), // 顶部留出间距
-                                    };
-                                    // 设置ZIndex确保在最上层
-                                    plateGrid.Children.Add(plateText);
-                                    var canvas = new ConsumableCanvas
-                                    {
-                                        ConsData = matchedConsumable.Settings,
-                                        Height = 250,
-                                        Width = 250,
-                                        HorizontalAlignment = HorizontalAlignment.Center,
-                                        VerticalAlignment = VerticalAlignment.Center,
-                                        Background = Brushes.Transparent,
-                                        PlateId = plateId
-                                    };
-                                    canvas.SelectedColumnsChanged += OnPlateColumnsSelected;
-                                    plateGrid.Children.Add(canvas);
-                                }
-                            });
+                                moduleName = moduleNameText.Text;
+                            }
+                            plateGrid.Children.Remove(nameLayer);
                         }
-                    }
-                }
 
-                // 4. 恢复流程步骤（step_list）
-                var stepList = script["step_list"] as JArray;
-                if (stepList != null)
+                        var nameStack2 = new StackPanel
+                        {
+                            Tag = "NameLayer",
+                            HorizontalAlignment = HorizontalAlignment.Center,
+                            VerticalAlignment = VerticalAlignment.Center,
+                        };
+                        var primaryBrush = (SolidColorBrush)FindResource("PrimaryColor");
+
+                        nameStack2.Children.Add(new TextBlock
+                        {
+                            Text = moduleName,
+                            FontSize = 20,
+                            FontWeight = FontWeights.Bold,
+                            HorizontalAlignment = HorizontalAlignment.Center,
+                            VerticalAlignment = VerticalAlignment.Center,
+                            Foreground = primaryBrush
+                        });
+                        nameStack2.Children.Add(new TextBlock
+                        {
+                            Text = targetConsumableName,
+                            FontSize = 20,
+                            FontWeight = FontWeights.Bold,
+                            HorizontalAlignment = HorizontalAlignment.Center,
+                            Foreground = primaryBrush
+                        });
+                        plateGrid.Children.Add(nameStack2);
+
+
+                        // 存入/更新_plateConsumableMap（兼容板位重复赋值）
+                        if (_plateConsumableMap.ContainsKey(plateId))
+                        {
+                            _plateConsumableMap[plateId] = consumableItem;
+                        }
+                        else
+                        {
+                            _plateConsumableMap.Add(plateId, consumableItem);
+                        }
+                    });
+                }
+                #endregion
+                #region 流程
+                // 添加开始步骤
+                FlowSteps.Add(new FlowStep
                 {
-                    // 添加开始步骤
-                    FlowSteps.Add(new FlowStep
+                    Index = 1,
+                    //Name = "开始",
+                    Type = "start",
+                    IsSelected = false,
+                    IsSystemStep = true
+                });
+                string[] allPythonLines = scriptContent.Split(
+    new[] { Environment.NewLine, "\n", "\r" },
+    StringSplitOptions.RemoveEmptyEntries);
+                bool isEnterRunFunction = false;
+                List<string> runFunctionLines = new List<string>();
+                foreach (string singleLine in allPythonLines)
+                {
+                    string trimLine = singleLine.Trim();
+                    string originalLine = singleLine;
+
+                    if (trimLine.StartsWith("def run():") && !isEnterRunFunction)
                     {
-                        Index = 1,
-                        //Name = "开始",
-                        Type = "start",
-                        IsSelected = false,
-                        IsSystemStep = true
-                    });
-
-                    // 解析步骤列表
-                    foreach (var stepItem in stepList)
-                    {
-                        string stepType = stepItem["type"]?.ToString();
-                        if (string.IsNullOrEmpty(stepType) || stepType == "start" || stepType == "end")
-                            continue; // 跳过系统步骤（开始/结束）
-
-                        // 转换为中文步骤类型
-                        string chineseType = stepType switch
-                        {
-                            "aspirate" => "吸液",
-                            "dispense" => "注液",
-                            "tipon" => "取头",
-                            "tipoff" => "退头",
-                            "wait" => "等待",
-                            "shaker" => "振荡",
-                            "magnetic" => "磁吸",
-                            "shift" => "转载",
-                            "pcr" => "热循环",
-                            "tempctrl" => "温控",
-                            _ => "未知"
-                        };
-
-                        // 创建步骤对象
-                        var flowStep = new FlowStep
-                        {
-                            Index = _stepIndex++,
-                            //Name = $"{chineseType}步骤{_stepIndex - 1}",
-                            Type = chineseType,
-                            Position = "P1", // 默认值，后续会覆盖
-                            Volume = 50,
-                            IsSelected = false,
-                            IsSystemStep = false
-                        };
-
-                        // 根据步骤类型解析参数
-                        switch (stepType)
-                        {
-                            case "aspirate":
-                                var aspirateParam = stepItem["aspirate_param"] as JObject;
-                                if (aspirateParam != null)
-                                {
-                                    flowStep.Volume = aspirateParam["volume"]?.Value<int>() ?? 50;
-                                    flowStep.Position = MapPlatePositionBack(stepItem["plate"]?.ToString());
-                                    // 新增：恢复孔位信息
-                                    int col = aspirateParam["col"]?.Value<int>() ?? 1; // 从JSON提取列号
-                                    flowStep.SelectedColumns = col.ToString(); // 保存选中列
-                                    flowStep.WellPosition = $"{ResourceHelper.Instance.StepDetailColumnPrefix}{col}"; // 孔位文本（如"列：2"）
-                                }
-                                break;
-                            case "dispense":
-                                var dispenseParam = stepItem["dispense_param"] as JObject;
-                                if (dispenseParam != null)
-                                {
-                                    flowStep.Volume = dispenseParam["volume"]?.Value<int>() ?? 50;
-                                    flowStep.Position = MapPlatePositionBack(stepItem["plate"]?.ToString());
-
-                                    // 新增：恢复孔位信息
-                                    int col = dispenseParam["col"]?.Value<int>() ?? 1;
-                                    flowStep.SelectedColumns = col.ToString();
-                                    flowStep.WellPosition = $"{ResourceHelper.Instance.StepDetailColumnPrefix}{col}";
-                                }
-                                break;
-                            case "tipon":
-                            case "tipoff":
-                                flowStep.Position = MapPlatePositionBack(stepItem["plate"]?.ToString());
-                                // 新增：恢复吸头/退头步骤的孔位信息
-                                var tipParam = stepItem[$"{stepType}_param"] as JObject;
-                                if (tipParam != null)
-                                {
-                                    int col = tipParam["col"]?.Value<int>() ?? 1;
-                                    flowStep.SelectedColumns = col.ToString();
-                                    flowStep.WellPosition = $"{ResourceHelper.Instance.StepDetailColumnPrefix}{col}";
-                                }
-                                break;
-                            case "wait":
-                                var waitParam = stepItem["wait_param"] as JObject;
-                                if (waitParam != null)
-                                {
-                                    // 转换毫秒为秒
-                                    flowStep.WaitTime = (int)(waitParam["time_ms"]?.Value<int>() ?? 0 / 1000);
-                                    flowStep.WaitContent = waitParam["contents"]?.ToString() ?? "Waiting for the operation";
-                                }
-                                break;
-                            case "shake":
-                                var shakeParam = stepItem["shaker_param"] as JObject;
-                                if (shakeParam != null)
-                                {
-                                    flowStep.ModuleName = shakeParam["shaker"]?.ToString() ?? "";
-                                    flowStep.ShakeTemp = shakeParam["temp"]?.Value<int>() ?? 0;
-                                    flowStep.ShakeRPM = shakeParam["rpm"]?.Value<int>() ?? 0;
-                                    flowStep.WaitTime = (int)(shakeParam["ms"]?.Value<int>() ?? 0 / 1000);
-                                    flowStep.IsPreHeat = shakeParam["is_wait_temp"]?.Value<bool>() ?? false;
-                                    flowStep.IsUnlockNext = shakeParam["is_wait_shaker_end"]?.Value<bool>() ?? false;
-                                }
-                                break;
-                            case "magnetic":
-                                var magneticParam = stepItem["magnetic_param"] as JObject;
-                                if (magneticParam != null)
-                                {
-                                    flowStep.ModuleName = magneticParam["magnetic"]?.ToString() ?? "";
-                                    int magnetUp = magneticParam["ms"]?.Value<int>() ?? 0;
-                                    if (magnetUp == 1)
-                                    {
-                                        flowStep.IsMagnetUp = true;
-                                        flowStep.IsMagnetDown = false;
-
-                                    }
-                                    else
-                                    {
-                                        flowStep.IsMagnetDown = true;
-                                        flowStep.IsMagnetUp = false;
-                                    }
-                                }
-                                break;
-                            case "tempctrl":
-                                var tempctrlParam = stepItem["tempctrl_param"] as JObject;
-                                if (tempctrlParam != null)
-                                {
-                                    flowStep.ModuleName = tempctrlParam["tempctrl"]?.ToString() ?? "";
-                                    flowStep.TempCtrlTemp = tempctrlParam["temp"]?.Value<int>() ?? 0;
-                                }
-                                break;
-                            case "shift":
-                                var shiftParam = stepItem["shift_param"] as JObject;
-                                if (shiftParam != null)
-                                {
-                                    flowStep.ModuleName = shiftParam["shift"]?.ToString() ?? "";
-                                    flowStep.FromPos = shiftParam["from"]?.ToString() ?? "";
-                                    flowStep.ToPos = shiftParam["to"]?.ToString() ?? "";
-                                }
-                                break;
-                        }
-                        FlowSteps.Add(flowStep);
+                        isEnterRunFunction = true;
+                        continue;
                     }
-                    // 添加结束步骤
-                    FlowSteps.Add(new FlowStep
+
+                    if (isEnterRunFunction && !originalLine.StartsWith("    ") && !string.IsNullOrWhiteSpace(trimLine))
                     {
-                        Index = _stepIndex++,
-                        Type = "end",
-                        IsSelected = false,
-                        IsSystemStep = true
-                    });
+                        isEnterRunFunction = false;
+                        break;
+                    }
 
-                    // 重新编号步骤
-                    RebuildStepIndexes();
+                    if (isEnterRunFunction && originalLine.StartsWith("    ") && !string.IsNullOrWhiteSpace(trimLine))
+                    {
+
+                        string lineWithoutIndent = originalLine.TrimStart(' ', '\t');
+                        runFunctionLines.Add(lineWithoutIndent); // 存入无缩进的行，便于解析
+                                                                 // 若需要保留原始缩进，直接存入 originalLine 即可
+                                                                 // runFunctionLines.Add(originalLine);
+                    }
                 }
+                string shakerTemp = "";
+                foreach (string targetLine in runFunctionLines)
+                {
+                    if (targetLine.Contains("(") && targetLine.Contains(")"))
+                    {
+                        string pattern = @"^([\w\.]+)\((.*)\)";
+                        Match funcMatch = Regex.Match(targetLine, pattern);
+                        if (funcMatch.Success)
+                        {
+                            var flowStep = new FlowStep
+                            {
+                                Index = _stepIndex++,
+                                IsSelected = false,
+                                IsSystemStep = false
+                            };
+                            string funcName = funcMatch.Groups[1].Value;
+                            string paramContent = funcMatch.Groups[2].Value;
+                            Debug.WriteLine($"    → 函数名：{funcName}，括号内参数：{paramContent}");
 
+                            switch (funcName)
+                            {
+                                case "tipon":
+                                    string tiponID = ExtractSingleParamValue(paramContent, "pipe_id");
+                                    string tiponPlate = ExtractSingleParamValue(paramContent, "plate");
+                                    string tiponRow = ExtractSingleParamValue(paramContent, "row");
+                                    string tiponCol = ExtractSingleParamValue(paramContent, "col");
+                                    flowStep.Position = MapPlatePositionBack(tiponPlate);
+                                    flowStep.Type = "TipOn";
+                                    if (tiponID == "1")
+                                    {
+                                        flowStep.SelectedPipetteName = "pipette_1";
+                                        flowStep.SelectedCells = ReverseParsePipettePosition(int.Parse(tiponRow), int.Parse(tiponCol), isLeftSigna);
+                                        flowStep.WellPosition = ReverseParsePipetteWellPosition(int.Parse(tiponRow), int.Parse(tiponCol), isLeftSigna);
+                                    }
+                                    else if (tiponID == "2")
+                                    {
+                                        flowStep.SelectedPipetteName = "pipette_2";
+                                        flowStep.SelectedCells = ReverseParsePipettePosition(int.Parse(tiponRow), int.Parse(tiponCol), isRightSigna);
+                                        flowStep.WellPosition = ReverseParsePipetteWellPosition(int.Parse(tiponRow), int.Parse(tiponCol), isRightSigna);
+                                    }
+                                    FlowSteps.Add(flowStep);
+                                    break;
+                                case "aspirate":
+                                    string aspID = ExtractSingleParamValue(paramContent, "pipe_id");
+                                    string aspPlate = ExtractSingleParamValue(paramContent, "plate");
+                                    string aspRow = ExtractSingleParamValue(paramContent, "row");
+                                    string aspCol = ExtractSingleParamValue(paramContent, "col");
+                                    string aspVol = ExtractSingleParamValue(paramContent, "vol");
+                                    string aspSpeed = ExtractSingleParamValue(paramContent, "speed");
+                                    string aspDepth = ExtractSingleParamValue(paramContent, "depth");
+                                    float aspDepthValue = ExtractFloatValueFromBracket(aspDepth);
+
+                                    flowStep.Position = MapPlatePositionBack(aspPlate);
+                                    flowStep.Type = "Aspirate";
+                                    flowStep.Volume = float.Parse(aspVol);
+                                    flowStep.LiquidAisSpeed = float.Parse(aspSpeed);
+                                    flowStep.LiquidAisDistance = aspDepthValue;
+                                    if (aspID == "1")
+                                    {
+                                        flowStep.SelectedPipetteName = "pipette_1";
+                                        flowStep.SelectedCells = ReverseParsePipettePosition(int.Parse(aspRow), int.Parse(aspCol), isLeftSigna);
+                                        flowStep.WellPosition = ReverseParsePipetteWellPosition(int.Parse(aspRow), int.Parse(aspCol), isLeftSigna);
+                                    }
+                                    else if (aspID == "2")
+                                    {
+                                        flowStep.SelectedPipetteName = "pipette_2";
+                                        flowStep.SelectedCells = ReverseParsePipettePosition(int.Parse(aspRow), int.Parse(aspCol), isRightSigna);
+                                        flowStep.WellPosition = ReverseParsePipetteWellPosition(int.Parse(aspRow), int.Parse(aspCol), isRightSigna);
+                                    }
+                                    FlowSteps.Add(flowStep);
+                                    break;
+                                case "dispense":
+                                    string disID = ExtractSingleParamValue(paramContent, "pipe_id");
+                                    string disPlate = ExtractSingleParamValue(paramContent, "plate");
+                                    string disRow = ExtractSingleParamValue(paramContent, "row");
+                                    string disCol = ExtractSingleParamValue(paramContent, "col");
+                                    string disVol = ExtractSingleParamValue(paramContent, "vol");
+                                    string disSpeed = ExtractSingleParamValue(paramContent, "speed");
+                                    string disDepth = ExtractSingleParamValue(paramContent, "depth");
+                                    float disDepthValue = ExtractFloatValueFromBracket(disDepth);
+
+                                    flowStep.Position = MapPlatePositionBack(disPlate);
+                                    flowStep.Type = "Dispense";
+                                    flowStep.Volume = float.Parse(disVol);
+                                    flowStep.LiquidDisSpeed = float.Parse(disSpeed);
+                                    flowStep.LiquidDisDistance = disDepthValue;
+                                    if (disID == "1")
+                                    {
+                                        flowStep.SelectedPipetteName = "pipette_1";
+                                        flowStep.SelectedCells = ReverseParsePipettePosition(int.Parse(disRow), int.Parse(disCol), isLeftSigna);
+                                        flowStep.WellPosition = ReverseParsePipetteWellPosition(int.Parse(disRow), int.Parse(disCol), isLeftSigna);
+                                    }
+                                    else if (disID == "2")
+                                    {
+                                        flowStep.SelectedPipetteName = "pipette_2";
+                                        flowStep.SelectedCells = ReverseParsePipettePosition(int.Parse(disRow), int.Parse(disCol), isRightSigna);
+                                        flowStep.WellPosition = ReverseParsePipetteWellPosition(int.Parse(disRow), int.Parse(disCol), isRightSigna);
+                                    }
+                                    FlowSteps.Add(flowStep);
+                                    break;
+                                case "tipoff":
+                                    string tipoffID = ExtractSingleParamValue(paramContent, "pipe_id");
+                                    string tipoffPlate = ExtractSingleParamValue(paramContent, "plate");
+                                    string tipoffRow = ExtractSingleParamValue(paramContent, "row");
+                                    string tipoffCol = ExtractSingleParamValue(paramContent, "col");
+                                    flowStep.Position = MapPlatePositionBack(tipoffPlate);
+                                    flowStep.Type = "TipOff";
+                                    if (tipoffID == "1")
+                                    {
+                                        flowStep.SelectedPipetteName = "pipette_1";
+                                        flowStep.SelectedCells = ReverseParsePipettePosition(int.Parse(tipoffRow), int.Parse(tipoffCol), isLeftSigna);
+                                        flowStep.WellPosition = ReverseParsePipetteWellPosition(int.Parse(tipoffRow), int.Parse(tipoffCol), isLeftSigna);
+                                    }
+                                    else if (tipoffID == "2")
+                                    {
+                                        flowStep.SelectedPipetteName = "pipette_2";
+                                        flowStep.SelectedCells = ReverseParsePipettePosition(int.Parse(tipoffRow), int.Parse(tipoffCol), isRightSigna);
+                                        flowStep.WellPosition = ReverseParsePipetteWellPosition(int.Parse(tipoffRow), int.Parse(tipoffCol), isRightSigna);
+                                    }
+                                    FlowSteps.Add(flowStep);
+                                    break;
+                                case "wait":
+                                    string waitTime = ExtractSingleParamValue(paramContent, "s");
+                                    //string waitValue = ExtractSingleParamValue(paramContent, "value");
+                                    flowStep.Type = "Wait";
+                                    flowStep.WaitTime = int.Parse(waitTime);
+                                    FlowSteps.Add(flowStep);
+                                    break;
+                                case "mixing":
+                                    string mixID = ExtractSingleParamValue(paramContent, "pipe_id");
+                                    string mixPlate = ExtractSingleParamValue(paramContent, "plate");
+                                    string mixRow = ExtractSingleParamValue(paramContent, "row");
+                                    string mixCol = ExtractSingleParamValue(paramContent, "col");
+                                    string mixVol = ExtractSingleParamValue(paramContent, "vol");
+                                    string mixRound = ExtractSingleParamValue(paramContent, "rounds");
+                                    string mixSpeed = ExtractSingleParamValue(paramContent, "speed");
+                                    string mixDepth = ExtractSingleParamValue(paramContent, "depth");
+                                    float mixDepthValue = ExtractFloatValueFromBracket(mixDepth);
+
+                                    flowStep.Position = MapPlatePositionBack(mixPlate);
+                                    flowStep.Type = "Mix";
+                                    flowStep.MixVolume = float.Parse(mixVol);
+                                    flowStep.MixCount = int.Parse(mixRound);
+                                    flowStep.LiquidAisSpeed = float.Parse(mixSpeed);
+                                    flowStep.LiquidDisSpeed = float.Parse(mixSpeed);
+                                    flowStep.LiquidAisDistance = mixDepthValue;
+                                    flowStep.LiquidDisDistance = mixDepthValue;
+
+                                    if (mixID == "1")
+                                    {
+                                        flowStep.SelectedPipetteName = "pipette_1";
+                                        flowStep.SelectedCells = ReverseParsePipettePosition(int.Parse(mixRow), int.Parse(mixCol), isLeftSigna);
+                                        flowStep.WellPosition = ReverseParsePipetteWellPosition(int.Parse(mixRow), int.Parse(mixCol), isLeftSigna);
+                                    }
+                                    else if (mixID == "2")
+                                    {
+                                        flowStep.SelectedPipetteName = "pipette_2";
+                                        flowStep.SelectedCells = ReverseParsePipettePosition(int.Parse(mixRow), int.Parse(mixCol), isRightSigna);
+                                        flowStep.WellPosition = ReverseParsePipetteWellPosition(int.Parse(mixRow), int.Parse(mixCol), isRightSigna);
+                                    }
+                                    FlowSteps.Add(flowStep);
+                                    break;
+                                case "movePlate":
+                                    string transferID = ExtractSingleParamValue(paramContent, "id");
+                                    string transferFromPlate = ExtractSingleParamValue(paramContent, "from_plate");
+                                    string transferToPlate = ExtractSingleParamValue(paramContent, "to_plate");
+                                    string transferPosition = ExtractSingleParamValue(paramContent, "pushing");
+                                    flowStep.ModuleName = "gripper_" + transferID;
+                                    flowStep.Type = "Transfer";
+                                    flowStep.FromPos = transferFromPlate.ToUpper();
+                                    flowStep.ToPos = transferToPlate.ToUpper();
+                                    if (transferPosition == "")
+                                        flowStep.TransferPosition = 0;
+                                    else
+                                        flowStep.TransferPosition = float.Parse(transferPosition);
+
+                                    FlowSteps.Add(flowStep);
+                                    break;
+                                case "Shaker.start_temp":
+                                    shakerTemp = ExtractSingleParamValue(paramContent, "temp");
+                                    break;
+                                case "Shaker.start_shaker":
+                                    string shakerID = ExtractSingleParamValue(paramContent, "id");
+                                    string shakerRPM = ExtractSingleParamValue(paramContent, "rpm");
+                                    string shakerTime = ExtractSingleParamValue(paramContent, "time");
+
+                                    flowStep.ModuleName = "shaker_" + shakerID;
+                                    int targetShakerIndex = plateModules.IndexOf(flowStep.ModuleName);
+
+
+                                    string finalResult = $"P{targetShakerIndex + 1}";
+                                    flowStep.Type = "Shake";
+                                    flowStep.Position = finalResult;
+                                    flowStep.ShakeTemp = float.Parse(shakerTemp);
+                                    flowStep.ShakeRPM = int.Parse(shakerRPM);
+                                    flowStep.WaitTime = int.Parse(shakerTime);
+                                    FlowSteps.Add(flowStep);
+                                    break;
+                                case "Magnetic.on":
+                                    string magneticENID = ExtractSingleParamValue(paramContent, "id");
+                                    flowStep.ModuleName = "magnetic_" + magneticENID;
+                                    int targetMagneticonIndex = plateModules.IndexOf(flowStep.ModuleName);
+
+                                    string finalmagneticENResult = $"P{targetMagneticonIndex + 1}";
+                                    flowStep.Type = "Magnetic";
+                                    flowStep.Position = finalmagneticENResult;
+                                    flowStep.IsMagnetUp = true;
+                                    flowStep.IsMagnetDown = false;
+                                    FlowSteps.Add(flowStep);
+                                    break;
+                                case "Magnetic.off"://magnetic
+                                    string magneticDisID = ExtractSingleParamValue(paramContent, "id");
+                                    flowStep.ModuleName = "magnetic_" + magneticDisID;
+                                    int targetMagneticoffIndex = plateModules.IndexOf(flowStep.ModuleName);
+
+                                    string finalmagneticDisResult = $"P{targetMagneticoffIndex + 1}";
+                                    flowStep.Type = "Magnetic";
+                                    flowStep.Position = finalmagneticDisResult;
+                                    flowStep.IsMagnetUp = false;
+                                    flowStep.IsMagnetDown = true;
+                                    FlowSteps.Add(flowStep);
+                                    break;
+                                case "Cool.start":
+                                    string coolID = ExtractSingleParamValue(paramContent, "id");
+                                    flowStep.ModuleName = "tempctrl_" + coolID;
+                                    int targetIndex = plateModules.IndexOf(flowStep.ModuleName);
+
+                                    string finalcoolResult = $"P{targetIndex + 1}";
+                                    string coolTemp = ExtractSingleParamValue(paramContent, "temp");
+
+                                    flowStep.Type = "Temp Ctrl";
+                                    flowStep.TempCtrlTemp = float.Parse(coolTemp);
+                                    flowStep.Position = finalcoolResult;
+                                    flowStep.IsTempCtrlOpen = true;
+                                    flowStep.IsTempCtrlClose = false;
+                                    FlowSteps.Add(flowStep);
+                                    break;
+                                case "Cool.stop":
+                                    string coolStopID = ExtractSingleParamValue(paramContent, "id");
+                                    flowStep.ModuleName = "tempctrl_" + coolStopID;
+                                    int targetCoolStopIndex = plateModules.IndexOf(flowStep.ModuleName);
+                                    string finalcoolStopResult = $"P{targetCoolStopIndex + 1}";
+
+                                    flowStep.Type = "Temp Ctrl";
+                                    flowStep.Position = finalcoolStopResult;
+                                    flowStep.IsTempCtrlOpen = false;
+                                    flowStep.IsTempCtrlClose = true;
+                                    FlowSteps.Add(flowStep);
+                                    break;
+                                case "Pcr.opendoor":
+                                    flowStep.PcrStep = _res.SettingManualPCROpen;
+                                    flowStep.Type = "PCR";
+                                    FlowSteps.Add(flowStep);
+                                    break;
+                                case "Pcr.closedoor":
+                                    flowStep.PcrStep = _res.SettingManualPCRClose;
+                                    flowStep.Type = "PCR";
+                                    FlowSteps.Add(flowStep);
+                                    break;
+                                case "Pcr.stop":
+                                    flowStep.PcrStep = _res.SettingManualPCRStop;
+                                    flowStep.Type = "PCR";
+                                    FlowSteps.Add(flowStep);
+                                    break;
+                                case "Pcr.run":
+                                    string PcrrunValue = ExtractSingleParamValue(paramContent, "data");
+                                    flowStep.PcrStep = _res.SettingManualPCRStart;
+                                    flowStep.PcrScriptAdress = PcrrunValue;
+                                    flowStep.Type = "PCR";
+                                    FlowSteps.Add(flowStep);
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                    }
+
+                }
+                // 添加结束步骤
+                FlowSteps.Add(new FlowStep
+                {
+                    Index = _stepIndex++,
+                    Type = "end",
+                    IsSelected = false,
+                    IsSystemStep = true
+                });
+
+                // 重新编号步骤
+                RebuildStepIndexes();
+                #endregion
                 ShowNotification(_res.ScriptLoadSucc, NotificationControl.NotificationType.Info);
             }
             catch (Exception ex)
@@ -2802,7 +2928,291 @@ pipetteCombo));
                 ShowNotification($"{_res.ScriptLoadFail}: {ex.Message}", NotificationControl.NotificationType.Error);
             }
         }
+        /// <summary>
+        /// 反向还原移液器孔位字符串（ParsePipettePosition的逆操作）
+        /// 支持两种格式还原：
+        /// 1.  单孔位：根据row、col → "行,列"（如row=2,col=5 → "2,5"）
+        /// 2.  8通道：根据首行firstRow、公共列commonCol → 8组孔位拼接字符串（如firstRow=1,commonCol=4 → "1,4;2,4;3,4;4,4;5,4;6,4;7,4;8,4"）
+        /// 3. 96通道：识别约定值(1,1) → 生成覆盖整板的96组孔位字符串（行1~8、列1~12）
+        /// </summary>
+        /// <param name="row">单孔位行号 / 8通道首行行号/ 96通道约定值1</param>
+        /// <param name="col">单孔位列号 / 8通道公共列号 / 96通道约定值1</param>
+        /// <param name="channelType">通道类型：0=单通道，1=8通道，2=96通道</param>
+        /// <returns>还原后的SelectedCells字符串</returns>
+        /// <exception cref="ArgumentOutOfRangeException">行/列号小于1时抛出（非法孔位）</exception>
+        /*
+        private string ReverseParsePipettePosition(int row, int col, int is8Channel)
+        {
+            // 基础参数校验：行号、列号必须大于0（孔位无0行0列）
+            if (row < 1 || col < 1)
+            {
+                throw new ArgumentOutOfRangeException($"行号（{row}）和列号（{col}）必须大于0", nameof(row));
+            }
 
+            // 场景1：单通道（0）→ 格式："行,列"
+            if (is8Channel == 0)
+            {
+                return $"{row},{col}";
+            }
+            // 场景2：8通道（1）→ 格式："1,4;2,4;...;8,4"
+            else if (is8Channel == 1)
+            {
+                List<string> channelPositionList = new List<string>();
+                for (int i = 0; i < 8; i++)
+                {
+                    int currentRow = row + i; // 首行+偏移量0~7，生成8行
+                    channelPositionList.Add($"{currentRow},{col}");
+                }
+                return string.Join(";", channelPositionList);
+            }
+            // 场景3：96通道（2）→ 按需自定义格式（以下为默认实现，可根据你的业务调整）
+            else if (is8Channel == 2)
+            {
+                List<string> channelPositionList = new List<string>();
+                // 96通道默认：生成12行×8列（可根据你的实际格式修改循环逻辑）
+                // 若你需要和8通道类似的“公共列+连续行”格式，可保留以下逻辑；若有其他格式，直接调整即可
+                for (int i = 0; i < 96; i++)
+                {
+                    int currentRow = row + i; // 首行+偏移量0~95，生成96行（或按你的96通道格式调整）
+                    channelPositionList.Add($"{currentRow},{col}");
+                }
+                return string.Join(";", channelPositionList);
+            }
+            // 场景4：非法通道类型（兜底分支，避免无返回值，同时抛出明确异常）
+            else
+            {
+                throw new ArgumentException($"非法的通道类型：{is8Channel}，仅支持0（单通道）、1（8通道）、2（96通道）", nameof(is8Channel));
+            }
+        }
+        */
+
+        private string ReverseParsePipettePosition(int row, int col, int channelType)
+        {
+            // 分支1：96通道（约定值1,1代表整板）
+            if (channelType == 2)
+            {
+                // 校验96通道必须传入约定值(1,1)
+                if (row != 1 || col != 1)
+                {
+                    throw new ArgumentOutOfRangeException($"96通道必须传入约定值(1,1)，当前传入({row},{col})", nameof(row));
+                }
+
+                // 生成整板96组孔位（行1~8，列1~12）
+                List<string> platePositionList = new List<string>();
+                for (int r = 1; r <= 8; r++) // 96孔板固定8行
+                {
+                    for (int c = 1; c <= 12; c++) // 96孔板固定12列
+                    {
+                        platePositionList.Add($"{r},{c}");
+                    }
+                }
+                return string.Join(";", platePositionList);
+            }
+
+            // 单通道/8通道：基础参数校验（行号、列号必须大于0）
+            if (row < 1 || col < 1)
+            {
+                throw new ArgumentOutOfRangeException($"行号（{row}）和列号（{col}）必须大于0", nameof(row));
+            }
+
+            // 分支2：单通道（0）→ 格式："行,列"
+            if (channelType == 0)
+            {
+                return $"{row},{col}";
+            }
+            // 分支3：8通道（1）→ 格式："1,4;2,4;...;8,4"
+            else if (channelType == 1)
+            {
+                List<string> channelPositionList = new List<string>();
+                for (int i = 0; i < 8; i++)
+                {
+                    int currentRow = row + i; // 首行+偏移量0~7，生成8行
+                                              // 校验8通道行号不超过96孔板最大行（8）
+                    if (currentRow > 8)
+                    {
+                        throw new ArgumentOutOfRangeException($"8通道首行({row})+偏移后行号({currentRow})超过96孔板最大行（8）", nameof(row));
+                    }
+                    channelPositionList.Add($"{currentRow},{col}");
+                }
+                return string.Join(";", channelPositionList);
+            }
+            // 分支4：非法通道类型
+            else
+            {
+                throw new ArgumentException($"非法的通道类型：{channelType}，仅支持0（单通道）、1（8通道）、2（96通道）", nameof(channelType));
+            }
+        }
+
+
+        /// <summary>
+        /// 反向还原移液器孔位可读字符串（适配界面显示）
+        /// 支持三种格式还原：
+        /// 1. 单孔位：根据row、col → "行X 列Y"（如row=2,col=5 → "行2 列5"）
+        /// 2. 8通道：根据首行firstRow、公共列commonCol → "行1~8 列Y"（如firstRow=1,commonCol=4 → "行1~8 列4"）
+        /// 3. 96通道：识别约定值(1,1) → "行1~8 列1~12"（整板）
+        /// </summary>
+        /// <param name="row">单孔位行号 / 8通道首行行号 / 96通道约定值1</param>
+        /// <param name="col">单孔位列号 / 8通道公共列号 / 96通道约定值1</param>
+        /// <param name="channelType">通道类型：0=单通道，1=8通道，2=96通道</param>
+        /// <returns>还原后的可读孔位字符串</returns>
+        /// <exception cref="ArgumentOutOfRangeException">单通道/8通道行/列号小于1时抛出；96通道非(1,1)时抛出</exception>
+        private string ReverseParsePipetteWellPosition(int row, int col, int channelType)
+        {
+            // 分支1：96通道（约定值1,1代表整板）
+            if (channelType == 2)
+            {
+                // 校验96通道必须传入约定值(1,1)
+                if (row != 1 || col != 1)
+                {
+                    throw new ArgumentOutOfRangeException($"96通道必须传入约定值(1,1)，当前传入({row},{col})", nameof(row));
+                }
+                // 96通道返回整板可读格式
+                return $"{ResourceHelper.Instance.StepDetailRowPrefix}1~8 {ResourceHelper.Instance.StepDetailColumnPrefix}1~12";
+            }
+
+            // 单通道/8通道：基础参数校验（行号、列号必须大于0）
+            if (row < 1 || col < 1)
+            {
+                throw new ArgumentOutOfRangeException($"行号（{row}）和列号（{col}）必须大于0", nameof(row));
+            }
+
+            // 分支2：单通道（0）→ 格式："行X 列Y"
+            if (channelType == 0)
+            {
+                return $"{ResourceHelper.Instance.StepDetailRowPrefix}{row} {ResourceHelper.Instance.StepDetailColumnPrefix}{col}";
+            }
+            // 分支3：8通道（1）→ 格式："行1~8 列Y"
+            else if (channelType == 1)
+            {
+                // 校验8通道首行合法性（确保偏移后不超过8行）
+                if (row + 7 > 8)
+                {
+                    throw new ArgumentOutOfRangeException($"8通道首行({row})偏移后超过96孔板最大行（8）", nameof(row));
+                }
+                return $"{ResourceHelper.Instance.StepDetailRowPrefix}1~8 {ResourceHelper.Instance.StepDetailColumnPrefix}{col}";
+            }
+            // 分支4：非法通道类型
+            else
+            {
+                throw new ArgumentException($"非法的通道类型：{channelType}，仅支持0（单通道）、1（8通道）、2（96通道）", nameof(channelType));
+            }
+        }
+        /*
+        private string ReverseParsePipetteWellPosition(int row, int col, int is8Channel)
+        {
+            // 基础参数校验：行号、列号必须大于0（孔位无0行0列）
+            if (row < 1 || col < 1)
+            {
+                throw new ArgumentOutOfRangeException($"行号（{row}）和列号（{col}）必须大于0", nameof(row));
+            }
+
+            // 场景1：单通道（0）→ 格式："行,列"
+            if (is8Channel == 0)
+            {
+                return $"{ResourceHelper.Instance.StepDetailRowPrefix}{row} {ResourceHelper.Instance.StepDetailColumnPrefix}{col}";
+            }
+            // 场景2：8通道（1）→ 格式："1,4;2,4;...;8,4"
+            else if (is8Channel == 1)
+            {
+                return $"{ResourceHelper.Instance.StepDetailRowPrefix}{"1~8"} {ResourceHelper.Instance.StepDetailColumnPrefix}{col}";
+            }
+            // 场景3：96通道（2）→ 按需自定义格式（以下为默认实现，可根据你的业务调整）
+            else if (is8Channel == 2)
+            {
+                List<string> channelPositionList = new List<string>();
+                // 96通道默认：生成12行×8列（可根据你的实际格式修改循环逻辑）
+                // 若你需要和8通道类似的“公共列+连续行”格式，可保留以下逻辑；若有其他格式，直接调整即可
+                for (int i = 0; i < 96; i++)
+                {
+                    int currentRow = row + i; // 首行+偏移量0~95，生成96行（或按你的96通道格式调整）
+                    channelPositionList.Add($"{currentRow},{col}");
+                }
+                return string.Join(";", channelPositionList);
+            }
+            // 场景4：非法通道类型（兜底分支，避免无返回值，同时抛出明确异常）
+            else
+            {
+                throw new ArgumentException($"非法的通道类型：{is8Channel}，仅支持0（单通道）、1（8通道）、2（96通道）", nameof(is8Channel));
+            }
+        }
+        */
+        private string ExtractSingleParamValue(string paramContent, string targetParamName)
+        {
+            if (string.IsNullOrWhiteSpace(paramContent) || string.IsNullOrWhiteSpace(targetParamName))
+            {
+                return string.Empty;
+            }
+
+            // 正则匹配规则：
+            // 1.  \b：单词边界，避免匹配到platex这类包含targetParamName的无效参数
+            // 2.  \s*=\s*：匹配参数名和值之间的任意空格（兼容id = xxx 或 id=xxx格式）
+            // 3.  ([^,)]+)：匹配值内容（直到逗号或右括号结束，兼容带引号/不带引号的值）
+            // 4.  RegexOptions.IgnoreCase：忽略参数名大小写（兼容Plate/plate格式）
+            string pattern = $@"\b{Regex.Escape(targetParamName)}\b\s*=\s*([^,)]+)";
+            Match paramMatch = Regex.Match(paramContent, pattern, RegexOptions.IgnoreCase);
+
+            if (paramMatch.Success)
+            {
+                string rawValue = paramMatch.Groups[1].Value.Trim();
+                // 去除值两端的双引号/单引号（兼容plate="p7" 或 plate='p7'格式）
+                rawValue = rawValue.Trim('"', '\'');
+                // 去除值两端多余的空格（兼容 col=  5 这类格式）
+                return rawValue.Trim();
+            }
+
+            // 未匹配到参数时返回空字符串
+            return string.Empty;
+        }
+        /// <summary>
+        /// 从带括号的字符串中提取数值（如"bottom(2.00"、"bottom(3.50)" → 2.00、3.50）
+        /// </summary>
+        /// <param name="bracketStr">带括号的字符串（如bottom(2.00、cons.bottom(5.60)）</param>
+        /// <param name="defaultValue">解析失败时的默认值</param>
+        /// <returns>提取并转换后的float数值</returns>
+        private float ExtractFloatValueFromBracket(string bracketStr, float defaultValue = 0.0f)
+        {
+            if (string.IsNullOrWhiteSpace(bracketStr))
+            {
+                return defaultValue;
+            }
+
+            // 正则匹配规则：捕获括号内的所有数字（包括整数、小数，支持正负号）
+            // \(：匹配左括号；([\d\.]+)：捕获数字和小数点；\)：匹配右括号（非必填，兼容缺少右括号的情况）
+            string pattern = @"\(([\d\.]+)\)?";
+            Match numMatch = Regex.Match(bracketStr, pattern);
+
+            if (numMatch.Success)
+            {
+                string numStr = numMatch.Groups[1].Value.Trim();
+                // 安全解析为float，失败返回默认值
+                if (float.TryParse(numStr, out float result))
+                {
+                    // 可选：保留两位小数，与导出时的:F2格式一致
+                    return (float)Math.Round(result, 2);
+                }
+            }
+
+            // 匹配失败或解析失败，返回默认值
+            return defaultValue;
+        }
+        private Border FindParentBorder(DependencyObject childControl)
+        {
+            if (childControl == null) return null;
+
+            // 遍历视觉树，查找父级Border
+            DependencyObject parent = VisualTreeHelper.GetParent(childControl);
+            while (parent != null)
+            {
+                if (parent is Border border)
+                {
+                    return border; // 找到父级Border，返回
+                }
+                // 继续向上查找父级
+                parent = VisualTreeHelper.GetParent(parent);
+            }
+
+            return null; // 未找到父级Border
+        }
         /// <summary>
         /// 将JSON中的板位格式（如p1、magnetic_1）转换回UI格式（如P1）
         /// </summary>
@@ -2812,10 +3222,10 @@ pipetteCombo));
 
             if (plate.StartsWith("p"))
                 return $"P{plate.Substring(1)}"; // p1 → P1
-            if (plate == "magnetic_1")
-                return "P3"; // 对应磁分离板位
-            if (plate == "shaker_1")
-                return "P9"; // 对应震荡板位
+            //if (plate == "magnetic_1")
+            //    return "P3"; // 对应磁分离板位
+            //if (plate == "shaker_1")
+            //    return "P9"; // 对应震荡板位
 
             return "P1"; // 默认值
         }
@@ -2853,37 +3263,60 @@ pipetteCombo));
             }
             try
             {
-                // 1. 创建脚本JSON
+                // 1. 创建脚本Python
                 ShowNotification(_res.ScriptStartCreating, NotificationControl.NotificationType.Info);
-                string scriptJson = CreateScriptJson();
-
+                //string scriptJson = CreateScriptJson();
+                string scriptPy = CreateScriptPython();
                 // 2. 保存脚本到文件
-                string scriptPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "scripts");
-                Directory.CreateDirectory(scriptPath);
-                string fileName = $"{DateTime.Now:yyyyMMddHHmmss}_script.json";
-                string fullPath = System.IO.Path.Combine(scriptPath, fileName);
-                File.WriteAllText(fullPath, scriptJson);
+                string scriptRootPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "scripts");
+                Directory.CreateDirectory(scriptRootPath);
+                string projectName = AppGlobalConfig.Instance.GuideProtocolName;
+                string validProjectName = string.IsNullOrWhiteSpace(projectName)
+                       ? "untitled"
+                       : System.Text.RegularExpressions.Regex.Replace(projectName, @"[\\/:*?""<>|]", "_");
+                string fileName = $"{validProjectName}_{AppGlobalConfig.Instance.GuideProtocolStartTime}.py";
+                string subFolderName = System.IO.Path.GetFileNameWithoutExtension(fileName);
+                string subFolderPath = System.IO.Path.Combine(scriptRootPath, subFolderName);
+                Directory.CreateDirectory(subFolderPath);
+                string fullPath = System.IO.Path.Combine(subFolderPath, fileName);
+                ExportGridToPngFile(PlateContainer, subFolderPath);
+                File.WriteAllText(fullPath, scriptPy);
 
-                // 3. 发送脚本到服务端执行（对应C++的emit startScript）
+                int stepsNum = FlowSteps.Count();
+
                 // 假设通过gRPC发送脚本
-                var response = await ScriptStartAsync(scriptJson);
-                if (response == 0)
+                var response = await ScriptRunAsync(scriptPy, stepsNum);
+                if (response == null)
                 {
-                    StartMonitoring();
-                    RunLogs.Clear();
+
+                    ShowNotification(_res.WindowGrpcComFail, NotificationControl.NotificationType.Warn);
+                    return;
+                }
+                if (response.Result == QybotrunPkg.execute_result.Types.errcode.Succeed)
+                {
                     runFlag = true;
                     ShowNotification(_res.ScriptStartSucc, NotificationControl.NotificationType.Info);
-                    // 切换视图
-                    StepDetailView.Visibility = Visibility.Collapsed;
-                    RunInfoView.Visibility = Visibility.Visible;
+                    var settingsDialog = new RunningInfoShow(this);
+                    settingsDialog.RunLogs.Clear();
+
+                    var dialogWindow = new Window
+                    {
+                        Width = 1300,
+                        Height = 750,
+
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                        Owner = this,
+                        WindowStyle = WindowStyle.None,
+                        AllowsTransparency = false,
+                        Content = settingsDialog,
+                    };
+
+                    // 显示模态弹窗
+                    dialogWindow.ShowDialog();
                 }
-                else if (response == 1)
+                else
                 {
-                    ShowNotification(_res.ScriptStartCheckFail, NotificationControl.NotificationType.Error);
-                }
-                else if (response == 2)
-                {
-                    ShowNotification(_res.ScriptStartFail, NotificationControl.NotificationType.Error);
+                    ShowNotification(response.Errinfo, NotificationControl.NotificationType.Error);
                 }
             }
             catch (Exception ex)
@@ -2891,224 +3324,8 @@ pipetteCombo));
                 ShowNotification($"{_res.ScriptStartCreateFail}: {ex.Message}", NotificationControl.NotificationType.Error);
             }
         }
-        //流程暂停
-        private async void PauseButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (mainPauseName.Tag.ToString() == "pause")
-            {
-                if (!runFlag)
-                {
-                    ShowNotification(_res.ScriptNotStart, NotificationControl.NotificationType.Warn);
-                    return;
-                }
-                ShowNotification(_res.ScriptPause, NotificationControl.NotificationType.Info);
-                mainPauseName.Content = "继续";
-                mainPauseName.Tag = "resume";
-                await ScriptPauseAsync();
-            }
-            else if (mainPauseName.Tag.ToString() == "resume")
-            {
-                ShowNotification(_res.ScriptContinue, NotificationControl.NotificationType.Info);
-                var switchValues = await GetSwitchValuesAsync();
 
-                DoorFlag = switchValues.GetValueOrDefault("door_lock", -1f);
-                if (DoorFlag == 0)
-                {
 
-                    ShowNotification(_res.GrpcFailDoor, NotificationControl.NotificationType.Warn);
-                }
-                else
-                {
-                    mainPauseName.Content = "暂停";
-                    mainPauseName.Tag = "pause";
-                    await ScriptContinueAsync();
-                }
-            }
-
-        }
-        //流程停止
-        private async void StopButton_Click(object sender, RoutedEventArgs e)
-        {
-            await ScriptStopAsync();
-        }
-        /// <summary>
-        /// 启动脚本监控（对应C++的Script_monitor方法）
-        /// </summary>
-        /// <returns>异步任务</returns>
-        public async Task ScriptMonitorAsync(CancellationToken cancellationToken)
-        {
-            try
-            {
-                // 使用传入的取消令牌
-                var callOptions = new CallOptions(cancellationToken: cancellationToken);
-
-                // 调用gRPC流方法
-                using (var call = _ScriptClient.Script_monitor(new ScriptEngine.Void(), callOptions))
-                {
-                    // 循环读取流数据，同时检查取消请求
-                    while (await call.ResponseStream.MoveNext(cancellationToken) &&
-                          !cancellationToken.IsCancellationRequested)
-                    {
-                        var info = call.ResponseStream.Current;
-
-                        // 触发事件传递监控数据
-                        MonitorDataReceived?.Invoke(this, new ScriptMonitorEventArgs
-                        {
-                            ErrorCode = info.Errcode,
-                            ErrorInfo = info.Errinfo,
-                            State = info.State,
-                            CurrentStep = info.CurrentSetp + 1,
-                            MaxStep = info.MaxSetp,
-                            MaxTime = info.MaxTime,
-                            RunTime = info.RunTime
-                        });
-                    }
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                // 预期的取消操作，不视为错误
-                Debug.WriteLine("ScriptMonitor was canceled");
-            }
-            catch (RpcException ex)
-            {
-                Debug.WriteLine($"ScriptMonitor gRPC error: {ex.Status.Detail} (Code: {ex.StatusCode})");
-                MonitorDataReceived?.Invoke(this, new ScriptMonitorEventArgs
-                {
-                    ErrorCode = -1,
-                    ErrorInfo = $"gRPC监控异常: {ex.Status.Detail}"
-                });
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"ScriptMonitor error: {ex.Message}");
-                MonitorDataReceived?.Invoke(this, new ScriptMonitorEventArgs
-                {
-                    ErrorCode = -2,
-                    ErrorInfo = $"监控异常: {ex.Message}"
-                });
-            }
-        }
-        // 启动监控并订阅事件
-        private void StartMonitoring()
-        {
-            // 先停止可能正在运行的监控
-            StopMonitoring();
-
-            // 创建新的取消令牌源
-            _monitorCts = new CancellationTokenSource();
-
-            // 订阅监控数据事件（更新UI或日志）
-            MonitorDataReceived += OnMonitorDataReceived;
-
-            // 启动监控方法（传入取消令牌）
-            _ = ScriptMonitorAsync(_monitorCts.Token).ConfigureAwait(false);
-        }
-        // 停止监控
-        private void StopMonitoring()
-        {
-            // 取消订阅事件，避免内存泄漏
-            MonitorDataReceived -= OnMonitorDataReceived;
-
-            // 如果存在活跃的取消令牌，请求取消
-            if (_monitorCts != null && !_monitorCts.IsCancellationRequested)
-            {
-                _monitorCts.Cancel();
-                _monitorCts.Dispose(); // 释放资源
-                _monitorCts = null;
-            }
-
-            // 可选：清空监控状态显示
-            ResetMonitorUI();
-        }
-
-        // 重置监控UI显示
-        private void ResetMonitorUI()
-        {
-            Dispatcher.Invoke(() =>
-            {
-                RunTimeText.Text = "00:00:00";
-                CurrentStepText.Text = "0/0";
-                StatusText.Text = _res.ScriptUINotRun;
-                StatusIndicator.Fill = new SolidColorBrush(Color.FromRgb(153, 153, 153)); // 灰色
-                StatusText.Foreground = new SolidColorBrush(Color.FromRgb(153, 153, 153));
-                RunProgressBar.Value = 0;
-                ProgressPercentText.Text = "0%";
-            });
-        }
-        // 监控数据处理方法（更新UI需通过Dispatcher）
-        private void OnMonitorDataReceived(object sender, ScriptMonitorEventArgs e)
-        {
-            // 确保在UI线程处理（如果需要更新UI）
-            Dispatcher.Invoke(() =>
-            {
-                // 更新运行时间 (将秒转换为时分秒格式)
-                double seconds = e.RunTime / 1000.0;
-                RunTimeText.Text = TimeSpan.FromSeconds(seconds).ToString(@"hh\:mm\:ss");
-
-                CurrentStepText.Text = $"{e.CurrentStep}/{e.MaxStep}";
-
-                if (e.MaxStep > 0)
-                {
-                    double progress = (double)e.CurrentStep / e.MaxStep * 100;
-                    RunProgressBar.Value = progress;
-                    ProgressPercentText.Text = $"{(int)progress}%";
-                }
-                // 更新状态和指示器颜色
-                StatusText.Text = e.State;
-                switch (e.State)
-                {
-                    case "run":
-                        StatusIndicator.Fill = new SolidColorBrush(Color.FromRgb(39, 174, 96)); // 绿色
-                        StatusText.Foreground = new SolidColorBrush(Color.FromRgb(39, 174, 96));
-                        break;
-                    case "pause":
-                        StatusIndicator.Fill = new SolidColorBrush(Color.FromRgb(243, 156, 18)); // 橙色
-                        StatusText.Foreground = new SolidColorBrush(Color.FromRgb(243, 156, 18));
-                        break;
-                    case "idle":
-                        StatusIndicator.Fill = new SolidColorBrush(Color.FromRgb(52, 152, 219)); // 蓝色
-                        StatusText.Foreground = new SolidColorBrush(Color.FromRgb(52, 152, 219));
-                        runFlag = false;
-                        pauseFlag = false;
-
-                        break;
-                    case "err":
-                        StatusIndicator.Fill = new SolidColorBrush(Color.FromRgb(231, 76, 60)); // 红色
-                        StatusText.Foreground = new SolidColorBrush(Color.FromRgb(231, 76, 60));
-                        break;
-                }
-                bool shouldLog = (e.CurrentStep != _lastLoggedStep) ||
-                       (e.State == "err" && _lastLoggedState != "err") ||
-                       _lastLoggedStep == -1;
-                if (shouldLog && e.CurrentStep > 0)
-                {
-                    // 添加日志条目
-                    GenerateStepLog(e.State, e.CurrentStep, e.MaxStep, e.ErrorCode, e.ErrorInfo);
-                    // 更新记录的步骤和状态
-                    _lastLoggedStep = e.CurrentStep;
-                    _lastLoggedState = e.State;
-                }
-
-            });
-        }
-        private void GenerateStepLog(string state, int currentStep, int maxStep, int errorCode, string errorInfo = "")
-        {
-            string stepName = FlowSteps[currentStep - 1].Type; ;
-
-            string stateText = state == "run" ? _res.ScriptUILogRun :
-                                 state == "pause" ? _res.ScriptUILogPause :
-                                 state == "idle" ? _res.ScriptUILogIdle :
-                                 state == "err" ? _res.ScriptUILogError : _res.ScriptUILogUnknown;
-
-            // 5. 构建状态描述（步骤信息）
-            string statusDesc = $"[{stateText}] / {stepName} ({currentStep}/{maxStep})";
-            if (state == "err")
-            {
-                statusDesc += $" | {errorCode} / {errorInfo}";
-            }
-            AddLogEntry(statusDesc);
-        }
         //补光灯
         private async void LightControlButton_Click(object sender, RoutedEventArgs e)
         {
@@ -3116,17 +3333,59 @@ pipetteCombo));
             {
                 ShowNotification(_res.DeviceLightOpen, NotificationControl.NotificationType.Info);
 
-                var lightFllag = await SetSwitchAsync("fill_light", 0);//open
-                UpdateLightButtonStyle(1);
-                LightFlag = 1;
+                StringBuilder pythonCode = new StringBuilder();
+                pythonCode.AppendLine("from qyrobot import Robot");
+                pythonCode.AppendLine("Robot.filllight(1)");
+
+                var rawLightFlag = await ScriptDebugAsync(pythonCode.ToString());//open
+                var lightFlag = ParseScriptDebugResponse(rawLightFlag);
+                if (lightFlag != null)
+                {
+                    if (lightFlag.Result == "succeed")
+                    {
+                        UpdateLightButtonStyle(1);
+                        LightFlag = 1;
+                    }
+                    else
+                    {
+                        UpdateLightButtonStyle(0);
+                        LightFlag = 0;
+                    }
+                }
+                else
+                {
+                    ShowNotification(_res.WindowGrpcComFail, NotificationControl.NotificationType.Error);
+                }
+
             }
             else if (LightFlag == 1)
             {
                 ShowNotification(_res.DeviceLightClose, NotificationControl.NotificationType.Info);
 
-                var lightFllag = await SetSwitchAsync("fill_light", 1);//close//fill_light
-                UpdateLightButtonStyle(0);
-                LightFlag = 0;
+                StringBuilder pythonCode = new StringBuilder();
+                pythonCode.AppendLine("from qyrobot import Robot");
+                pythonCode.AppendLine("Robot.filllight(0)");
+
+                var rawLightFlag = await ScriptDebugAsync(pythonCode.ToString());//close
+                var lightFlag = ParseScriptDebugResponse(rawLightFlag);
+                if (lightFlag != null)
+                {
+                    if (lightFlag.Result == "succeed")
+                    {
+                        UpdateLightButtonStyle(0);
+                        LightFlag = 0;
+                    }
+                    else
+                    {
+                        UpdateLightButtonStyle(1);
+                        LightFlag = 1;
+                    }
+                }
+                else
+                {
+                    ShowNotification(_res.WindowGrpcComFail, NotificationControl.NotificationType.Error);
+                }
+
             }
         }
         //UV灯
@@ -3135,30 +3394,73 @@ pipetteCombo));
             if (UVFlag == 0)
             {
                 ShowNotification(_res.DeviceUVOpen, NotificationControl.NotificationType.Info);
+                StringBuilder pythonCode = new StringBuilder();
+                pythonCode.AppendLine("from qyrobot import Robot");
+                pythonCode.AppendLine("Robot.uv(1)");
 
-                var switchValues = await GetSwitchValuesAsync();
-
-                DoorFlag = switchValues.GetValueOrDefault("fill_light", -1f);
-                if (DoorFlag == 1)
+                var rawUvFlag = await ScriptDebugAsync(pythonCode.ToString());//open
+                var uvFlag = ParseScriptDebugResponse(rawUvFlag);
+                if (uvFlag != null)
                 {
-                    ShowNotification(_res.GrpcFailDoor, NotificationControl.NotificationType.Warn);
+                    if (uvFlag.Result == "succeed")
+                    {
+                        UpdateUVButtonStyle(1);
+                        UVFlag = 1;
+                    }
+                    else
+                    {
+                        UpdateUVButtonStyle(0);
+                        UVFlag = 0;
+                    }
                 }
                 else
                 {
-                    var lightFllag = await SetSwitchAsync("uv_lamp", 0);//open
-                    UpdateUVButtonStyle(1);
-                    UVFlag = 1;
+                    ShowNotification(_res.DeviceUVOpen, NotificationControl.NotificationType.Info);
                 }
+
+
 
             }
             else if (UVFlag == 1)
             {
                 ShowNotification(_res.DeviceUVClose, NotificationControl.NotificationType.Info);
+                StringBuilder pythonCode = new StringBuilder();
+                pythonCode.AppendLine("from qyrobot import Robot");
+                pythonCode.AppendLine("Robot.uv(0)");
 
-                var lightFllag = await SetSwitchAsync("uv_lamp", 1);//close//fill_light
-                UpdateUVButtonStyle(0);
-                UVFlag = 0;
+                var rawUvFlag = await ScriptDebugAsync(pythonCode.ToString());//close
+                var uvFlag = ParseScriptDebugResponse(rawUvFlag);
+                if (uvFlag != null)
+                {
+                    if (uvFlag.Result == "succeed")
+                    {
+                        UpdateUVButtonStyle(0);
+                        UVFlag = 0;
+
+                    }
+                    else
+                    {
+                        UpdateUVButtonStyle(1);
+                        UVFlag = 1;
+                    }
+                }
+                else
+                {
+                    ShowNotification(_res.WindowGrpcComFail, NotificationControl.NotificationType.Error);
+
+                }
+
             }
+        }
+
+        //摄像头
+        private void CameraControlButton_Click(object sender, RoutedEventArgs e)
+        {
+            var cameraWindow = new CameraShowWindow
+            {
+                Owner = this
+            };
+            cameraWindow.Show();
         }
         // 更新补光灯按钮样式
         private void UpdateLightButtonStyle(int LightFlag)
@@ -3207,7 +3509,8 @@ pipetteCombo));
                 //Name = "开始",
                 Type = "start",
                 IsSelected = false,
-                IsSystemStep = true // 标记为系统步骤
+                IsSystemStep = true, // 标记为系统步骤
+                Level = 0
             });
             // 添加结束步骤
             FlowSteps.Add(new FlowStep
@@ -3216,711 +3519,84 @@ pipetteCombo));
                 //Name = "结束",
                 Type = "end",
                 IsSelected = false,
-                IsSystemStep = true // 标记为系统步骤
+                IsSystemStep = true, // 标记为系统步骤
+                Level = 0
             });
             FlowList.ItemsSource = FlowSteps;
             _stepIndex = 3;
+            _stepClickIndex = 1;
         }
         //快速生成
         private void QuickGenerateButton_Click(object sender, RoutedEventArgs e)
         {
-            var quickWindow = new QuickFlowWindow(
-                this,
-        FlowSteps,
-        _plateConsumableMap,
-        Liquids
+            var settingsDialog = new RunningInfoShow(this);
 
-
-    );
-
-            if (quickWindow.ShowDialog() == true)
+            // 使用Window作为容器显示弹窗（确保弹窗可模态显示）
+            var dialogWindow = new Window
             {
-                // 刷新列表显示
-                FlowList.Items.Refresh();
+                Width = 1300,
+                Height = 750,
 
-                // 显示成功提示
-                ShowNotification(_res.ScriptSuccCrea, NotificationControl.NotificationType.Info);
-            }
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Owner = this,
+                WindowStyle = WindowStyle.None,
+                AllowsTransparency = false,
+                Content = settingsDialog,
+            };
+
+            // 显示模态弹窗
+            dialogWindow.ShowDialog();
         }
         //grpc
-        // 获取数据库板位数据
-        public async Task<Plate_info> GetSQLDataAsync(string plate)
-        {
-            if (string.IsNullOrEmpty(plate))
-            {
-                await Dispatcher.InvokeAsync(() =>
-                {
-                    ShowNotification(_res.SQLPosNameNotEmpty, NotificationControl.NotificationType.Error);
-                });
-                return null;
-            }
-
-            var request = new Plate_info
-            {
-                Name = plate
-            };
-
-            try
-            {
-                // 调用gRPC服务获取数据
-                var response = await _dataEngineClient.Data_Plate_getAsync(
-                    request,
-                    deadline: DateTime.UtcNow.AddSeconds(10));
-
-                return response;
-            }
-            catch (Grpc.Core.RpcException ex)
-            {
-                await Dispatcher.InvokeAsync(() =>
-                {
-                    ShowNotification(
-                        $"gRPC Warn: {ex.Status.Detail}\n{ex.StatusCode}",
-                        NotificationControl.NotificationType.Error);
-                });
-            }
-            catch (Exception ex)
-            {
-                await Dispatcher.InvokeAsync(() =>
-                {
-                    ShowNotification(
-                        $"gRPC Err: {ex.Message}",
-                        NotificationControl.NotificationType.Error);
-                });
-            }
-
-            return null;
-        }
-        // 保存数据库板位数据
-        public async Task<Plate_info> SetSQLDataAsync(string plate, float x, float y, float z)
-        {
-            if (string.IsNullOrEmpty(plate))
-            {
-                await Dispatcher.InvokeAsync(() =>
-                {
-                    ShowNotification(_res.SQLPosNameNotEmpty, NotificationControl.NotificationType.Error);
-                });
-                return null;
-            }
-
-            var request = new Plate_info
-            {
-                Name = plate,
-                X = x,
-                Y = y,
-                Z = z
-            };
-
-            try
-            {
-                // 调用gRPC服务保存数据
-                var response = await _dataEngineClient.Data_Plate_setAsync(
-                    request,
-                    deadline: DateTime.UtcNow.AddSeconds(10));
-                return response;
-            }
-            catch (Grpc.Core.RpcException ex)
-            {
-                await Dispatcher.InvokeAsync(() =>
-                {
-                    ShowNotification(
-                        $"gRPC Warn: {ex.Status.Detail}\n{ex.StatusCode}",
-                        NotificationControl.NotificationType.Error);
-                });
-            }
-            catch (Exception ex)
-            {
-                await Dispatcher.InvokeAsync(() =>
-                {
-                    ShowNotification(
-                        $"gRPC Err: {ex.Message}",
-                        NotificationControl.NotificationType.Error);
-                });
-            }
-
-            return null;
-        }
-        //设置UV、补光灯、门
-        public async Task<int> SetSwitchAsync(string switchName, float switchPower)
-        {
-            var request = new switch_info
-            {
-                Id = switchName,
-                Sw = switchPower
-            };
-
-            try
-            {
-                var response = await _commonClient.Set_switch_infoAsync(
-                    request,
-                    deadline: DateTime.UtcNow.AddSeconds(5));
-
-                // 正确处理UI更新和返回值
-                var result = response.Errcode == 0 ? 0 : -1;
-                var message = response.Errcode == 0
-                    ? _res.DeviceOperationSucc
-                    : $"{_res.DeviceOperationFailure} ({response.Errcode})";
-
-                await Dispatcher.InvokeAsync(() =>
-                {
-                    ShowNotification(
-                         message,
-                         response.Errcode == 0
-                             ? NotificationControl.NotificationType.Info
-                             : NotificationControl.NotificationType.Error);
-                });
-
-                return result;
-            }
-            catch (Grpc.Core.RpcException ex)
-            {
-                await Dispatcher.InvokeAsync(() =>
-                {
-                    ShowNotification(
-                        $"gRPC Warn: {ex.Status.Detail}\n{ex.StatusCode}",
-                        NotificationControl.NotificationType.Error);
-                });
-
-                return -1;
-            }
-            catch (Exception ex)
-            {
-                await Dispatcher.InvokeAsync(() =>
-                {
-                    ShowNotification(
-                        $"gRPC Err: {ex.Message}",
-                        NotificationControl.NotificationType.Error);
-                });
-
-                return -1;
-            }
-        }
-        //获得UV、补光灯、门状态
-        public async Task<Dictionary<string, float>> GetSwitchValuesAsync()
-        {
-            try
-            {
-                var response = await _commonClient.Get_switch_infoAsync(
-                    new CommonModel.Void(),
-                    deadline: DateTime.UtcNow.AddSeconds(5));
-
-                if (response == null || response.Info.Count == 0)
-                {
-                    string message = response == null
-                        ? "服务器未响应"
-                        : "没有可用开关";
-
-                    //ShowNotification(message, NotificationControl.NotificationType.Warn);
-                    return new Dictionary<string, float>();
-                }
-
-                // 将响应转换为字典
-                return response.Info.ToDictionary(
-                    info => info.Id,
-                    info => info.Sw
-                );
-            }
-            catch (Grpc.Core.RpcException ex)
-            {
-                Dispatcher.Invoke(() =>
-                {
-                    ShowNotification(
-                        $"gRPC Warn: {ex.Status.Detail}\n{ex.StatusCode}",
-                        NotificationControl.NotificationType.Error);
-                });
-
-                return new Dictionary<string, float>();
-            }
-            catch (Exception ex)
-            {
-                Dispatcher.Invoke(() =>
-                {
-                    ShowNotification(
-                        $"gRPC Err: {ex.Message}",
-                        NotificationControl.NotificationType.Error);
-                });
-
-                return new Dictionary<string, float>();
-            }
-        }
-        //电机运动
-        public async Task<int> MotorActionAsync(IEnumerable<MotorActionParams> motorActions)
-        {
-            var moveBases = motorActions.Select(action => new Motor_action_param_base
-            {
-                Id = action.MotorId,
-                Type = action.ActionType,
-                Target = action.Target,
-                Speed = action.Speed,
-                Acc = action.Acc,
-                Dcc = action.Dcc
-            }).ToList();
-
-            var request = new Motor_action_param
-            {
-                Move = { moveBases }
-            };
-
-            try
-            {
-                var response = await _MotorClient.Motor_actionAsync(
-                    request,
-                    deadline: DateTime.UtcNow.AddSeconds(15));
-
-                // 关键：用 Func<int> 让 Dispatcher.Invoke 返回处理结果，再由外层方法返回
-                int resultCode = Dispatcher.Invoke(() =>
-                {
-                    if (response.Errcode == 0)
-                    {
-                        // 这里的 return 是 Func<int> 的返回值，会被外层的 resultCode 接收
-                        return response.Errcode;
-                    }
-                    else
-                    {
-                        string errorMessage = $"{_res.DeviceOperationFailure} ({response.Errcode}): ";
-                        //switch (response.Errcode)
-                        //{
-                        //    case 1: errorMessage += "电机不支持此操作"; break;
-                        //    case 2: errorMessage += "无效参数"; break;
-                        //    case 3: errorMessage += "操作已取消"; break;
-                        //    case 4: errorMessage += "电机超时"; break;
-                        //    case 5: errorMessage += "电机繁忙"; break;
-                        //    case 6: errorMessage += "事件触发识别"; break;
-                        //    case 7: errorMessage += "驱动器错误"; break;
-                        //    default: errorMessage += "未知错误"; break;
-                        //}
-                        //if (!string.IsNullOrEmpty(response.Errinfo))
-                        //{
-                        //    errorMessage += $"\n细节: {response.Errinfo}";
-                        //}
-                        ShowNotification(errorMessage, NotificationControl.NotificationType.Error);
-                        return response.Errcode; // 同样返回错误码
-                    }
-                });
-
-                return resultCode;
-            }
-            catch (Grpc.Core.RpcException ex)
-            {
-                // 异常处理同理：捕获 Dispatcher.Invoke 的返回值
-                int errorCode = Dispatcher.Invoke(() =>
-                {
-                    ShowNotification(
-                        $"gRPC Warn: {ex.Status.Detail}\n{ex.StatusCode}",
-                        NotificationControl.NotificationType.Error);
-                    return -1; // 返回异常码
-                });
-                return errorCode;
-            }
-            catch (Exception ex)
-            {
-                int errorCode = Dispatcher.Invoke(() =>
-                {
-                    ShowNotification(
-                        $"gRPC Err: {ex.Message}",
-                        NotificationControl.NotificationType.Error);
-                    return -1;
-                });
-                return errorCode;
-            }
-        }
-        //移液器吸液
-        public async Task<int> AspiratePipeAsync(string name, float volume, float speed)
-        {
-            var request = new Pipe_action_param
-            {
-                PipeName = name,
-
-                Volume = volume
-            };
-
-            var liquidParam = new Pipe_liquid_param
-            {
-                Speed = speed,              // 吸液速度
-                Density = 1000.0f,             // 密度
-                AirBefore = 0.0f,           // 前置空气量
-                AirAfter = 0.0f             // 后置空气量
-            };
-            request.Liq = liquidParam;
-
-            try
-            {
-                var response = await _pipetteClient.Pipe_aspirateAsync(
-                    request,
-                    deadline: DateTime.UtcNow.AddSeconds(15));
-
-                int resultCode = Dispatcher.Invoke(() =>
-                {
-                    if (response.Errcode == 0)
-                    {
-                        return response.Errcode;
-                    }
-                    else
-                    {
-                        string errorMessage = $"{_res.DeviceOperationFailure} ({response.Errcode}): ";
-                        ShowNotification(errorMessage, NotificationControl.NotificationType.Error);
-                        return response.Errcode;
-                    }
-                });
-
-                return resultCode;
-            }
-            catch (Grpc.Core.RpcException ex)
-            {
-                int errorCode = Dispatcher.Invoke(() =>
-                {
-                    ShowNotification(
-                        $"gRPC Warn: {ex.Status.Detail}\n: {ex.StatusCode}",
-                        NotificationControl.NotificationType.Error);
-                    return -1;
-                });
-                return errorCode;
-            }
-            catch (Exception ex)
-            {
-                int errorCode = Dispatcher.Invoke(() =>
-                {
-                    ShowNotification(
-                        $"gRPC Err: {ex.Message}",
-                        NotificationControl.NotificationType.Error);
-                    return -1;
-                });
-                return errorCode;
-            }
-        }
-        //移液器注液
-        public async Task<int> DispensePipeAsync(string name, float volume, float speed)
-        {
-            var request = new Pipe_action_param
-            {
-                PipeName = name,
-
-                Volume = volume
-            };
-
-            var liquidParam = new Pipe_liquid_param
-            {
-                Speed = speed,              // 注液速度
-                Density = 1000.0f,             // 密度
-                AirBefore = 0.0f,           // 前置空气量
-                AirAfter = 0.0f             // 后置空气量
-            };
-            request.Liq = liquidParam;
-
-            try
-            {
-                var response = await _pipetteClient.Pipe_disenseAsync(
-                    request,
-                    deadline: DateTime.UtcNow.AddSeconds(15));
-
-                int resultCode = Dispatcher.Invoke(() =>
-                {
-                    if (response.Errcode == 0)
-                    {
-                        return response.Errcode;
-                    }
-                    else
-                    {
-                        string errorMessage = $"{_res.DeviceOperationFailure} ({response.Errcode}): ";
-                        ShowNotification(errorMessage, NotificationControl.NotificationType.Error);
-                        return response.Errcode;
-                    }
-                });
-
-                return resultCode;
-            }
-            catch (Grpc.Core.RpcException ex)
-            {
-                int errorCode = Dispatcher.Invoke(() =>
-                {
-                    ShowNotification(
-                        $"gRPC Warn: {ex.Status.Detail}\n: {ex.StatusCode}",
-                        NotificationControl.NotificationType.Error);
-                    return -1;
-                });
-                return errorCode;
-            }
-            catch (Exception ex)
-            {
-                int errorCode = Dispatcher.Invoke(() =>
-                {
-                    ShowNotification(
-                        $"gRPC Err: {ex.Message}",
-                        NotificationControl.NotificationType.Error);
-                    return -1;
-                });
-                return errorCode;
-            }
-        }
-        //移液器退头
-        public async Task<int> BreakPipeAsync(string name)
-        {
-            var request = new Pipe_action_param
-            {
-                PipeName = name,
-            };
-
-            try
-            {
-                var response = await _pipetteClient.Pipe_breakTipAsync(
-                    request,
-                    deadline: DateTime.UtcNow.AddSeconds(15));
-
-                int resultCode = Dispatcher.Invoke(() =>
-                {
-                    if (response.Errcode == 0)
-                    {
-                        return response.Errcode;
-                    }
-                    else
-                    {
-                        string errorMessage = $"{_res.DeviceOperationFailure} ({response.Errcode}): ";
-                        ShowNotification(errorMessage, NotificationControl.NotificationType.Error);
-                        return response.Errcode;
-                    }
-                });
-
-                return resultCode;
-            }
-            catch (Grpc.Core.RpcException ex)
-            {
-                int errorCode = Dispatcher.Invoke(() =>
-                {
-                    ShowNotification(
-                        $"gRPC Warn: {ex.Status.Detail}\n: {ex.StatusCode}",
-                        NotificationControl.NotificationType.Error);
-                    return -1;
-                });
-                return errorCode;
-            }
-            catch (Exception ex)
-            {
-                int errorCode = Dispatcher.Invoke(() =>
-                {
-                    ShowNotification(
-                        $"gRPC Err: {ex.Message}",
-                        NotificationControl.NotificationType.Error);
-                    return -1;
-                });
-                return errorCode;
-            }
-        }
-        //移液器复位
-        public async Task<int> ResetPipeAsync(string name)
-        {
-            var request = new Pipe_action_param
-            {
-                PipeName = name,
-            };
-
-            try
-            {
-                var response = await _pipetteClient.Pipe_resetAsync(
-                    request,
-                    deadline: DateTime.UtcNow.AddSeconds(15));
-
-                int resultCode = Dispatcher.Invoke(() =>
-                {
-                    if (response.Errcode == 0)
-                    {
-                        return response.Errcode;
-                    }
-                    else
-                    {
-                        string errorMessage = $"{_res.DeviceOperationFailure}  ({response.Errcode}): ";
-                        ShowNotification(errorMessage, NotificationControl.NotificationType.Error);
-                        return response.Errcode;
-                    }
-                });
-
-                return resultCode;
-            }
-            catch (Grpc.Core.RpcException ex)
-            {
-                int errorCode = Dispatcher.Invoke(() =>
-                {
-                    ShowNotification(
-                        $"gRPC Warn:  {ex.Status.Detail} \n: {ex.StatusCode}",
-                        NotificationControl.NotificationType.Error);
-                    return -1;
-                });
-                return errorCode;
-            }
-            catch (Exception ex)
-            {
-                int errorCode = Dispatcher.Invoke(() =>
-                {
-                    ShowNotification(
-                        $"gRPC Err: {ex.Message}",
-                        NotificationControl.NotificationType.Error);
-                    return -1;
-                });
-                return errorCode;
-            }
-        }
-        //移液器获得定标
-        public async Task<PipeCalibrationParams> GetPipeCalibrationAsync(string pipeName)
-        {
-            var request = new Pipe_cali_param
-            {
-                PipeName = pipeName
-            };
-
-            try
-            {
-                var response = await _pipetteClient.Pipe_get_caliAsync(
-                    request,
-                    deadline: DateTime.UtcNow.AddSeconds(15));
-
-                return new PipeCalibrationParams
-                {
-                    PipeName = pipeName,
-                    BackDiff = response.Backdiff,
-                    K10 = response.K10,
-                    K20 = response.K20,
-                    K50 = response.K50,
-                    K100 = response.K100,
-                    K200 = response.K200,
-                    K300 = response.K300,
-                    K400 = response.K400,
-                    K500 = response.K500,
-                    K600 = response.K600,
-                    K700 = response.K700,
-                    K800 = response.K800,
-                    K900 = response.K900,
-                    K1000 = response.K1000
-                };
-            }
-            catch (Grpc.Core.RpcException ex)
-            {
-                await Dispatcher.InvokeAsync(() =>
-                {
-                    ShowNotification(
-                        $"gRPC Warn: {ex.Status.Detail}\n: {ex.StatusCode}",
-                        NotificationControl.NotificationType.Error);
-                });
-            }
-            catch (Exception ex)
-            {
-                await Dispatcher.InvokeAsync(() =>
-                {
-                    ShowNotification(
-                        $"gRPC Err: {ex.Message}",
-                        NotificationControl.NotificationType.Error);
-                });
-            }
-
-            return null;
-        }
-        //移液器设置定标
-        public async Task<int> SetPipeCalibrationAsync(PipeCalibrationParams @params)
-        {
-            var request = new Pipe_cali_param
-            {
-                PipeName = @params.PipeName,
-                Backdiff = @params.BackDiff,
-                K10 = @params.K10,
-                K20 = @params.K20,
-                K50 = @params.K50,
-                K100 = @params.K100,
-                K200 = @params.K200,
-                K300 = @params.K300,
-                K400 = @params.K400,
-                K500 = @params.K500,
-                K600 = @params.K600,
-                K700 = @params.K700,
-                K800 = @params.K800,
-                K900 = @params.K900,
-                K1000 = @params.K1000
-            };
-
-            try
-            {
-                var response = await _pipetteClient.Pipe_set_caliAsync(
-                    request,
-                    deadline: DateTime.UtcNow.AddSeconds(15));
-
-                int resultCode = Dispatcher.Invoke(() =>
-                {
-                    if (response != null)
-                    {
-                        return 0;
-                    }
-                    else
-                    {
-                        string errorMessage = _res.DeviceOperationFailure;
-                        ShowNotification(errorMessage, NotificationControl.NotificationType.Error);
-                        return -1;
-                    }
-                });
-
-                return resultCode;
-            }
-            catch (Grpc.Core.RpcException ex)
-            {
-                int errorCode = Dispatcher.Invoke(() =>
-                {
-                    ShowNotification(
-                        $"gRPC Warn: {ex.Status.Detail}\n: {ex.StatusCode}",
-                        NotificationControl.NotificationType.Error);
-                    return -1;
-                });
-                return errorCode;
-            }
-            catch (Exception ex)
-            {
-                int errorCode = Dispatcher.Invoke(() =>
-                {
-                    ShowNotification(
-                        $"gRPC Err: {ex.Message}",
-                        NotificationControl.NotificationType.Error);
-                    return -1;
-                });
-                return errorCode;
-            }
-        }
         //开始流程
-        public async Task<int> ScriptStartAsync(string scriptValue)
+        public async Task<execute_result> ScriptRunAsync(string scriptData, int scriptStep)
         {
-            var request = new Script_data
+            var request = new script_data
             {
-                ScriptJson = scriptValue
+                Data = scriptData,
+                StartStep = scriptStep
             };
 
-            var response = await _ScriptClient.Script_checkAsync(
-                request,
-                deadline: DateTime.UtcNow.AddSeconds(15));
-            if (response.Errcode == 0)
+            try
             {
-                var responseRun = await _ScriptClient.Script_runAsync(
-request,
-deadline: DateTime.UtcNow.AddSeconds(15));
-                if (responseRun.Errcode == 0)
-                {
-                    return 0;
-                }
-                else
-                {
-                    return 2;
-                }
-            }
-            else
-            {
-                return 1;
-            }
-        }
+                var response = await _qybotrunClient.script_runAsync(
+                    request);
 
-        //暂停流程
+                return response;
+            }
+            catch (Grpc.Core.RpcException ex)
+            {
+                await Dispatcher.InvokeAsync(() =>
+                {
+                    ShowNotification(
+                        $"gRPC Warn: {ex.Status.Detail}\n: {ex.StatusCode}",
+                        NotificationControl.NotificationType.Error);
+                });
+            }
+            catch (Exception ex)
+            {
+                await Dispatcher.InvokeAsync(() =>
+                {
+                    ShowNotification(
+                        $"gRPC Err: {ex.Message}",
+                        NotificationControl.NotificationType.Error);
+                });
+            }
+
+            return null;
+        }
+        //流程暂停
         public async Task ScriptPauseAsync()
         {
             try
             {
-                var response = await _ScriptClient.Script_pauseAsync(
-                    new ScriptEngine.Void(),
+                var response = await _qybotrunClient.script_pauseAsync(
+                    new Empty(),
                     deadline: DateTime.UtcNow.AddSeconds(10));
 
                 Dispatcher.Invoke(() =>
                 {
-                    if (response.Errcode == 0)
+                    if (response.Result == 0)
                     {
                         runFlag = false;
                         pauseFlag = true;
@@ -3929,7 +3605,7 @@ deadline: DateTime.UtcNow.AddSeconds(15));
                     }
                     else
                     {
-                        string errorMessage = $"{_res.DeviceOperationFailure}  ({response.Errcode}): ";
+                        string errorMessage = $"{_res.DeviceOperationFailure}  ({response.Result}): ";
 
                         if (!string.IsNullOrEmpty(response.Errinfo))
                         {
@@ -3961,18 +3637,18 @@ deadline: DateTime.UtcNow.AddSeconds(15));
                 });
             }
         }
-        //继续流程
+        //流程继续
         public async Task ScriptContinueAsync()
         {
             try
             {
-                var response = await _ScriptClient.Script_continueAsync(
-                    new ScriptEngine.Void(),
+                var response = await _qybotrunClient.script_resumeAsync(
+                    new Empty(),
                     deadline: DateTime.UtcNow.AddSeconds(10));
 
                 Dispatcher.Invoke(() =>
                 {
-                    if (response.Errcode == 0)
+                    if (response.Result == 0)
                     {
                         runFlag = true;
                         pauseFlag = false;
@@ -3981,7 +3657,7 @@ deadline: DateTime.UtcNow.AddSeconds(15));
                     }
                     else
                     {
-                        string errorMessage = $"{_res.DeviceOperationFailure} ({response.Errcode}): ";
+                        string errorMessage = $"{_res.DeviceOperationFailure} ({response.Result}): ";
 
                         if (!string.IsNullOrEmpty(response.Errinfo))
                         {
@@ -4013,19 +3689,18 @@ deadline: DateTime.UtcNow.AddSeconds(15));
                 });
             }
         }
-        //停止流程
-
+        //流程停止
         public async Task ScriptStopAsync()
         {
             try
             {
-                var response = await _ScriptClient.Script_stopAsync(
-                    new ScriptEngine.Void(),
+                var response = await _qybotrunClient.script_abortAsync(
+                    new Empty(),
                     deadline: DateTime.UtcNow.AddSeconds(10));
 
                 Dispatcher.Invoke(() =>
                 {
-                    if (response.Errcode == 0)
+                    if (response.Result == 0)
                     {
                         runFlag = false;
                         //_lastStep = -1;
@@ -4036,7 +3711,7 @@ deadline: DateTime.UtcNow.AddSeconds(15));
                     }
                     else
                     {
-                        string errorMessage = $"{_res.DeviceOperationFailure} ({response.Errcode}): ";
+                        string errorMessage = $"{_res.DeviceOperationFailure} ({response.Result}): ";
 
                         if (!string.IsNullOrEmpty(response.Errinfo))
                         {
@@ -4068,10 +3743,128 @@ deadline: DateTime.UtcNow.AddSeconds(15));
                 });
             }
         }
+        //流程调试
+        public async Task<debug_data> ScriptDebugAsync(string debugData)
+        {
+            var request = new debug_data
+            {
+                Data = debugData
+            };
+
+            try
+            {
+                var response = await _qybotrunClient.script_debugAsync(
+                    request);
+
+                return response;
+            }
+            catch (Grpc.Core.RpcException ex)
+            {
+                await Dispatcher.InvokeAsync(() =>
+                {
+                    ShowNotification(
+                        $"gRPC Warn: {ex.Status.Detail}\n: {ex.StatusCode}",
+                        NotificationControl.NotificationType.Error);
+                });
+            }
+            catch (Exception ex)
+            {
+                await Dispatcher.InvokeAsync(() =>
+                {
+                    ShowNotification(
+                        $"gRPC Err: {ex.Message}",
+                        NotificationControl.NotificationType.Error);
+                });
+            }
+
+            return null;
+        }
+        //流程获取
+        public async Task<runtime_info> ScriptGetInfoAsync()
+        {
+            try
+            {
+                var response = await _qybotrunClient.get_runtimeAsync(new Empty());
+
+                return response;
+            }
+            catch (Grpc.Core.RpcException ex)
+            {
+                return default(runtime_info);
+            }
+            catch (Exception ex)
+            {
+                return default(runtime_info);
+            }
+        }
+        /// <summary>
+        /// 解析ScriptDebugAsync返回的原始数据
+        /// </summary>
+        /// <param name="rawDebugData">gRPC返回的原始debug_data对象</param>
+        /// <returns>解析后的强类型数据，解析失败返回null</returns>
+        public ScriptDebugParsedResult ParseScriptDebugResponse(debug_data rawDebugData)
+        {
+            // 1. 校验原始数据是否为空
+            if (rawDebugData == null || string.IsNullOrWhiteSpace(rawDebugData.Data))
+            {
+                Dispatcher.InvokeAsync(() =>
+                {
+                    ShowNotification(
+                        "json null",
+                        NotificationControl.NotificationType.Warn);
+                });
+                return null;
+            }
+
+            try
+            {
+                // 步骤1：先将JSON字符串解析为JsonDocument（手动处理字段，避免类型不匹配）
+                using var jsonDoc = JsonDocument.Parse(rawDebugData.Data); // using自动释放资源
+                var rootElement = jsonDoc.RootElement;
+
+                // 步骤2：初始化解析结果对象
+                var parsedResult = new ScriptDebugParsedResult();
+
+                // 步骤3：手动提取details字段（字符串类型，直接获取）
+                if (rootElement.TryGetProperty("details", out var detailsElem))
+                {
+                    parsedResult.Details = detailsElem.GetString() ?? string.Empty; // 避免null，给默认空字符串
+                }
+
+                // 步骤4：手动提取result字段（字符串类型，直接获取）
+                if (rootElement.TryGetProperty("result", out var resultElem))
+                {
+                    parsedResult.Result = resultElem.GetString() ?? string.Empty;
+                }
+
+                // 步骤5：手动提取data字段（关键！无论data是什么类型，都转为原始JSON字符串）
+                if (rootElement.TryGetProperty("data", out var dataElem))
+                {
+                    parsedResult.Data = dataElem.GetRawText(); // 核心方法：将data的原始JSON（{} / "xxx" / []）转为字符串
+                }
+                if (parsedResult.Result == "err")
+                {
+                    ShowNotification(
+    $"Error：{parsedResult.Details}",
+    NotificationControl.NotificationType.Error);
+                }
+                // 步骤6：返回解析后的对象
+                return parsedResult;
+            }
+            catch (JsonException ex)
+            {
+                Dispatcher.InvokeAsync(() =>
+                {
+                    ShowNotification(
+                        $"JSON Err：{ex.Message}\nJSON：{rawDebugData.Data}",
+                        NotificationControl.NotificationType.Error);
+                });
+                return null;
+            }
+        }
         //中文
         private void LangSwitch_Checked(object sender, RoutedEventArgs e)
         {
-            // 切换为中文
             ResourceHelper.Instance.SwitchToChinese();
             ShowNotification("已切换为中文", NotificationControl.NotificationType.Info);
         }
@@ -4081,5 +3874,7 @@ deadline: DateTime.UtcNow.AddSeconds(15));
             ResourceHelper.Instance.SwitchToEnglish();
             ShowNotification("It has been switched to English", NotificationControl.NotificationType.Info);
         }
+
+
     }
 }

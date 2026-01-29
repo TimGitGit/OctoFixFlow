@@ -55,7 +55,6 @@
 
     <Border
         x:Name="PopupBorder"
-        MaxWidth="315"
         Margin="2000,0,0,0"
         HorizontalAlignment="Right"
         Background="White"
@@ -64,493 +63,848 @@
         CornerRadius="8"
         Effect="{StaticResource PopupShadow}"
         Opacity="0">
-        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-            <StackPanel>
-                <Border Background="#F8F8F8" CornerRadius="8,8,0,0">
-                    <StackPanel>
-                        <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
-                            <Path
-                                Width="30"
-                                Height="30"
-                                Margin="15,5,5,0"
-                                HorizontalAlignment="Left"
-                                Data="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"
-                                Fill="{StaticResource PrimaryColor}"
-                                Stretch="Uniform" />
-                            <TextBlock
-                                x:Name="settingTitle"
-                                Margin="0,5,0,0"
-                                VerticalAlignment="Center"
-                                FontSize="16"
-                                FontWeight="Medium"
-                                Foreground="{StaticResource PrimaryColor}"
-                                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualPipetteControl}" />
+        <!--  核心修改：拆分为标题栏（固定）+ 内容区（滚动）  -->
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <!--  标题栏高度自适应  -->
+                <RowDefinition Height="*" />
+                <!--  内容区占满剩余空间  -->
+            </Grid.RowDefinitions>
 
-                        </StackPanel>
-
-                        <TabControl
-                            Name="mainSettingTable"
-                            Background="#FCFCFC"
-                            BorderThickness="0">
-                            <TabControl.Resources>
-                                <Style TargetType="{x:Type TabItem}">
-                                    <Setter Property="Visibility" Value="Collapsed" />
-                                </Style>
-                            </TabControl.Resources>
-                            <TabItem Header="Single-channel pipette">
-                                <Grid>
-                                    <!--  移液器控制  -->
-                                    <Border
-                                        Margin="0,0,0,20"
-                                        Background="White"
-                                        BorderBrush="#E0E0E0"
-                                        BorderThickness="1"
-                                        CornerRadius="5">
-                                        <StackPanel Margin="15">
-                                            <TextBlock
-                                                Margin="0,0,0,15"
-                                                FontSize="16"
-                                                FontWeight="Medium"
-                                                Foreground="{StaticResource PrimaryColor}"
-                                                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualPipetteControl}" />
-
-                                            <!--  1. 吸液参数  -->
-                                            <TextBlock
-                                                Margin="0,0,0,8"
-                                                FontSize="14"
-                                                Foreground="#666666"
-                                                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualAspirationParams}" />
-                                            <Grid Margin="0,0,0,15">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="*" />
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock
-                                                    Grid.Column="0"
-                                                    VerticalAlignment="Center"
-                                                    FontSize="13"
-                                                    Foreground="#666666"
-                                                    Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualVolume}" />
-                                                <TextBox
-                                                    x:Name="txtAspirateVol"
-                                                    Grid.Column="1"
-                                                    Width="100"
-                                                    Style="{StaticResource InputTextBoxStyle}"
-                                                    Text="50" />
-                                            </Grid>
-                                            <Grid Margin="0,0,0,15">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="*" />
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock
-                                                    Grid.Column="0"
-                                                    VerticalAlignment="Center"
-                                                    FontSize="13"
-                                                    Foreground="#666666"
-                                                    Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualSpeed}" />
-                                                <TextBox
-                                                    x:Name="txtAspirateSpeed"
-                                                    Grid.Column="1"
-                                                    Width="100"
-                                                    Style="{StaticResource InputTextBoxStyle}"
-                                                    Text="100" />
-                                            </Grid>
-                                            <Button
-                                                x:Name="btnAspirate"
-                                                Margin="0,0,10,15"
-                                                HorizontalAlignment="Left"
-                                                Click="Aspirate_Click"
-                                                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualAspirate}"
-                                                Style="{StaticResource ActionButtonStyle}" />
-
-                                            <!--  2. 注液参数  -->
-                                            <TextBlock
-                                                Margin="0,0,0,8"
-                                                FontSize="14"
-                                                Foreground="#666666"
-                                                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualDispensingParams}" />
-                                            <Grid Margin="0,0,0,15">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="*" />
-                                                </Grid.ColumnDefinitions>
-
-                                                <TextBlock
-                                                    Grid.Column="0"
-                                                    VerticalAlignment="Center"
-                                                    FontSize="13"
-                                                    Foreground="#666666"
-                                                    Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualVolume}" />
-                                                <TextBox
-                                                    x:Name="txtDispenseVol"
-                                                    Grid.Column="1"
-                                                    Width="100"
-                                                    Style="{StaticResource InputTextBoxStyle}"
-                                                    Text="50" />
-                                            </Grid>
-                                            <Grid Margin="0,0,0,15">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="*" />
-                                                </Grid.ColumnDefinitions>
-
-                                                <TextBlock
-                                                    Grid.Column="0"
-                                                    VerticalAlignment="Center"
-                                                    FontSize="13"
-                                                    Foreground="#666666"
-                                                    Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualSpeed}" />
-                                                <TextBox
-                                                    x:Name="txtDispenseSpeed"
-                                                    Grid.Column="1"
-                                                    Width="100"
-                                                    Style="{StaticResource InputTextBoxStyle}"
-                                                    Text="100" />
-                                            </Grid>
-                                            <Button
-                                                x:Name="btnDispense"
-                                                Margin="0,0,10,15"
-                                                HorizontalAlignment="Left"
-                                                Click="Dispense_Click"
-                                                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualDispense}"
-                                                Style="{StaticResource ActionButtonStyle}" />
-
-                                            <!--  3. 基础功能按钮  -->
-                                            <StackPanel
-                                                Margin="0,0,0,15"
-                                                HorizontalAlignment="Left"
-                                                Orientation="Horizontal">
-                                                <Button
-                                                    x:Name="btnEjectTip"
-                                                    Margin="0,0,10,0"
-                                                    Click="EjectTip_Click"
-                                                    Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualEjectTip}"
-                                                    Style="{StaticResource ActionButtonStyle}" />
-                                                <Button
-                                                    x:Name="btnResetPipette"
-                                                    Click="ResetPipette_Click"
-                                                    Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualReset}"
-                                                    Style="{StaticResource ActionButtonStyle}" />
-
-                                            </StackPanel>
-                                            <!--  4. 定标挡位设置  -->
-                                            <TextBlock
-                                                Margin="0,15,0,8"
-                                                FontSize="14"
-                                                Foreground="#666666"
-                                                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualCalibrationGear}" />
-
-                                            <!--  定标操作按钮  -->
-                                            <StackPanel
-                                                Margin="0,0,0,15"
-                                                HorizontalAlignment="Left"
-                                                Orientation="Horizontal">
-                                                <Button
-                                                    x:Name="btnGetCalibration"
-                                                    Margin="0,0,10,0"
-                                                    Click="GetCalibration_Click"
-                                                    Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualGetCalibration}"
-                                                    Style="{StaticResource ActionButtonStyle}" />
-                                                <Button
-                                                    x:Name="btnSetCalibration"
-                                                    Click="SetCalibration_Click"
-                                                    Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualSetCalibration}"
-                                                    Style="{StaticResource ActionButtonStyle}" />
-                                            </StackPanel>
-                                            <!--  回程差/10挡  -->
-                                            <StackPanel
-                                                Margin="0,0,0,15"
-                                                HorizontalAlignment="Left"
-                                                Orientation="Horizontal">
-                                                <!--  回程差  -->
-                                                <StackPanel Width="120" Margin="0,0,0,10">
-                                                    <TextBlock
-                                                        Margin="0,0,0,5"
-                                                        FontSize="13"
-                                                        Foreground="#666666"
-                                                        Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualBacklash}" />
-                                                    <TextBox
-                                                        x:Name="txtCalib0"
-                                                        Width="100"
-                                                        Margin="-20,0,0,0"
-                                                        Style="{StaticResource InputTextBoxStyle}"
-                                                        Text="0.00" />
-                                                </StackPanel>
-                                                <!--  10挡  -->
-                                                <StackPanel Width="120" Margin="0,0,0,10">
-                                                    <TextBlock
-                                                        Margin="0,0,0,5"
-                                                        FontSize="13"
-                                                        Foreground="#666666"
-                                                        Text="10" />
-                                                    <TextBox
-                                                        x:Name="txtCalib10"
-                                                        Width="100"
-                                                        Margin="-20,0,0,0"
-                                                        Style="{StaticResource InputTextBoxStyle}"
-                                                        Text="0.00" />
-                                                </StackPanel>
-                                            </StackPanel>
-                                            <!--  20挡/50挡  -->
-                                            <StackPanel
-                                                Margin="0,0,0,15"
-                                                HorizontalAlignment="Left"
-                                                Orientation="Horizontal">
-                                                <!--  20挡  -->
-                                                <StackPanel Width="120" Margin="0,0,0,10">
-                                                    <TextBlock
-                                                        Margin="0,0,0,5"
-                                                        FontSize="13"
-                                                        Foreground="#666666"
-                                                        Text="20" />
-                                                    <TextBox
-                                                        x:Name="txtCalib20"
-                                                        Width="100"
-                                                        Margin="-20,0,0,0"
-                                                        Style="{StaticResource InputTextBoxStyle}"
-                                                        Text="0.00" />
-                                                </StackPanel>
-                                                <!--  50挡  -->
-                                                <StackPanel Width="120" Margin="0,0,0,10">
-                                                    <TextBlock
-                                                        Margin="0,0,0,5"
-                                                        FontSize="13"
-                                                        Foreground="#666666"
-                                                        Text="50" />
-                                                    <TextBox
-                                                        x:Name="txtCalib50"
-                                                        Width="100"
-                                                        Margin="-20,0,0,0"
-                                                        Style="{StaticResource InputTextBoxStyle}"
-                                                        Text="0.00" />
-                                                </StackPanel>
-                                            </StackPanel>
-                                            <!--  100挡/200挡  -->
-                                            <StackPanel
-                                                Margin="0,0,0,15"
-                                                HorizontalAlignment="Left"
-                                                Orientation="Horizontal">
-                                                <!--  100挡  -->
-                                                <StackPanel Width="120" Margin="0,0,0,10">
-                                                    <TextBlock
-                                                        Margin="0,0,0,5"
-                                                        FontSize="13"
-                                                        Foreground="#666666"
-                                                        Text="100" />
-                                                    <TextBox
-                                                        x:Name="txtCalib100"
-                                                        Width="100"
-                                                        Margin="-20,0,0,0"
-                                                        Style="{StaticResource InputTextBoxStyle}"
-                                                        Text="0.00" />
-                                                </StackPanel>
-                                                <!--  200挡  -->
-                                                <StackPanel Width="120" Margin="0,0,0,10">
-                                                    <TextBlock
-                                                        Margin="0,0,0,5"
-                                                        FontSize="13"
-                                                        Foreground="#666666"
-                                                        Text="200" />
-                                                    <TextBox
-                                                        x:Name="txtCalib200"
-                                                        Width="100"
-                                                        Margin="-20,0,0,0"
-                                                        Style="{StaticResource InputTextBoxStyle}"
-                                                        Text="0.00" />
-                                                </StackPanel>
-                                            </StackPanel>
-                                            <!--  300挡/400挡  -->
-                                            <StackPanel
-                                                Margin="0,0,0,15"
-                                                HorizontalAlignment="Left"
-                                                Orientation="Horizontal">
-                                                <!--  300挡  -->
-                                                <StackPanel Width="120" Margin="0,0,0,10">
-                                                    <TextBlock
-                                                        Margin="0,0,0,5"
-                                                        FontSize="13"
-                                                        Foreground="#666666"
-                                                        Text="300" />
-                                                    <TextBox
-                                                        x:Name="txtCalib300"
-                                                        Width="100"
-                                                        Margin="-20,0,0,0"
-                                                        Style="{StaticResource InputTextBoxStyle}"
-                                                        Text="0.00" />
-                                                </StackPanel>
-                                                <!--  400挡  -->
-                                                <StackPanel Width="120" Margin="0,0,0,10">
-                                                    <TextBlock
-                                                        Margin="0,0,0,5"
-                                                        FontSize="13"
-                                                        Foreground="#666666"
-                                                        Text="400" />
-                                                    <TextBox
-                                                        x:Name="txtCalib400"
-                                                        Width="100"
-                                                        Margin="-20,0,0,0"
-                                                        Style="{StaticResource InputTextBoxStyle}"
-                                                        Text="0.00" />
-                                                </StackPanel>
-                                            </StackPanel>
-                                            <!--  500挡/600挡  -->
-                                            <StackPanel
-                                                Margin="0,0,0,15"
-                                                HorizontalAlignment="Left"
-                                                Orientation="Horizontal">
-
-                                                <!--  500挡  -->
-                                                <StackPanel Width="120" Margin="0,0,0,10">
-                                                    <TextBlock
-                                                        Margin="0,0,0,5"
-                                                        FontSize="13"
-                                                        Foreground="#666666"
-                                                        Text="500" />
-                                                    <TextBox
-                                                        x:Name="txtCalib500"
-                                                        Width="100"
-                                                        Margin="-20,0,0,0"
-                                                        Style="{StaticResource InputTextBoxStyle}"
-                                                        Text="0.00" />
-                                                </StackPanel>
-
-                                                <!--  600挡  -->
-                                                <StackPanel Width="120" Margin="0,0,0,10">
-                                                    <TextBlock
-                                                        Margin="0,0,0,5"
-                                                        FontSize="13"
-                                                        Foreground="#666666"
-                                                        Text="600" />
-                                                    <TextBox
-                                                        x:Name="txtCalib600"
-                                                        Width="100"
-                                                        Margin="-20,0,0,0"
-                                                        Style="{StaticResource InputTextBoxStyle}"
-                                                        Text="0.00" />
-                                                </StackPanel>
-                                            </StackPanel>
-                                            <!--  700挡/800挡  -->
-                                            <StackPanel
-                                                Margin="0,0,0,15"
-                                                HorizontalAlignment="Left"
-                                                Orientation="Horizontal">
-
-                                                <!--  700挡  -->
-                                                <StackPanel Width="120" Margin="0,0,0,10">
-                                                    <TextBlock
-                                                        Margin="0,0,0,5"
-                                                        FontSize="13"
-                                                        Foreground="#666666"
-                                                        Text="700" />
-                                                    <TextBox
-                                                        x:Name="txtCalib700"
-                                                        Width="100"
-                                                        Margin="-20,0,0,0"
-                                                        Style="{StaticResource InputTextBoxStyle}"
-                                                        Text="0.00" />
-                                                </StackPanel>
-
-                                                <!--  800挡  -->
-                                                <StackPanel Width="120" Margin="0,0,0,10">
-                                                    <TextBlock
-                                                        Margin="0,0,0,5"
-                                                        FontSize="13"
-                                                        Foreground="#666666"
-                                                        Text="800" />
-                                                    <TextBox
-                                                        x:Name="txtCalib800"
-                                                        Width="100"
-                                                        Margin="-20,0,0,0"
-                                                        Style="{StaticResource InputTextBoxStyle}"
-                                                        Text="0.00" />
-                                                </StackPanel>
-                                            </StackPanel>
-                                            <!--  900挡/1000挡  -->
-                                            <StackPanel
-                                                Margin="0,0,0,15"
-                                                HorizontalAlignment="Left"
-                                                Orientation="Horizontal">
-                                                <!--  900挡  -->
-                                                <StackPanel Width="120" Margin="0,0,0,10">
-                                                    <TextBlock
-                                                        Margin="0,0,0,5"
-                                                        FontSize="13"
-                                                        Foreground="#666666"
-                                                        Text="900" />
-                                                    <TextBox
-                                                        x:Name="txtCalib900"
-                                                        Width="100"
-                                                        Margin="-20,0,0,0"
-                                                        Style="{StaticResource InputTextBoxStyle}"
-                                                        Text="0.00" />
-                                                </StackPanel>
-
-                                                <!--  1000挡（第2行第7个）  -->
-                                                <StackPanel Width="120" Margin="0,0,0,10">
-                                                    <TextBlock
-                                                        Margin="0,0,0,5"
-                                                        FontSize="13"
-                                                        Foreground="#666666"
-                                                        Text="1000" />
-                                                    <TextBox
-                                                        x:Name="txtCalib1000"
-                                                        Width="100"
-                                                        Margin="-20,0,0,0"
-                                                        Style="{StaticResource InputTextBoxStyle}"
-                                                        Text="0.00" />
-                                                </StackPanel>
-                                            </StackPanel>
-                                        </StackPanel>
-                                    </Border>
-                                </Grid>
-                            </TabItem>
-                            <TabItem Header="tongs">
-                                <Grid>
-                                    <!--  抓手控制  -->
-                                    <Border
-                                        Margin="0,0,0,20"
-                                        Background="White"
-                                        BorderBrush="#E0E0E0"
-                                        BorderThickness="1"
-                                        CornerRadius="5">
-                                        <StackPanel Margin="15">
-                                            <TextBlock
-                                                Margin="0,0,0,15"
-                                                FontSize="16"
-                                                FontWeight="Medium"
-                                                Foreground="{StaticResource PrimaryColor}"
-                                                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualGripperControl}" />
-                                            <StackPanel
-                                                Margin="0,0,0,15"
-                                                HorizontalAlignment="Left"
-                                                Orientation="Horizontal">
-                                                <Button
-                                                    x:Name="btnOpenGripperbration"
-                                                    Margin="0,0,10,0"
-                                                    Click="OpenGripper_Click"
-                                                    Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualGripperOpen}"
-                                                    Style="{StaticResource ActionButtonStyle}" />
-                                                <Button
-                                                    x:Name="btnCloseGripperbration"
-                                                    Click="CloseGripper_Click"
-                                                    Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualGripperClose}"
-                                                    Style="{StaticResource ActionButtonStyle}" />
-                                            </StackPanel>
-                                        </StackPanel>
-                                    </Border>
-                                </Grid>
-                            </TabItem>
-                            <TabItem Header="96-channel pipette">
-                                <Grid />
-                            </TabItem>
-                        </TabControl>
+            <!--  ========== 标题栏（固定在顶部） ==========  -->
+            <Border
+                Grid.Row="0"
+                Background="#F8F8F8"
+                CornerRadius="8,8,0,0">
+                <StackPanel>
+                    <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
+                        <Path
+                            Width="30"
+                            Height="30"
+                            Margin="15,5,5,0"
+                            HorizontalAlignment="Left"
+                            Data="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"
+                            Fill="{StaticResource PrimaryColor}"
+                            Stretch="Uniform" />
+                        <TextBlock
+                            x:Name="settingTitle"
+                            Margin="0,5,0,0"
+                            VerticalAlignment="Center"
+                            FontSize="16"
+                            FontWeight="Medium"
+                            Foreground="{StaticResource PrimaryColor}"
+                            Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualPipetteControl}" />
                     </StackPanel>
+                </StackPanel>
+            </Border>
 
-                </Border>
+            <!--  ========== 内容区（仅此处滚动） ==========  -->
+            <ScrollViewer
+                Grid.Row="1"
+                HorizontalScrollBarVisibility="Auto"
+                VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <TabControl
+                        Name="mainSettingTable"
+                        Background="#FCFCFC"
+                        BorderThickness="0">
+                        <TabControl.Resources>
+                            <Style TargetType="{x:Type TabItem}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                            </Style>
+                        </TabControl.Resources>
+                        <TabItem Header="Single-channel pipette">
+                            <Grid>
+                                <!--  移液器控制  -->
+                                <Border
+                                    Margin="0,0,0,20"
+                                    Background="White"
+                                    BorderBrush="#E0E0E0"
+                                    BorderThickness="1"
+                                    CornerRadius="5">
+                                    <StackPanel Margin="15">
+                                        <TextBlock
+                                            Margin="0,0,0,15"
+                                            FontSize="16"
+                                            FontWeight="Medium"
+                                            Foreground="{StaticResource PrimaryColor}"
+                                            Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualPipetteControl}" />
 
-            </StackPanel>
-        </ScrollViewer>
+                                        <!--  1. 吸液参数  -->
+                                        <TextBlock
+                                            Margin="0,0,0,8"
+                                            FontSize="14"
+                                            Foreground="#666666"
+                                            Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualAspirationParams}" />
+                                        <Grid Margin="0,0,0,15">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock
+                                                Grid.Column="0"
+                                                VerticalAlignment="Center"
+                                                FontSize="13"
+                                                Foreground="#666666"
+                                                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualVolume}" />
+                                            <TextBox
+                                                x:Name="txtAspirateVol"
+                                                Grid.Column="1"
+                                                Width="100"
+                                                Style="{StaticResource InputTextBoxStyle}"
+                                                Text="50" />
+                                        </Grid>
+                                        <Grid Margin="0,0,0,15">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock
+                                                Grid.Column="0"
+                                                VerticalAlignment="Center"
+                                                FontSize="13"
+                                                Foreground="#666666"
+                                                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualSpeed}" />
+                                            <TextBox
+                                                x:Name="txtAspirateSpeed"
+                                                Grid.Column="1"
+                                                Width="100"
+                                                Style="{StaticResource InputTextBoxStyle}"
+                                                Text="100" />
+                                        </Grid>
+                                        <Button
+                                            x:Name="btnAspirate"
+                                            Margin="0,0,10,15"
+                                            HorizontalAlignment="Left"
+                                            Click="Aspirate_Click"
+                                            Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualAspirate}"
+                                            Style="{StaticResource ActionButtonStyle}" />
 
+                                        <!--  2. 注液参数  -->
+                                        <TextBlock
+                                            Margin="0,0,0,8"
+                                            FontSize="14"
+                                            Foreground="#666666"
+                                            Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualDispensingParams}" />
+                                        <Grid Margin="0,0,0,15">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock
+                                                Grid.Column="0"
+                                                VerticalAlignment="Center"
+                                                FontSize="13"
+                                                Foreground="#666666"
+                                                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualVolume}" />
+                                            <TextBox
+                                                x:Name="txtDispenseVol"
+                                                Grid.Column="1"
+                                                Width="100"
+                                                Style="{StaticResource InputTextBoxStyle}"
+                                                Text="50" />
+                                        </Grid>
+                                        <Grid Margin="0,0,0,15">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock
+                                                Grid.Column="0"
+                                                VerticalAlignment="Center"
+                                                FontSize="13"
+                                                Foreground="#666666"
+                                                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualSpeed}" />
+                                            <TextBox
+                                                x:Name="txtDispenseSpeed"
+                                                Grid.Column="1"
+                                                Width="100"
+                                                Style="{StaticResource InputTextBoxStyle}"
+                                                Text="100" />
+                                        </Grid>
+                                        <Button
+                                            x:Name="btnDispense"
+                                            Margin="0,0,10,15"
+                                            HorizontalAlignment="Left"
+                                            Click="Dispense_Click"
+                                            Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualDispense}"
+                                            Style="{StaticResource ActionButtonStyle}" />
+
+                                        <!--  3. 基础功能按钮  -->
+                                        <StackPanel
+                                            Margin="0,0,0,15"
+                                            HorizontalAlignment="Left"
+                                            Orientation="Horizontal">
+                                            <Button
+                                                x:Name="btnEjectTip"
+                                                Margin="0,0,10,0"
+                                                Click="EjectTip_Click"
+                                                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualEjectTip}"
+                                                Style="{StaticResource ActionButtonStyle}" />
+                                            <Button
+                                                x:Name="btnResetPipette"
+                                                Click="ResetPipette_Click"
+                                                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualReset}"
+                                                Style="{StaticResource ActionButtonStyle}" />
+
+                                        </StackPanel>
+                                        <!--  4. 定标挡位设置  -->
+                                        <TextBlock
+                                            Margin="0,15,0,8"
+                                            FontSize="14"
+                                            Foreground="#666666"
+                                            Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualCalibrationGear}" />
+
+                                        <!--  定标操作按钮  -->
+                                        <StackPanel
+                                            Margin="0,0,0,15"
+                                            HorizontalAlignment="Left"
+                                            Orientation="Horizontal">
+                                            <Button
+                                                x:Name="btnGetCalibration"
+                                                Margin="0,0,10,0"
+                                                Click="GetCalibration_Click"
+                                                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualGetCalibration}"
+                                                Style="{StaticResource ActionButtonStyle}" />
+                                            <Button
+                                                x:Name="btnSetCalibration"
+                                                Click="SetCalibration_Click"
+                                                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualSetCalibration}"
+                                                Style="{StaticResource ActionButtonStyle}" />
+                                        </StackPanel>
+                                        <!--  回程差/10挡  -->
+                                        <StackPanel
+                                            Margin="0,0,0,15"
+                                            HorizontalAlignment="Left"
+                                            Orientation="Horizontal">
+                                            <!--  回程差  -->
+                                            <StackPanel Width="120" Margin="0,0,0,10">
+                                                <TextBlock
+                                                    Margin="0,0,0,5"
+                                                    FontSize="13"
+                                                    Foreground="#666666"
+                                                    Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualBacklash}" />
+                                                <TextBox
+                                                    x:Name="txtCalib0"
+                                                    Width="100"
+                                                    Margin="-20,0,0,0"
+                                                    Style="{StaticResource InputTextBoxStyle}"
+                                                    Text="0.00" />
+                                            </StackPanel>
+                                            <!--  10挡  -->
+                                            <StackPanel Width="120" Margin="0,0,0,10">
+                                                <TextBlock
+                                                    Margin="0,0,0,5"
+                                                    FontSize="13"
+                                                    Foreground="#666666"
+                                                    Text="10" />
+                                                <TextBox
+                                                    x:Name="txtCalib10"
+                                                    Width="100"
+                                                    Margin="-20,0,0,0"
+                                                    Style="{StaticResource InputTextBoxStyle}"
+                                                    Text="0.00" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                        <!--  20挡/50挡  -->
+                                        <StackPanel
+                                            Margin="0,0,0,15"
+                                            HorizontalAlignment="Left"
+                                            Orientation="Horizontal">
+                                            <!--  20挡  -->
+                                            <StackPanel Width="120" Margin="0,0,0,10">
+                                                <TextBlock
+                                                    Margin="0,0,0,5"
+                                                    FontSize="13"
+                                                    Foreground="#666666"
+                                                    Text="20" />
+                                                <TextBox
+                                                    x:Name="txtCalib20"
+                                                    Width="100"
+                                                    Margin="-20,0,0,0"
+                                                    Style="{StaticResource InputTextBoxStyle}"
+                                                    Text="0.00" />
+                                            </StackPanel>
+                                            <!--  50挡  -->
+                                            <StackPanel Width="120" Margin="0,0,0,10">
+                                                <TextBlock
+                                                    Margin="0,0,0,5"
+                                                    FontSize="13"
+                                                    Foreground="#666666"
+                                                    Text="50" />
+                                                <TextBox
+                                                    x:Name="txtCalib50"
+                                                    Width="100"
+                                                    Margin="-20,0,0,0"
+                                                    Style="{StaticResource InputTextBoxStyle}"
+                                                    Text="0.00" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                        <!--  100挡/200挡  -->
+                                        <StackPanel
+                                            Margin="0,0,0,15"
+                                            HorizontalAlignment="Left"
+                                            Orientation="Horizontal">
+                                            <!--  100挡  -->
+                                            <StackPanel Width="120" Margin="0,0,0,10">
+                                                <TextBlock
+                                                    Margin="0,0,0,5"
+                                                    FontSize="13"
+                                                    Foreground="#666666"
+                                                    Text="100" />
+                                                <TextBox
+                                                    x:Name="txtCalib100"
+                                                    Width="100"
+                                                    Margin="-20,0,0,0"
+                                                    Style="{StaticResource InputTextBoxStyle}"
+                                                    Text="0.00" />
+                                            </StackPanel>
+                                            <!--  200挡  -->
+                                            <StackPanel Width="120" Margin="0,0,0,10">
+                                                <TextBlock
+                                                    Margin="0,0,0,5"
+                                                    FontSize="13"
+                                                    Foreground="#666666"
+                                                    Text="200" />
+                                                <TextBox
+                                                    x:Name="txtCalib200"
+                                                    Width="100"
+                                                    Margin="-20,0,0,0"
+                                                    Style="{StaticResource InputTextBoxStyle}"
+                                                    Text="0.00" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                        <!--  300挡/400挡  -->
+                                        <StackPanel
+                                            Margin="0,0,0,15"
+                                            HorizontalAlignment="Left"
+                                            Orientation="Horizontal">
+                                            <!--  300挡  -->
+                                            <StackPanel Width="120" Margin="0,0,0,10">
+                                                <TextBlock
+                                                    Margin="0,0,0,5"
+                                                    FontSize="13"
+                                                    Foreground="#666666"
+                                                    Text="300" />
+                                                <TextBox
+                                                    x:Name="txtCalib300"
+                                                    Width="100"
+                                                    Margin="-20,0,0,0"
+                                                    Style="{StaticResource InputTextBoxStyle}"
+                                                    Text="0.00" />
+                                            </StackPanel>
+                                            <!--  400挡  -->
+                                            <StackPanel Width="120" Margin="0,0,0,10">
+                                                <TextBlock
+                                                    Margin="0,0,0,5"
+                                                    FontSize="13"
+                                                    Foreground="#666666"
+                                                    Text="400" />
+                                                <TextBox
+                                                    x:Name="txtCalib400"
+                                                    Width="100"
+                                                    Margin="-20,0,0,0"
+                                                    Style="{StaticResource InputTextBoxStyle}"
+                                                    Text="0.00" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                        <!--  500挡/600挡  -->
+                                        <StackPanel
+                                            Margin="0,0,0,15"
+                                            HorizontalAlignment="Left"
+                                            Orientation="Horizontal">
+
+                                            <!--  500挡  -->
+                                            <StackPanel Width="120" Margin="0,0,0,10">
+                                                <TextBlock
+                                                    Margin="0,0,0,5"
+                                                    FontSize="13"
+                                                    Foreground="#666666"
+                                                    Text="500" />
+                                                <TextBox
+                                                    x:Name="txtCalib500"
+                                                    Width="100"
+                                                    Margin="-20,0,0,0"
+                                                    Style="{StaticResource InputTextBoxStyle}"
+                                                    Text="0.00" />
+                                            </StackPanel>
+
+                                            <!--  600挡  -->
+                                            <StackPanel Width="120" Margin="0,0,0,10">
+                                                <TextBlock
+                                                    Margin="0,0,0,5"
+                                                    FontSize="13"
+                                                    Foreground="#666666"
+                                                    Text="600" />
+                                                <TextBox
+                                                    x:Name="txtCalib600"
+                                                    Width="100"
+                                                    Margin="-20,0,0,0"
+                                                    Style="{StaticResource InputTextBoxStyle}"
+                                                    Text="0.00" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                        <!--  700挡/800挡  -->
+                                        <StackPanel
+                                            Margin="0,0,0,15"
+                                            HorizontalAlignment="Left"
+                                            Orientation="Horizontal">
+
+                                            <!--  700挡  -->
+                                            <StackPanel Width="120" Margin="0,0,0,10">
+                                                <TextBlock
+                                                    Margin="0,0,0,5"
+                                                    FontSize="13"
+                                                    Foreground="#666666"
+                                                    Text="700" />
+                                                <TextBox
+                                                    x:Name="txtCalib700"
+                                                    Width="100"
+                                                    Margin="-20,0,0,0"
+                                                    Style="{StaticResource InputTextBoxStyle}"
+                                                    Text="0.00" />
+                                            </StackPanel>
+
+                                            <!--  800挡  -->
+                                            <StackPanel Width="120" Margin="0,0,0,10">
+                                                <TextBlock
+                                                    Margin="0,0,0,5"
+                                                    FontSize="13"
+                                                    Foreground="#666666"
+                                                    Text="800" />
+                                                <TextBox
+                                                    x:Name="txtCalib800"
+                                                    Width="100"
+                                                    Margin="-20,0,0,0"
+                                                    Style="{StaticResource InputTextBoxStyle}"
+                                                    Text="0.00" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                        <!--  900挡/1000挡  -->
+                                        <StackPanel
+                                            Margin="0,0,0,15"
+                                            HorizontalAlignment="Left"
+                                            Orientation="Horizontal">
+                                            <!--  900挡  -->
+                                            <StackPanel Width="120" Margin="0,0,0,10">
+                                                <TextBlock
+                                                    Margin="0,0,0,5"
+                                                    FontSize="13"
+                                                    Foreground="#666666"
+                                                    Text="900" />
+                                                <TextBox
+                                                    x:Name="txtCalib900"
+                                                    Width="100"
+                                                    Margin="-20,0,0,0"
+                                                    Style="{StaticResource InputTextBoxStyle}"
+                                                    Text="0.00" />
+                                            </StackPanel>
+
+                                            <!--  1000挡（第2行第7个）  -->
+                                            <StackPanel Width="120" Margin="0,0,0,10">
+                                                <TextBlock
+                                                    Margin="0,0,0,5"
+                                                    FontSize="13"
+                                                    Foreground="#666666"
+                                                    Text="1000" />
+                                                <TextBox
+                                                    x:Name="txtCalib1000"
+                                                    Width="100"
+                                                    Margin="-20,0,0,0"
+                                                    Style="{StaticResource InputTextBoxStyle}"
+                                                    Text="0.00" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                        </TabItem>
+                        <TabItem Header="tongs">
+                            <Grid>
+                                <!--  抓手控制  -->
+                                <Border
+                                    Margin="0,0,0,20"
+                                    Background="White"
+                                    BorderBrush="#E0E0E0"
+                                    BorderThickness="1"
+                                    CornerRadius="5">
+                                    <StackPanel Margin="15">
+                                        <TextBlock
+                                            Margin="0,0,0,15"
+                                            FontSize="16"
+                                            FontWeight="Medium"
+                                            Foreground="{StaticResource PrimaryColor}"
+                                            Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualGripperControl}" />
+                                        <StackPanel
+                                            Margin="0,0,0,15"
+                                            HorizontalAlignment="Left"
+                                            Orientation="Horizontal">
+                                            <Button
+                                                x:Name="btnOpenGripperbration"
+                                                Margin="0,0,10,0"
+                                                Click="OpenGripper_Click"
+                                                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualGripperOpen}"
+                                                Style="{StaticResource ActionButtonStyle}" />
+                                            <Button
+                                                x:Name="btnCloseGripperbration"
+                                                Click="CloseGripper_Click"
+                                                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualGripperClose}"
+                                                Style="{StaticResource ActionButtonStyle}" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                        </TabItem>
+                        <TabItem Header="96-channel pipette">
+                            <Grid />
+                        </TabItem>
+                        <TabItem Header="Step details">
+                            <Grid>
+                                <StackPanel x:Name="StepDetailPanel" />
+                            </Grid>
+                        </TabItem>
+                        <TabItem Header="magnetic">
+                            <Grid>
+                                <!--  磁吸控制  -->
+                                <Border
+                                    Margin="0,0,0,20"
+                                    Background="White"
+                                    BorderBrush="#E0E0E0"
+                                    BorderThickness="1"
+                                    CornerRadius="5">
+                                    <StackPanel Margin="15">
+                                        <TextBlock
+                                            Margin="0,0,0,15"
+                                            FontSize="16"
+                                            FontWeight="Medium"
+                                            Foreground="{StaticResource PrimaryColor}"
+                                            Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualMagneticControl}" />
+                                        <StackPanel
+                                            Margin="0,0,0,15"
+                                            HorizontalAlignment="Left"
+                                            Orientation="Horizontal">
+                                            <Button
+                                                x:Name="btnUpMagnetic"
+                                                Margin="0,0,10,0"
+                                                Click="UpMagnetic_Click"
+                                                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=StepDetailMagnetUp}"
+                                                Style="{StaticResource ActionButtonStyle}" />
+                                            <Button
+                                                x:Name="btnDownMagnetic"
+                                                Click="DownMagnetic_Click"
+                                                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=StepDetailMagnetDown}"
+                                                Style="{StaticResource ActionButtonStyle}" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                        </TabItem>
+                        <TabItem Header="shaker">
+                            <Grid>
+                                <Border
+                                    Margin="0,0,0,20"
+                                    Background="White"
+                                    BorderBrush="#E0E0E0"
+                                    BorderThickness="1"
+                                    CornerRadius="5">
+                                    <StackPanel Margin="15">
+                                        <TextBlock
+                                            Margin="0,0,0,15"
+                                            FontSize="16"
+                                            FontWeight="Medium"
+                                            Foreground="{StaticResource PrimaryColor}"
+                                            Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualShakerControl}" />
+
+                                        <!--  1. 温度控制  -->
+                                        <TextBlock
+                                            Margin="0,0,0,8"
+                                            FontSize="14"
+                                            Foreground="#666666"
+                                            Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualShakerTempControl}" />
+                                        <Grid Margin="0,0,0,15">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock
+                                                Grid.Column="0"
+                                                VerticalAlignment="Center"
+                                                FontSize="13"
+                                                Foreground="#666666"
+                                                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualShakerTempCurrent}" />
+                                            <TextBlock
+                                                x:Name="realGetShakeTemp"
+                                                Grid.Column="1"
+                                                Width="100"
+                                                FontSize="14"
+                                                Text="50" />
+                                        </Grid>
+                                        <Grid Margin="0,0,0,15">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock
+                                                Grid.Column="0"
+                                                VerticalAlignment="Center"
+                                                FontSize="13"
+                                                Foreground="#666666"
+                                                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualShakerTempSet}" />
+                                            <TextBox
+                                                x:Name="ShakerTempSetValue"
+                                                Grid.Column="1"
+                                                Width="100"
+                                                Style="{StaticResource InputTextBoxStyle}"
+                                                Text="45" />
+                                        </Grid>
+                                        <StackPanel
+                                            Margin="0,0,0,5"
+                                            HorizontalAlignment="Left"
+                                            Orientation="Horizontal">
+                                            <Button
+                                                x:Name="btnStartTemperature"
+                                                Margin="0,0,10,0"
+                                                Click="btnStartTemperature_Click"
+                                                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualStartTemperature}"
+                                                Style="{StaticResource ActionButtonStyle}" />
+                                            <Button
+                                                x:Name="btnStopTemperature"
+                                                Click="btnStopTemperature_Click"
+                                                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualStopTemperature}"
+                                                Style="{StaticResource ActionButtonStyle}" />
+                                        </StackPanel>
+
+                                        <!--  2. 振荡控制  -->
+                                        <TextBlock
+                                            Margin="0,0,0,8"
+                                            FontSize="14"
+                                            Foreground="#666666"
+                                            Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualShakerShakingControl}" />
+
+                                        <Grid Margin="0,0,0,15">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock
+                                                Grid.Column="0"
+                                                VerticalAlignment="Center"
+                                                FontSize="13"
+                                                Foreground="#666666"
+                                                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualShakerShakingSet}" />
+                                            <TextBox
+                                                x:Name="ShakerSpeedSetValue"
+                                                Grid.Column="1"
+                                                Width="100"
+                                                Style="{StaticResource InputTextBoxStyle}"
+                                                Text="1200" />
+                                        </Grid>
+                                        <Grid Margin="0,0,0,15">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock
+                                                Grid.Column="0"
+                                                VerticalAlignment="Center"
+                                                FontSize="13"
+                                                Foreground="#666666"
+                                                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualShakerShakingTimeSet}" />
+                                            <TextBox
+                                                x:Name="ShakerTimeSetValue"
+                                                Grid.Column="1"
+                                                Width="100"
+                                                Style="{StaticResource InputTextBoxStyle}"
+                                                Text="10" />
+                                        </Grid>
+
+                                        <StackPanel
+                                            Margin="0,0,0,5"
+                                            HorizontalAlignment="Left"
+                                            Orientation="Horizontal">
+                                            <Button
+                                                x:Name="btnStartShake"
+                                                Margin="0,0,10,0"
+                                                Click="btnStartShake_Click"
+                                                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualStartShaking}"
+                                                Style="{StaticResource ActionButtonStyle}" />
+                                            <Button
+                                                x:Name="btnStopShake"
+                                                Click="btnStopShake_Click"
+                                                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualStopShaking}"
+                                                Style="{StaticResource ActionButtonStyle}" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+
+                            </Grid>
+                        </TabItem>
+                        <TabItem Header="temp">
+                            <Grid>
+                                <Border
+                                    Margin="0,0,0,20"
+                                    Background="White"
+                                    BorderBrush="#E0E0E0"
+                                    BorderThickness="1"
+                                    CornerRadius="5">
+                                    <StackPanel Margin="15">
+                                        <TextBlock
+                                            Margin="0,0,0,15"
+                                            FontSize="16"
+                                            FontWeight="Medium"
+                                            Foreground="{StaticResource PrimaryColor}"
+                                            Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualShakerTempControl}" />
+
+                                        <!--  1. 温度控制  -->
+                                        <TextBlock
+                                            Margin="0,0,0,8"
+                                            FontSize="14"
+                                            Foreground="#666666"
+                                            Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualShakerTempControl}" />
+                                        <Grid Margin="0,0,0,15">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock
+                                                Grid.Column="0"
+                                                VerticalAlignment="Center"
+                                                FontSize="13"
+                                                Foreground="#666666"
+                                                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualShakerTempCurrent}" />
+                                            <TextBlock
+                                                x:Name="realGetTemp"
+                                                Grid.Column="1"
+                                                Width="100"
+                                                FontSize="14"
+                                                Text="50" />
+                                        </Grid>
+                                        <Grid Margin="0,0,0,15">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock
+                                                Grid.Column="0"
+                                                VerticalAlignment="Center"
+                                                FontSize="13"
+                                                Foreground="#666666"
+                                                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualShakerTempSet}" />
+                                            <TextBox
+                                                x:Name="CoolTempSetValue"
+                                                Grid.Column="1"
+                                                Width="100"
+                                                Style="{StaticResource InputTextBoxStyle}"
+                                                Text="45" />
+                                        </Grid>
+                                        <StackPanel
+                                            Margin="0,0,0,5"
+                                            HorizontalAlignment="Left"
+                                            Orientation="Horizontal">
+                                            <Button
+                                                x:Name="btnStartCool"
+                                                Margin="0,0,10,0"
+                                                Click="btnStartCool_Click"
+                                                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualStartTemperature}"
+                                                Style="{StaticResource ActionButtonStyle}" />
+                                            <Button
+                                                x:Name="btnStopCool"
+                                                Click="btnStopCool_Click"
+                                                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualStopTemperature}"
+                                                Style="{StaticResource ActionButtonStyle}" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+
+                            </Grid>
+                        </TabItem>
+                        <TabItem Header="PCR">
+                            <Grid>
+                                <Border
+                                    Margin="0,0,0,20"
+                                    Background="White"
+                                    BorderBrush="#E0E0E0"
+                                    BorderThickness="1"
+                                    CornerRadius="5">
+                                    <StackPanel Margin="15">
+                                        <TextBlock
+                                            Margin="0,0,0,15"
+                                            FontSize="16"
+                                            FontWeight="Medium"
+                                            Foreground="{StaticResource PrimaryColor}"
+                                            Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualPCRControl}" />
+
+                                        <Grid Margin="0,0,0,8">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock
+                                                Grid.Column="0"
+                                                VerticalAlignment="Center"
+                                                FontSize="13"
+                                                Foreground="#666666"
+                                                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualPCRScriptRun}" />
+                                            <Button
+                                                x:Name="btnSeletePCR"
+                                                Grid.Column="1"
+                                                Click="btnSeletePCR_Click"
+                                                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualPCRSelection}"
+                                                Style="{StaticResource ActionButtonStyle}" />
+                                        </Grid>
+                                        <Grid Margin="0,0,0,15">
+                                            <TextBox
+                                                x:Name="PCRFileAddress"
+                                                MinHeight="100"
+                                                MaxWidth="260"
+                                                AcceptsReturn="True"
+                                                IsEnabled="false"
+                                                Style="{StaticResource InputTextBoxStyle}"
+                                                TextWrapping="WrapWithOverflow" />
+                                        </Grid>
+                                        <StackPanel
+                                            Margin="0,0,0,5"
+                                            HorizontalAlignment="Left"
+                                            Orientation="Horizontal">
+                                            <Button
+                                                x:Name="btnStartPCR"
+                                                Margin="0,0,10,0"
+                                                Click="btnStartPCR_Click"
+                                                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualPCRStart}"
+                                                Style="{StaticResource ActionButtonStyle}" />
+                                            <Button
+                                                x:Name="btnStopPCR"
+                                                Click="btnStopPCR_Click"
+                                                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualPCRStop}"
+                                                Style="{StaticResource ActionButtonStyle}" />
+                                        </StackPanel>
+                                        <StackPanel
+                                            Margin="0,0,0,5"
+                                            HorizontalAlignment="Left"
+                                            Orientation="Horizontal">
+                                            <Button
+                                                x:Name="btnOpenPCR"
+                                                Margin="0,0,10,0"
+                                                Click="btnOpenPCR_Click"
+                                                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualPCROpen}"
+                                                Style="{StaticResource ActionButtonStyle}" />
+                                            <Button
+                                                x:Name="btnClosePCR"
+                                                Click="btnClosePCR_Click"
+                                                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualPCRClose}"
+                                                Style="{StaticResource ActionButtonStyle}" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+
+                            </Grid>
+                        </TabItem>
+                    </TabControl>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
     </Border>
 </UserControl>
