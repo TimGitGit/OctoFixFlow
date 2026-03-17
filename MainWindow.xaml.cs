@@ -23,7 +23,7 @@ namespace OctoFixFlow
             Loaded += MainWindow_Loaded;
         }
 
-        #region 核心优化：异步后台加载3D模型，彻底解决卡顿
+        #region 异步后台加载3D模型
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             try
@@ -53,8 +53,9 @@ namespace OctoFixFlow
 
 
                         Transform3DGroup transformGroup = new Transform3DGroup();
+
                         transformGroup.Children.Add(new RotateTransform3D(
-                            new AxisAngleRotation3D(new System.Windows.Media.Media3D.Vector3D(1, 0, 0), 90)));
+                           new AxisAngleRotation3D(new System.Windows.Media.Media3D.Vector3D(1, 0, 0), 90)));
                         modelGroup.Transform = transformGroup;
 
 
@@ -65,14 +66,14 @@ namespace OctoFixFlow
                 if (modelGroup != null)
                 {
                     modelVisual.Content = modelGroup;
+                    var camera = modelViewport.Camera as PerspectiveCamera;
+                    if (camera != null)
+                    {
+                        camera.Position = new Point3D(0, 10, 0);
+                        camera.LookDirection = new System.Windows.Media.Media3D.Vector3D(-5, -0.1, 0);
+                        camera.UpDirection = new System.Windows.Media.Media3D.Vector3D(0, 0, 1);
+                    }
                     modelViewport.ZoomExtents();
-                    //if (modelViewport.Camera is PerspectiveCamera camera)
-                    //{
-                    //    camera.Position = new System.Windows.Media.Media3D.Point3D(-2000, 0, 0);
-                    //    camera.LookDirection = new System.Windows.Media.Media3D.Vector3D(-1, 0, 0);
-                    //    camera.UpDirection = new System.Windows.Media.Media3D.Vector3D(0, 0, 1);
-                    //    camera.FieldOfView = 15;
-                    //}
                 }
             }
             catch (Exception ex)
@@ -142,62 +143,6 @@ namespace OctoFixFlow
             return modelGroup;
         }
         #endregion
-
-        //    private void MainWindow_Loaded(object sender, RoutedEventArgs e)
-        //    {
-        //        // 核心修改：延迟加载3D模型，让窗口先完成初始化（包括任务栏图标渲染）
-        //        // DispatcherPriority.Background 表示窗口初始化完成后再执行
-        //        Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
-        //        {
-        //            string modelResourcePath = "/OctoFixFlow;component/images/QYRB-12C.fbx";
-        //            var resourceUri = new Uri(modelResourcePath, UriKind.Relative);
-        //            var resourceInfo = Application.GetResourceStream(resourceUri);
-
-        //            Model3DGroup modelGroup = Load3DModelFromStream(resourceInfo.Stream, Path.GetExtension(modelResourcePath));
-        //            Transform3DGroup transformGroup = new Transform3DGroup();
-        //            transformGroup.Children.Add(new RotateTransform3D(
-        //new AxisAngleRotation3D(new System.Windows.Media.Media3D.Vector3D(1, 0, 0), 90)));
-
-
-        //            // 步骤4：把组合旋转应用到模型
-        //            modelGroup.Transform = transformGroup;
-        //            modelVisual.Content = modelGroup;
-        //            modelViewport.ZoomExtents();
-
-        //            // 最后关闭流，释放资源
-        //            resourceInfo.Stream.Close();
-        //        }));
-        //    }
-
-
-        //    private void MainWindow_Loaded(object sender, RoutedEventArgs e)
-        //    {
-        //        try
-        //        {
-        //            // 模型路径：支持FBX/STEP/STL，确保文件生成操作是Resource
-        //            string modelResourcePath = "/OctoFixFlow;component/images/QYRB-12C.fbx";
-        //            var resourceUri = new Uri(modelResourcePath, UriKind.Relative);
-
-        //            var resourceInfo = Application.GetResourceStream(resourceUri);
-        //            if (resourceInfo?.Stream == null)
-        //            {
-        //                ShowNotification(_res.MainWindowDetailSTL, NotificationControl.NotificationType.Error);
-        //                return;
-        //            }
-
-        //            // 加载模型（适配4.1.0 API）
-        //            Model3DGroup modelGroup = Load3DModelFromStream(resourceInfo.Stream, Path.GetExtension(modelResourcePath));
-        //            RotateTransform3D rotateTransform = new RotateTransform3D(
-        //new AxisAngleRotation3D(new System.Windows.Media.Media3D.Vector3D(1, 0, 0), 90)); // 轴：X轴(1,0,0)，角度：90度
-        //            modelGroup.Transform = rotateTransform; // 给模型组应用旋转
-        //            modelVisual.Content = modelGroup;
-        //            modelViewport.ZoomExtents();
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            ShowNotification($"{_res.MainWindowDetailLoadFail}: {ex.Message}", NotificationControl.NotificationType.Error);
-        //        }
-        //    }
 
         /// <summary>
         /// 适配AssimpNet 4.1.0的模型加载方法
@@ -276,59 +221,6 @@ namespace OctoFixFlow
 
             return modelGroup;
         }
-        //private void MainWindow_Loaded(object sender, RoutedEventArgs e)
-        //{
-        //    try
-        //    {
-        //        string stlResourcePath = "/OctoFixFlow;component/images/QYRB-12C.STL";
-        //        var resourceUri = new Uri(stlResourcePath, UriKind.Relative);
-
-        //        var resourceInfo = Application.GetResourceStream(resourceUri);
-        //        if (resourceInfo?.Stream == null)
-        //        {
-        //            ShowNotification(_res.MainWindowDetailSTL, NotificationControl.NotificationType.Error);
-        //            return;
-        //        }
-
-        //        var reader = new StLReader();
-        //        using (resourceInfo.Stream)
-        //        {
-        //            Model3DGroup modelGroup = reader.Read(resourceInfo.Stream);
-
-        //            // 应用自定义材质（替换默认蓝色）
-        //            ApplyCustomMaterial(modelGroup);
-
-        //            modelVisual.Content = modelGroup;
-        //        }
-        //        modelViewport.ZoomExtents();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        ShowNotification($"{_res.MainWindowDetailLoadFail}: {ex.Message}", NotificationControl.NotificationType.Error);
-        //    }
-        //}
-
-        // 递归应用材质的辅助方法
-        //private void ApplyCustomMaterial(Model3DGroup group)
-        //{
-        //    foreach (var model in group.Children)
-        //    {
-        //        if (model is Model3DGroup subGroup)
-        //        {
-        //            ApplyCustomMaterial(subGroup);
-        //        }
-        //        else if (model is GeometryModel3D geometryModel)
-        //        {
-        //            // 创建银色金属质感材质
-        //            var materialGroup = new MaterialGroup();
-        //            materialGroup.Children.Add(new DiffuseMaterial(Brushes.Silver));
-        //            materialGroup.Children.Add(new SpecularMaterial(Brushes.White, 100));
-
-        //            geometryModel.Material = materialGroup;
-        //            geometryModel.BackMaterial = materialGroup; // 双面渲染
-        //        }
-        //    }
-        //}
         private void LoginButton_Click(object sender, RoutedEventArgs e)
         {
             if (login_Name.Text == "")
