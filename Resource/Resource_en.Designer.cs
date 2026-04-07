@@ -457,6 +457,15 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 Device not connected 的本地化字符串。
+        /// </summary>
+        public static string MainWindowNotConn {
+            get {
+                return ResourceManager.GetString("MainWindowNotConn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 The selected file is empty 的本地化字符串。
         /// </summary>
         public static string OpenFileDialog_Empty {
@@ -2005,6 +2014,15 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 Wait for Run Completion 的本地化字符串。
+        /// </summary>
+        public static string SettingManualPCRWaitRun {
+            get {
+                return ResourceManager.GetString("SettingManualPCRWaitRun", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Pipette Control 的本地化字符串。
         /// </summary>
         public static string SettingManualPipetteControl {
@@ -2680,6 +2698,15 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 PushOutVolume(ul): 的本地化字符串。
+        /// </summary>
+        public static string StepDetailPushVolume {
+            get {
+                return ResourceManager.GetString("StepDetailPushVolume", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Row: 的本地化字符串。
         /// </summary>
         public static string StepDetailRowPrefix {
@@ -3171,6 +3198,15 @@ namespace OctoFixFlow.Resource {
         public static string WindowLogOut {
             get {
                 return ResourceManager.GetString("WindowLogOut", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Nested loops not supported 的本地化字符串。
+        /// </summary>
+        public static string WindowLoopTip {
+            get {
+                return ResourceManager.GetString("WindowLoopTip", resourceCulture);
             }
         }
         

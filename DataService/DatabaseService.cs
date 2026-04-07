@@ -2,15 +2,22 @@
 using System.Data;
 using System.Data.SQLite;
 using System.IO;
+using System.Net.NetworkInformation;
 namespace OctoFixFlow
 {
     internal class DatabaseService
     {
+        // 单例实例（懒加载，线程安全）
+        private static readonly Lazy<DatabaseService> _instance = new Lazy<DatabaseService>(() => new DatabaseService());
+        // 对外暴露单例
+        public static DatabaseService Instance => _instance.Value;
+
         private readonly SQLiteConnection connection;
         private const string DatabaseFilePath = "DataService/octoFixFlow_data.db";
 
         private readonly string _mysqlConnectionString = "server=192.168.100.10;port=8003;database=qybot;uid=root;pwd=qy123456;charset=utf8;Allow User Variables=True;";
-
+        private const int MaxRetryCount = 1;
+        private const int RetryDelayMs = 1000;
         public DatabaseService()
         {
             string directoryPath = Path.GetDirectoryName(DatabaseFilePath);
@@ -162,7 +169,27 @@ namespace OctoFixFlow
         }
         public void Close()
         {
-            connection.Close();
+            if (connection != null && connection.State != ConnectionState.Closed)
+            {
+                connection.Close(); // 关闭SQLite连接
+                connection.Dispose(); // 释放连接资源
+            }
+        }
+        public bool IsMySqlServerReachable()
+        {
+            try
+            {
+                using (Ping ping = new Ping())
+                {
+                    PingReply reply = ping.Send("192.168.100.10", 2000);
+                    return reply.Status == IPStatus.Success;
+                }
+            }
+            catch
+            {
+                // 任何异常（如Ping失败、网络禁用）都视为不可达
+                return false;
+            }
         }
         #region mysql
         /// <summary>
@@ -171,35 +198,84 @@ namespace OctoFixFlow
         /// <param name="sql">查询SQL</param>
         /// <param name="parameters">SQL参数（防止注入）</param>
         /// <returns>查询结果DataTable</returns>
+        /// 
         public async Task<DataTable> QueryMySqlDataAsync(string sql, MySqlParameter[] parameters = null)
         {
             DataTable dt = new DataTable();
-            // 使用using自动释放MySQL连接
-            using (MySqlConnection conn = new MySqlConnection(_mysqlConnectionString))
+            int retryCount = 0;
+
+            while (retryCount < MaxRetryCount)
             {
                 try
                 {
-                    await conn.OpenAsync();
-                    using (MySqlCommand cmd = new MySqlCommand(sql, conn))
+                    using (MySqlConnection conn = new MySqlConnection(_mysqlConnectionString))
                     {
-                        if (parameters != null && parameters.Length > 0)
+                        await conn.OpenAsync();
+                        using (MySqlCommand cmd = new MySqlCommand(sql, conn))
                         {
-                            cmd.Parameters.AddRange(parameters);
+                            if (parameters != null && parameters.Length > 0)
+                            {
+                                cmd.Parameters.AddRange(parameters);
+                            }
+                            using (MySqlDataAdapter adapter = new MySqlDataAdapter(cmd))
+                            {
+                                adapter.Fill(dt);
+                            }
                         }
-                        using (MySqlDataAdapter adapter = new MySqlDataAdapter(cmd))
-                        {
-                            adapter.Fill(dt);
-                        }
+                        return dt;
                     }
                 }
-                catch (Exception ex)
+                catch (MySqlException ex) when (ex.Number is 0 or 1042 or 2003 or 2006)
                 {
-                    Console.WriteLine($"MySQL查询失败：{ex.Message}");
-                    throw;
+                    retryCount++;
+                    if (retryCount < MaxRetryCount)
+                    {
+                        await Task.Delay(RetryDelayMs);
+                    }
+                }
+                catch (Exception)
+                {
+                    break;
                 }
             }
+
+            // 所有重试失败/异常时，返回初始化的空DataTable
             return dt;
         }
+
+
+        //public async Task<DataTable> QueryMySqlDataAsync(string sql, MySqlParameter[] parameters = null)
+        //{
+        //    DataTable dt = new DataTable();
+        //    // 使用using自动释放MySQL连接
+        //    using (MySqlConnection conn = new MySqlConnection(_mysqlConnectionString))
+        //    {
+        //        try
+        //        {
+        //            await conn.OpenAsync();
+        //            using (MySqlCommand cmd = new MySqlCommand(sql, conn))
+        //            {
+        //                if (parameters != null && parameters.Length > 0)
+        //                {
+        //                    cmd.Parameters.AddRange(parameters);
+        //                }
+        //                using (MySqlDataAdapter adapter = new MySqlDataAdapter(cmd))
+        //                {
+        //                    adapter.Fill(dt);
+        //                }
+        //            }
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            Console.WriteLine($"MySQL查询失败：{ex.Message}");
+        //            throw;
+        //        }
+        //    }
+        //    return dt;
+        //}
+
+
+
         /// <summary>
         /// MySQL通用执行方法（新增/更新/删除，对应INSERT/UPDATE/DELETE操作）
         /// </summary>

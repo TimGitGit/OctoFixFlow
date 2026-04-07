@@ -2,6 +2,7 @@
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 
 namespace OctoFixFlow
@@ -115,11 +116,11 @@ namespace OctoFixFlow
             {
                 Name = "pipette_1",
                 Type = pipetteType1,
-                PlatePosition = "13",
+                PlatePosition = "16",
                 PipetteVolume = pipetteVolume1,
                 ModuleImage = ""
             };
-            AppGlobalConfig.Instance.AddOrUpdateModule("13", pipetteModule);
+            AppGlobalConfig.Instance.AddOrUpdateModule("16", pipetteModule);
             if (pipetteContainer2.Visibility == Visibility.Visible)
             {
                 //移液器2
@@ -137,11 +138,11 @@ namespace OctoFixFlow
                 {
                     Name = "pipette_2",
                     Type = pipetteType2,
-                    PlatePosition = "14",
+                    PlatePosition = "17",
                     PipetteVolume = pipetteVolume2,
                     ModuleImage = ""
                 };
-                AppGlobalConfig.Instance.AddOrUpdateModule("14", pipetteModule2);
+                AppGlobalConfig.Instance.AddOrUpdateModule("17", pipetteModule2);
             }
 
             // 触发完成事件
@@ -232,7 +233,7 @@ namespace OctoFixFlow
         private void EnableGripper_Click(object sender, RoutedEventArgs e)
         {
             AppGlobalConfig.Instance.IsGripperEnabled = !AppGlobalConfig.Instance.IsGripperEnabled;
-            string plateId = "15";
+            string plateId = "18";
 
             if (AppGlobalConfig.Instance.IsGripperEnabled)
             {
@@ -492,6 +493,113 @@ namespace OctoFixFlow
         }
         #endregion
 
+
+        #region 扩展板位
+        /// <summary>
+        /// 鼠标进入可添加板位：播放动画/切换减号
+        /// </summary>
+        private void AddablePlate_MouseEnter(object sender, MouseEventArgs e)
+        {
+            if (sender is not Border border || !int.TryParse(border.Tag?.ToString(), out int plateId))
+                return;
+
+            // 获取当前板位的内部元素
+            var plusText = border.FindName($"PlusText{plateId}") as TextBlock;
+            var plateText = border.FindName($"PlateText{plateId}") as TextBlock;
+            var minusText = border.FindName($"MinusText{plateId}") as TextBlock;
+
+            bool isActive = AppGlobalConfig.Instance._addablePlateState[plateId];
+            if (!isActive)
+            {
+                // 未激活状态：播放加号缩放动画
+                if (plusText != null)
+                {
+                    var scaleAnimation = FindResource("PlusScaleAnimation") as Storyboard;
+                    scaleAnimation?.Begin(plusText);
+                }
+            }
+            else
+            {
+                // 已激活状态：隐藏Pxx，显示减号
+                if (plateText != null) plateText.Visibility = Visibility.Collapsed;
+                if (minusText != null) minusText.Visibility = Visibility.Visible;
+            }
+        }
+
+
+        /// <summary>
+        /// 鼠标离开可添加板位：恢复显示状态
+        /// </summary>
+        private void AddablePlate_MouseLeave(object sender, MouseEventArgs e)
+        {
+            if (sender is not Border border || !int.TryParse(border.Tag?.ToString(), out int plateId))
+                return;
+
+            var plateText = border.FindName($"PlateText{plateId}") as TextBlock;
+            var minusText = border.FindName($"MinusText{plateId}") as TextBlock;
+
+            // 已激活状态：隐藏减号，恢复显示Pxx
+            if (AppGlobalConfig.Instance._addablePlateState[plateId])
+            {
+                if (minusText != null) minusText.Visibility = Visibility.Collapsed;
+                if (plateText != null) plateText.Visibility = Visibility.Visible;
+            }
+        }
+
+
+        /// <summary>
+        /// 鼠标点击：切换激活/未激活状态
+        /// </summary>
+        private void AddablePlate_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true; // 阻止事件冒泡
+            if (sender is not Border border || !int.TryParse(border.Tag?.ToString(), out int plateId))
+                return;
+
+            // 获取内部元素
+            var plusText = border.FindName($"PlusText{plateId}") as TextBlock;
+            var plateText = border.FindName($"PlateText{plateId}") as TextBlock;
+            var minusText = border.FindName($"MinusText{plateId}") as TextBlock;
+
+            bool isCurrentActive = AppGlobalConfig.Instance._addablePlateState[plateId];
+
+            // ========== 未激活 → 激活：变成Pxx板位 ==========
+            if (!isCurrentActive)
+            {
+                AppGlobalConfig.Instance._addablePlateState[plateId] = true;
+                // 切换显示
+                if (plusText != null) plusText.Visibility = Visibility.Collapsed;
+                if (plateText != null) plateText.Visibility = Visibility.Visible;
+
+                // 【关键】切换为原有板位的样式，继承拖拽、事件等所有功能
+                border.Style = (Style)FindResource("PlateSlotStyle");
+                border.AllowDrop = false;
+                border.Focusable = true;
+                // 绑定原有板位的所有事件，和P1-P12功能完全一致
+                border.MouseEnter += PlateSlot_MouseEnter;
+                border.MouseLeave += PlateSlot_MouseLeave;
+                border.PreviewKeyDown += PlateSlot_PreviewKeyDown;
+            }
+            // ========== 已激活 → 未激活：变回加号按钮 ==========
+            else
+            {
+                AppGlobalConfig.Instance._addablePlateState[plateId] = false;
+                // 切换显示
+                if (plateText != null) plateText.Visibility = Visibility.Collapsed;
+                if (minusText != null) minusText.Visibility = Visibility.Collapsed;
+                if (plusText != null) plusText.Visibility = Visibility.Visible;
+
+                // 恢复初始样式，移除拖拽事件
+                border.Style = (Style)FindResource("AddablePlateSlotStyle");
+                border.AllowDrop = false;
+                border.Focusable = false;
+                // 解绑原有板位的事件
+                border.MouseEnter -= PlateSlot_MouseEnter;
+                border.MouseLeave -= PlateSlot_MouseLeave;
+                border.PreviewKeyDown -= PlateSlot_PreviewKeyDown;
+            }
+        }
+        #endregion
 
     }
 }

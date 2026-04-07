@@ -249,6 +249,9 @@
   <data name="MainWindowDetailUserEmpty" xml:space="preserve">
     <value>Username is empty</value>
   </data>
+  <data name="MainWindowNotConn" xml:space="preserve">
+    <value>Device not connected</value>
+  </data>
   <data name="OpenFileDialog_Empty" xml:space="preserve">
     <value>The selected file is empty</value>
   </data>
@@ -768,6 +771,9 @@
   <data name="SettingManualPCRStop" xml:space="preserve">
     <value>Stop Run</value>
   </data>
+  <data name="SettingManualPCRWaitRun" xml:space="preserve">
+    <value>Wait for Run Completion</value>
+  </data>
   <data name="SettingManualPipetteControl" xml:space="preserve">
     <value>Pipette Control</value>
   </data>
@@ -994,6 +1000,9 @@
   <data name="StepDetailPCRprocedure" xml:space="preserve">
     <value>PCR procedure</value>
   </data>
+  <data name="StepDetailPushVolume" xml:space="preserve">
+    <value>PushOutVolume(ul):</value>
+  </data>
   <data name="StepDetailRowPrefix" xml:space="preserve">
     <value>Row:</value>
   </data>
@@ -1167,6 +1176,9 @@
   </data>
   <data name="WindowLogOut" xml:space="preserve">
     <value>LogOut</value>
+  </data>
+  <data name="WindowLoopTip" xml:space="preserve">
+    <value>Nested loops not supported</value>
   </data>
   <data name="WindowOneclickdeletion" xml:space="preserve">
     <value>Clear</value>

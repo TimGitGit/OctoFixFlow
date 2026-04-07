@@ -70,6 +70,9 @@ namespace OctoFixFlow
         public string WindowActionLoop => IsEnglish ? Resource.Resource_en.WindowActionLoop : Resource.Resource_zh.WindowActionLoop;
         //结束循环 /endLoop
         public string WindowActionEndLoop => IsEnglish ? Resource.Resource_en.WindowActionEndLoop : Resource.Resource_zh.WindowActionEndLoop;
+        //不支持循环嵌套 Nested loops not supported
+        public string WindowLoopTip => IsEnglish ? Resource.Resource_en.WindowLoopTip : Resource.Resource_zh.WindowLoopTip;
+
         public string WindowBoardPosition => IsEnglish ? Resource.Resource_en.WindowBoardPosition : Resource.Resource_zh.WindowBoardPosition;
         public string WindowBoardToopTip => IsEnglish ? Resource.Resource_en.WindowBoardToopTip : Resource.Resource_zh.WindowBoardToopTip;
         public string WindowConsumablesWarehouse => IsEnglish ? Resource.Resource_en.WindowConsumablesWarehouse : Resource.Resource_zh.WindowConsumablesWarehouse;
@@ -308,6 +311,8 @@ namespace OctoFixFlow
         public string SettingManualPCROpen => IsEnglish ? Resource.Resource_en.SettingManualPCROpen : Resource.Resource_zh.SettingManualPCROpen;
         //关盖/Close Lid
         public string SettingManualPCRClose => IsEnglish ? Resource.Resource_en.SettingManualPCRClose : Resource.Resource_zh.SettingManualPCRClose;
+        //等待运行完成/Wait for Run Completion 
+        public string SettingManualPCRWaitRun => IsEnglish ? Resource.Resource_en.SettingManualPCRWaitRun : Resource.Resource_zh.SettingManualPCRWaitRun;
         //脚本选择/Script Selection
         public string SettingManualPCRSelection => IsEnglish ? Resource.Resource_en.SettingManualPCRSelection : Resource.Resource_zh.SettingManualPCRSelection;
         public string SettingManualClose => IsEnglish ? Resource.Resource_en.SettingManualClose : Resource.Resource_zh.SettingManualClose;
@@ -429,6 +434,8 @@ namespace OctoFixFlow
         public string StepDetailWellPosition => IsEnglish ? Resource.Resource_en.StepDetailWellPosition : Resource.Resource_zh.StepDetailWellPosition;
         // 体积（“Volume(ul):”/“体积(ul)：”）
         public string StepDetailVolume => IsEnglish ? Resource.Resource_en.StepDetailVolume : Resource.Resource_zh.StepDetailVolume;
+        // 推出体积（“PushOutVolume(ul):”/“推出体积(ul)：”）
+        public string StepDetailPushVolume => IsEnglish ? Resource.Resource_en.StepDetailPushVolume : Resource.Resource_zh.StepDetailPushVolume;
         // 混合次数（“Mixing Times:”/“混合次数：”）
         public string StepDetailMixCount => IsEnglish ? Resource.Resource_en.StepDetailMixCount : Resource.Resource_zh.StepDetailMixCount;
         // 混合体积（“Mixing Volumes(ul):”/“混合体积(ul)：”）
@@ -478,6 +485,8 @@ namespace OctoFixFlow
         public string MainWindowDetailUserEmpty => IsEnglish ? Resource.Resource_en.MainWindowDetailUserEmpty : Resource.Resource_zh.MainWindowDetailUserEmpty;
         // 密码为空（The password is empty）
         public string MainWindowDetailPassEmpty => IsEnglish ? Resource.Resource_en.MainWindowDetailPassEmpty : Resource.Resource_zh.MainWindowDetailPassEmpty;
+        // 设备未连接（Device not connected）
+        public string MainWindowNotConn => IsEnglish ? Resource.Resource_en.MainWindowNotConn : Resource.Resource_zh.MainWindowNotConn;
         // 当前登录：（Logged in is:）
         public string MainWindowDetailLoginIN => IsEnglish ? Resource.Resource_en.MainWindowDetailLoginIN : Resource.Resource_zh.MainWindowDetailLoginIN;
         // GRPC加载成功（GRPC loading is successful）

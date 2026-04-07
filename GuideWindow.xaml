@@ -12,7 +12,41 @@
     Topmost="True"
     WindowStyle="None"
     mc:Ignorable="d">
+    <Window.Resources>
+        <!--  加号悬浮动画：放大再回弹，匹配你要的"放大再缩小"效果  -->
+        <Storyboard
+            x:Key="PlusScaleAnimation"
+            AutoReverse="True"
+            Duration="0:0:0.3">
+            <DoubleAnimation
+                Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                To="1.3"
+                Duration="0:0:0.15" />
+            <DoubleAnimation
+                Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                To="1.3"
+                Duration="0:0:0.15" />
+        </Storyboard>
 
+        <!--  可添加板位的初始样式：淡边框、半透明，匹配"隐隐约约"的效果  -->
+        <Style x:Key="AddablePlateSlotStyle" TargetType="Border">
+            <Setter Property="BorderBrush" Value="LightGray" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Margin" Value="5" />
+            <Setter Property="Opacity" Value="0.4" />
+            <!--  初始半透明  -->
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Focusable" Value="False" />
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Opacity" Value="0.8" />
+                    <Setter Property="BorderBrush" Value="#007ACC" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
     <Grid Background="White">
         <Grid.RowDefinitions>
             <RowDefinition Height="50" />
@@ -171,7 +205,7 @@
                                                 x:Name="cmbPipette1"
                                                 Width="150"
                                                 SelectedIndex="0"
-                                                SelectionChanged="cmbPipette1_SelectionChanged" 
+                                                SelectionChanged="cmbPipette1_SelectionChanged"
                                                 Style="{StaticResource InputComboBoxStyle}">
                                                 <ComboBoxItem Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualSingleChannel}" />
                                                 <ComboBoxItem Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualEightChannel}" />
@@ -359,7 +393,7 @@
                             Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=GuideBtnDeckLayoutTitile}" />
                         <!--  模块显示区  -->
                         <GroupBox
-                            Margin="145,5,50,10"
+                            Margin="85,5,50,10"
                             FontSize="14"
                             Header="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=GuideBtnDeckLayoutModuleList}">
                             <ScrollViewer VerticalScrollBarVisibility="Auto">
@@ -461,7 +495,7 @@
                     </StackPanel>
 
                     <!--  12板位布局  -->
-                    <Grid Grid.Column="1" Margin="0,0,190,0">
+                    <Grid Grid.Column="1" Margin="0,0,85,0">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="0.2*" />
                             <RowDefinition Height="*" />
@@ -470,6 +504,7 @@
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="*" />
@@ -718,6 +753,142 @@
                                     FontSize="16"
                                     FontWeight="Bold"
                                     Text="P3" />
+                            </Grid>
+                        </Border>
+                        <Border
+                            x:Name="AddablePlate13"
+                            Grid.Row="4"
+                            Grid.Column="3"
+                            MouseEnter="AddablePlate_MouseEnter"
+                            MouseLeave="AddablePlate_MouseLeave"
+                            MouseLeftButtonDown="AddablePlate_MouseLeftButtonDown"
+                            Style="{StaticResource AddablePlateSlotStyle}"
+                            Tag="13">
+                            <Grid>
+                                <!--  初始加号  -->
+                                <TextBlock
+                                    x:Name="PlusText13"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontSize="24"
+                                    FontWeight="Bold"
+                                    Foreground="#007ACC"
+                                    RenderTransformOrigin="0.5,0.5"
+                                    Text="➕">
+                                    <TextBlock.RenderTransform>
+                                        <ScaleTransform ScaleX="1" ScaleY="1" />
+                                    </TextBlock.RenderTransform>
+                                </TextBlock>
+                                <!--  激活后显示的P13文字  -->
+                                <TextBlock
+                                    x:Name="PlateText13"
+                                    Margin="0,5,0,0"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontSize="16"
+                                    FontWeight="Bold"
+                                    Text="P13"
+                                    Visibility="Collapsed" />
+                                <!--  激活后鼠标悬浮显示的减号  -->
+                                <TextBlock
+                                    x:Name="MinusText13"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontSize="24"
+                                    FontWeight="Bold"
+                                    Foreground="#FF333333"
+                                    Text="➖"
+                                    Visibility="Collapsed" />
+                            </Grid>
+                        </Border>
+
+                        <!--  ******************** 新增2：P14可添加板位（第二行最右侧） ********************  -->
+                        <Border
+                            x:Name="AddablePlate14"
+                            Grid.Row="3"
+                            Grid.Column="3"
+                            MouseEnter="AddablePlate_MouseEnter"
+                            MouseLeave="AddablePlate_MouseLeave"
+                            MouseLeftButtonDown="AddablePlate_MouseLeftButtonDown"
+                            Style="{StaticResource AddablePlateSlotStyle}"
+                            Tag="14">
+                            <Grid>
+                                <TextBlock
+                                    x:Name="PlusText14"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontSize="24"
+                                    FontWeight="Bold"
+                                    Foreground="#007ACC"
+                                    RenderTransformOrigin="0.5,0.5"
+                                    Text="➕">
+                                    <TextBlock.RenderTransform>
+                                        <ScaleTransform ScaleX="1" ScaleY="1" />
+                                    </TextBlock.RenderTransform>
+                                </TextBlock>
+                                <TextBlock
+                                    x:Name="PlateText14"
+                                    Margin="0,5,0,0"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontSize="16"
+                                    FontWeight="Bold"
+                                    Text="P14"
+                                    Visibility="Collapsed" />
+                                <TextBlock
+                                    x:Name="MinusText14"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontSize="24"
+                                    FontWeight="Bold"
+                                    Foreground="#FF333333"
+                                    Text="➖"
+                                    Visibility="Collapsed" />
+                            </Grid>
+                        </Border>
+
+                        <!--  ******************** 新增3：P15可添加板位（第三行最右侧） ********************  -->
+                        <Border
+                            x:Name="AddablePlate15"
+                            Grid.Row="2"
+                            Grid.Column="3"
+                            MouseEnter="AddablePlate_MouseEnter"
+                            MouseLeave="AddablePlate_MouseLeave"
+                            MouseLeftButtonDown="AddablePlate_MouseLeftButtonDown"
+                            Style="{StaticResource AddablePlateSlotStyle}"
+                            Tag="15">
+                            <Grid>
+                                <TextBlock
+                                    x:Name="PlusText15"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontSize="24"
+                                    FontWeight="Bold"
+                                    Foreground="#007ACC"
+                                    RenderTransformOrigin="0.5,0.5"
+                                    Text="➕">
+                                    <TextBlock.RenderTransform>
+                                        <ScaleTransform ScaleX="1" ScaleY="1" />
+                                    </TextBlock.RenderTransform>
+                                </TextBlock>
+                                <TextBlock
+                                    x:Name="PlateText15"
+                                    Margin="0,5,0,0"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontSize="16"
+                                    FontWeight="Bold"
+                                    Text="P15"
+                                    Visibility="Collapsed" />
+                                <TextBlock
+                                    x:Name="MinusText15"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontSize="24"
+                                    FontWeight="Bold"
+                                    Foreground="#FF333333"
+                                    Text="➖"
+                                    Visibility="Collapsed" />
                             </Grid>
                         </Border>
                     </Grid>

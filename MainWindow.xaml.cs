@@ -26,6 +26,15 @@ namespace OctoFixFlow
         #region 异步后台加载3D模型
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
+            if (Properties.Settings.Default.IsRememberChecked)
+            {
+                chkRememberUser.IsChecked = true;
+                login_Name.Text = Properties.Settings.Default.RememberUserName;
+            }
+            if (Properties.Settings.Default.IsRememberDevice)
+            {
+                chkAutoLoadDevice.IsChecked = true;
+            }
             try
             {
                 string modelResourcePath = "/OctoFixFlow;component/images/QYRB-12C.fbx";
@@ -233,6 +242,31 @@ namespace OctoFixFlow
                 ShowNotification(_res.MainWindowDetailPassEmpty, NotificationControl.NotificationType.Warn);
                 return;
             }
+
+
+            Properties.Settings.Default.IsRememberDevice = chkAutoLoadDevice.IsChecked ?? false;
+            if (Properties.Settings.Default.IsRememberDevice)
+            {
+                bool isServerReachable = DatabaseService.Instance.IsMySqlServerReachable();
+                if (!isServerReachable)
+                {
+                    ShowNotification(_res.MainWindowNotConn, NotificationControl.NotificationType.Error);
+                    return;
+                }
+
+            }
+
+            Properties.Settings.Default.IsRememberChecked = chkRememberUser.IsChecked ?? false;
+            if (Properties.Settings.Default.IsRememberChecked)
+            {
+                Properties.Settings.Default.RememberUserName = login_Name.Text;
+            }
+            else
+            {
+                Properties.Settings.Default.RememberUserName = "";
+            }
+            Properties.Settings.Default.Save();
+
             MainWidget mWidget = new MainWidget();
             Application.Current.MainWindow = mWidget;
             this.Close();
@@ -245,6 +279,8 @@ namespace OctoFixFlow
         //退出按钮
         private void ExitButton_Click(object sender, RoutedEventArgs e)
         {
+            DatabaseService.Instance.Close();
+
             Application.Current.Shutdown();
         }
         // 显示引导窗口的方法
@@ -273,7 +309,6 @@ namespace OctoFixFlow
                 }
             };
 
-            // 显示引导窗口（非模态，但由于MainWidget被禁用，用户必须先完成引导）
             guideWindow.Show();
         }
         public void ShowNotification(string message, NotificationControl.NotificationType type, int duration = 3000)

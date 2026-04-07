@@ -25,9 +25,11 @@
     <None Remove="images\megarobo.png" />
     <None Remove="images\MixedHeating.png" />
     <None Remove="images\module.png" />
+    <None Remove="images\MOXI.png" />
     <None Remove="images\OctoFlow3D3.STL" />
     <None Remove="images\pause.png" />
     <None Remove="images\PCR.png" />
+    <None Remove="images\QYLogo.png" />
     <None Remove="images\QYRB-12C.fbx" />
     <None Remove="images\start.png" />
     <None Remove="images\stop.png" />
@@ -42,7 +44,13 @@
     <Resource Include="images\MegaOuLogo.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
+    <Resource Include="images\MOXI.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="images\pause.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="images\QYLogo.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
     <Resource Include="images\QYRB-12C.fbx">

@@ -67,12 +67,13 @@
 
                 <!--  Source="/OctoFixFlow;component/images/megarobo.png"  -->
                 <!--  Source="/OctoFixFlow;component/images/MegaOuLogo.png"  -->
+                <!--  Source="/OctoFixFlow;component/images/QYLogo.png"  -->
+                <!--  Source="/OctoFixFlow;component/images/MOXI.png"  -->
 
                 <Image
                     Grid.Column="0"
                     Width="180"
-                    Margin="5"
-                    Source="/OctoFixFlow;component/images/GenLogo.png"
+                    Source="/OctoFixFlow;component/images/MOXI.png"
                     Stretch="Uniform" />
                 <TextBlock
                     Grid.Column="1"
@@ -81,6 +82,7 @@
                     FontWeight="Bold"
                     Foreground="{StaticResource PrimaryColor}"
                     Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowTitle}" />
+                <!--  八通道移液工作站  -->
 
                 <StackPanel Grid.Column="2" Orientation="Horizontal">
                     <TextBlock
@@ -176,7 +178,8 @@
                         Background="#7f8c8d"
                         Click="LogoutButton_Click"
                         Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowLogOut}"
-                        Cursor="Hand" />
+                        Cursor="Hand"
+                        Visibility="Collapsed" />
                     <Button
                         Width="30"
                         Height="30"
@@ -492,6 +495,7 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <!--  动态生成12个板位  -->
                     <Border
@@ -627,6 +631,31 @@
                                 Text="P9" />
                         </Grid>
                     </Border>
+                    <!--  pe15  -->
+                    <Border
+                        x:Name="BorderGrid15"
+                        Grid.Row="2"
+                        Grid.Column="3"
+                        AllowDrop="True"
+                        DragEnter="PlateSlot_DragEnter"
+                        Drop="PlateSlot_Drop"
+                        Focusable="True"
+                        MouseEnter="PlateSlot_MouseEnter"
+                        MouseLeave="PlateSlot_MouseLeave"
+                        PreviewKeyDown="PlateSlot_PreviewKeyDown"
+                        Style="{StaticResource PlateSlotStyle}"
+                        Tag="15">
+                        <Grid x:Name="PlateGrid15">
+                            <TextBlock
+                                Margin="0,5,0,0"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Tag="BottomLayer"
+                                Text="P15" />
+                        </Grid>
+                    </Border>
                     <Border
                         Grid.Row="3"
                         Grid.Column="0"
@@ -696,6 +725,31 @@
                                 Text="P6" />
                         </Grid>
                     </Border>
+                    <!--  pe14  -->
+                    <Border
+                        x:Name="BorderGrid14"
+                        Grid.Row="3"
+                        Grid.Column="3"
+                        AllowDrop="True"
+                        DragEnter="PlateSlot_DragEnter"
+                        Drop="PlateSlot_Drop"
+                        Focusable="True"
+                        MouseEnter="PlateSlot_MouseEnter"
+                        MouseLeave="PlateSlot_MouseLeave"
+                        PreviewKeyDown="PlateSlot_PreviewKeyDown"
+                        Style="{StaticResource PlateSlotStyle}"
+                        Tag="14">
+                        <Grid x:Name="PlateGrid14">
+                            <TextBlock
+                                Margin="0,5,0,0"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Tag="BottomLayer"
+                                Text="P14" />
+                        </Grid>
+                    </Border>
                     <Border
                         Grid.Row="4"
                         Grid.Column="0"
@@ -763,6 +817,31 @@
                                 FontWeight="Bold"
                                 Tag="BottomLayer"
                                 Text="P3" />
+                        </Grid>
+                    </Border>
+                    <!--  pe13  -->
+                    <Border
+                        x:Name="BorderGrid13"
+                        Grid.Row="4"
+                        Grid.Column="3"
+                        AllowDrop="True"
+                        DragEnter="PlateSlot_DragEnter"
+                        Drop="PlateSlot_Drop"
+                        Focusable="True"
+                        MouseEnter="PlateSlot_MouseEnter"
+                        MouseLeave="PlateSlot_MouseLeave"
+                        PreviewKeyDown="PlateSlot_PreviewKeyDown"
+                        Style="{StaticResource PlateSlotStyle}"
+                        Tag="13">
+                        <Grid x:Name="PlateGrid13">
+                            <TextBlock
+                                Margin="0,5,0,0"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Tag="BottomLayer"
+                                Text="P13" />
                         </Grid>
                     </Border>
                 </Grid>
@@ -845,14 +924,36 @@
                                             </Style.Triggers>
                                         </Style>
                                     </Border.Style>
-                                    <StackPanel Margin="{Binding Level, Converter={StaticResource LevelToMarginConverter}}" Orientation="Horizontal">
+                                    <Grid Margin="{Binding Level, Converter={StaticResource LevelToMarginConverter}}">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <!--  左侧：序号+步骤名称  -->
+                                            <ColumnDefinition Width="*" />
+                                            <!--  右侧：步骤详情，占满剩余宽度  -->
+                                        </Grid.ColumnDefinitions>
+
+                                        <!--  左侧：原有步骤序号+名称，逻辑完全不变  -->
+                                        <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                            <TextBlock
+                                                Width="30"
+                                                FontWeight="Bold"
+                                                Foreground="{StaticResource PrimaryColor}"
+                                                Text="{Binding DisplayIndex}" />
+                                            <TextBlock Text="{Binding Name}" />
+                                        </StackPanel>
+
+                                        <!--  右侧：步骤详情文本，实时绑定StepDescription  -->
                                         <TextBlock
-                                            Width="30"
-                                            FontWeight="Bold"
-                                            Foreground="{StaticResource PrimaryColor}"
-                                            Text="{Binding DisplayIndex}" />
-                                        <TextBlock Text="{Binding Name}" />
-                                    </StackPanel>
+                                            Grid.Column="1"
+                                            Margin="15,0,5,0"
+                                            VerticalAlignment="Center"
+                                            FontStyle="Italic"
+                                            Foreground="#666666"
+                                            Text="{Binding StepDescription}"
+                                            TextTrimming="CharacterEllipsis" />
+
+                                        <!--  如需长文本自动换行，把上面的TextTrimming替换为：TextWrapping="Wrap"  -->
+                                    </Grid>
                                 </Border>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
@@ -864,7 +965,7 @@
         <!--  状态栏  -->
         <StatusBar Grid.Row="3" Background="{StaticResource DarkBackground}">
             <StatusBarItem>
-                <TextBlock Foreground="White" Text="Ready | " />
+                <TextBlock Foreground="White" Text="MoxiPlatform S1 | " />
             </StatusBarItem>
             <StatusBarItem>
                 <TextBlock x:Name="DateTimeText" Foreground="White" />

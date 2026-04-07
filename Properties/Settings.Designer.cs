@@ -34,5 +34,41 @@ namespace OctoFixFlow.Properties {
                 this["IsEnglish"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string RememberUserName {
+            get {
+                return ((string)(this["RememberUserName"]));
+            }
+            set {
+                this["RememberUserName"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool IsRememberChecked {
+            get {
+                return ((bool)(this["IsRememberChecked"]));
+            }
+            set {
+                this["IsRememberChecked"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool IsRememberDevice {
+            get {
+                return ((bool)(this["IsRememberDevice"]));
+            }
+            set {
+                this["IsRememberDevice"] = value;
+            }
+        }
     }
 }

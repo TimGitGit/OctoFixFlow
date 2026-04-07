@@ -159,6 +159,7 @@ namespace OctoFixFlow
                 "PCR" => res.WindowActionPCR,
                 "Transfer" => res.WindowActionTransfer,
                 "Mix" => res.WindowActionMix,
+                "Loop" => res.WindowActionLoop,
                 _ => step.Type // 未知类型默认显示原始值
             };
             // 添加通用详情标题
@@ -499,7 +500,7 @@ namespace OctoFixFlow
                 var posFromCombo = new ComboBox
                 {
                     Style = (Style)FindResource("InputComboBoxStyle"),
-                    ItemsSource = new List<string> { res.SettingManualPCRStart, res.SettingManualPCRStop, res.SettingManualPCROpen, res.SettingManualPCRClose },
+                    ItemsSource = new List<string> { res.SettingManualPCRStart, res.SettingManualPCRStop, res.SettingManualPCROpen, res.SettingManualPCRClose, res.SettingManualPCRWaitRun },
                     Width = 140,
                     VerticalAlignment = VerticalAlignment.Center
                 };
@@ -561,7 +562,7 @@ namespace OctoFixFlow
                 var posFromCombo = new ComboBox
                 {
                     Style = (Style)FindResource("InputComboBoxStyle"),
-                    ItemsSource = new List<string> { "P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "P11", "P12" },
+                    ItemsSource = new List<string> { "P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "P11", "P12", "P13", "P14", "P15" },
                     Width = 140,
                     VerticalAlignment = VerticalAlignment.Center
                 };
@@ -579,7 +580,62 @@ namespace OctoFixFlow
                 var posToCombo = new ComboBox
                 {
                     Style = (Style)FindResource("InputComboBoxStyle"),
-                    ItemsSource = new List<string> { "P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "P11", "P12" },
+                    ItemsSource = new List<string> { "P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "P11", "P12", "P13", "P14", "P15" },
+                    Width = 140,
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                var posToBinding = new Binding
+                {
+                    Source = step,
+                    Path = new PropertyPath("ToPos"),
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                };
+                posToCombo.SetBinding(ComboBox.SelectedItemProperty, posToBinding);
+
+                StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailTransferTo, posToCombo));
+                // 抓板下压距离
+                var TransferPositionTextBox = new TextBox
+                {
+                    Style = (Style)FindResource("InputTextBoxStyle"),
+                    Width = 140,
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                TransferPositionTextBox.SetBinding(TextBox.TextProperty, new Binding
+                {
+                    Source = step,
+                    Path = new PropertyPath("TransferPosition"),
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.LostFocus
+                });
+                StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailTransferPosition, TransferPositionTextBox));
+                return;
+            }
+            else if (step.Type == "Loop")//循环
+            {
+                // 起始板位
+                var posFromCombo = new ComboBox
+                {
+                    Style = (Style)FindResource("InputComboBoxStyle"),
+                    ItemsSource = new List<string> { "P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "P11", "P12", "P13", "P14", "P15" },
+                    Width = 140,
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                var posFromBinding = new Binding
+                {
+                    Source = step,
+                    Path = new PropertyPath("FromPos"),
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                };
+                posFromCombo.SetBinding(ComboBox.SelectedItemProperty, posFromBinding);
+
+                StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailTransferFrom, posFromCombo));
+                // 终止板位
+                var posToCombo = new ComboBox
+                {
+                    Style = (Style)FindResource("InputComboBoxStyle"),
+                    ItemsSource = new List<string> { "P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "P11", "P12", "P13", "P14", "P15" },
                     Width = 140,
                     VerticalAlignment = VerticalAlignment.Center
                 };
@@ -643,8 +699,6 @@ namespace OctoFixFlow
             wellSelectionCanvas.SelectedColumnsChanged += (plateId, columnText) =>
             {
                 step.WellPosition = columnText;
-                //var columns = _selectedColumnsFromText(columnText);
-                //step.SelectedColumns = string.Join(",", columns);
                 var selectedCells = _mainWidget._selectedCellsFromText(columnText);
                 step.SelectedCells = string.Join(";", selectedCells.Select(c => $"{c.Row},{c.Col}"));
 
@@ -816,7 +870,7 @@ pipetteCombo));
             // 移液器选择、体积输入（吸液/注液特有）
             if (step.Type == "Aspirate" || step.Type == "Dispense" || step.Type == "Mix")
             {
-                if (step.Type == "Aspirate" || step.Type == "Dispense")
+                if (step.Type == "Aspirate")
                 {
                     // 创建体积输入框并绑定
                     var volumeTextBox = new TextBox
@@ -824,8 +878,6 @@ pipetteCombo));
                         Style = (Style)FindResource("InputTextBoxStyle"),
                         Width = 150
                     };
-
-
 
                     var volumeBinding = new Binding
                     {
@@ -838,6 +890,46 @@ pipetteCombo));
                     volumeTextBox.SetBinding(TextBox.TextProperty, volumeBinding);
 
                     StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailVolume, volumeTextBox));
+                }
+                else if (step.Type == "Dispense")
+                {
+                    // 创建体积输入框并绑定
+                    var volumeTextBox = new TextBox
+                    {
+                        Style = (Style)FindResource("InputTextBoxStyle"),
+                        Width = 150
+                    };
+
+                    var volumeBinding = new Binding
+                    {
+                        Source = step,
+                        Path = new PropertyPath("Volume"),
+                        Mode = BindingMode.TwoWay,
+                        UpdateSourceTrigger = UpdateSourceTrigger.LostFocus
+                    };
+
+                    volumeTextBox.SetBinding(TextBox.TextProperty, volumeBinding);
+
+                    StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailVolume, volumeTextBox));
+
+                    // 创建push体积输入框并绑定
+                    var volumePushTextBox = new TextBox
+                    {
+                        Style = (Style)FindResource("InputTextBoxStyle"),
+                        Width = 150
+                    };
+
+                    var volumePushBinding = new Binding
+                    {
+                        Source = step,
+                        Path = new PropertyPath("PushOutvolume"),
+                        Mode = BindingMode.TwoWay,
+                        UpdateSourceTrigger = UpdateSourceTrigger.LostFocus
+                    };
+
+                    volumePushTextBox.SetBinding(TextBox.TextProperty, volumePushBinding);
+
+                    StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailPushVolume, volumePushTextBox));
                 }
                 else if (step.Type == "Mix")
                 {
@@ -890,6 +982,25 @@ pipetteCombo));
                     volumeMixAllCountTextBox.SetBinding(TextBox.TextProperty, volumeMixAllCountBinding);
 
                     StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailMixCount, volumeMixAllCountTextBox));
+
+                    // 创建push体积输入框并绑定
+                    var volumePushTextBox = new TextBox
+                    {
+                        Style = (Style)FindResource("InputTextBoxStyle"),
+                        Width = 150
+                    };
+
+                    var volumePushBinding = new Binding
+                    {
+                        Source = step,
+                        Path = new PropertyPath("PushOutvolume"),
+                        Mode = BindingMode.TwoWay,
+                        UpdateSourceTrigger = UpdateSourceTrigger.LostFocus
+                    };
+
+                    volumePushTextBox.SetBinding(TextBox.TextProperty, volumePushBinding);
+
+                    StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailPushVolume, volumePushTextBox));
                 }
 
                 // #################### 新增：液体参数选择与显示 ####################

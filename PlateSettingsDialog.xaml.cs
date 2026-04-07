@@ -1,4 +1,5 @@
-﻿using MySqlConnector;
+﻿using HelixToolkit.Wpf;
+using MySqlConnector;
 using System.ComponentModel;
 using System.Data;
 using System.IO;
@@ -10,6 +11,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Media3D;
 using System.Xml;
 
 namespace OctoFixFlow
@@ -61,6 +63,10 @@ namespace OctoFixFlow
         private int _tempCount = 0; // 温控模块计数器
         private List<ModuleDatas> _tempModules = new List<ModuleDatas>(); // 温控模块列表
         private float _currentJumpSize = 0.1f;
+
+        //移液器3D
+        private ContainerUIElement3D _pipetteContainer; // 用来容纳移液器的容器，方便刷新
+
         public PlateSettingsDialog(MainWidget mainWidget)
         {
             InitializeComponent();
@@ -84,10 +90,12 @@ namespace OctoFixFlow
             this.Loaded += async (s, e) =>
             {
                 await loadSqlData();
+                InitPipette3D();
+
             };
-            AddHeatingOscillModule();
-            AddMagnetModule();
-            AddTempControlModule();
+            AddHeatingOscillModule(1, "P9");
+            AddMagnetModule(1, "P6");
+            AddTempControlModule(1, "P3");
         }
         private async Task loadSqlData()
         {
@@ -192,6 +200,7 @@ namespace OctoFixFlow
                     _mainWidget.ShowNotification($"液体更新失败：{liquidNew.name} 的 {e.PropertyName} 属性", NotificationControl.NotificationType.Warn);
                 }
             }
+            RefreshPipetteModel();
         }
         //退出界面
         private void ExitSetClick(object sender, RoutedEventArgs e)
@@ -317,7 +326,7 @@ namespace OctoFixFlow
             // 订阅新实例事件
             newLiquid.PropertyChanged += LiquidNew_PropertyChanged;
             liquidNew = newLiquid;
-
+            RefreshPipetteModel();
             // 刷新UI绑定
             this.DataContext = null;
             this.DataContext = this;
@@ -823,18 +832,11 @@ namespace OctoFixFlow
                 btn.IsChecked = true;
                 _mainWidget.ShowNotification(_mainWidget._res.SettingManualGetPlate, NotificationControl.NotificationType.Info);
                 LoadPlateCoordinates("p" + plateId);
-                //if (plateId == "3")
-                //{
-                //    LoadPlateCoordinates("magnetic_1");
-                //}
-                //else if (plateId == "9")
-                //{
-                //    LoadPlateCoordinates("shaker_1");
-                //}
-                //else
-                //{
-                //    LoadPlateCoordinates("p" + plateId);
-                //}
+
+                if (int.Parse(plateId) < 4 || int.Parse(plateId) > 12)
+                    btnMoveToPlate.IsEnabled = false;
+                else
+                    btnMoveToPlate.IsEnabled = true;
             }
         }
         // 辅助方法：查找视觉子元素
@@ -1083,9 +1085,14 @@ namespace OctoFixFlow
 
             StringBuilder pythonCode = new StringBuilder();
             pythonCode.AppendLine("from arm import Arm");
-            pythonCode.AppendLine("Arm.reset(1,{'z'})");
+            if (jumpZButton.IsChecked == true)
+                pythonCode.AppendLine("Arm.reset(1,{'z'})");
+            else if (jumpZ2Button.IsChecked == true)
+                pythonCode.AppendLine("Arm.reset(2,{'z'})");
+            else if (jumpZ3Button.IsChecked == true)
+                pythonCode.AppendLine("Arm.reset(3,{'z'})");
 
-            var rawZResetFlag = await _mainWidget.ScriptDebugAsync(pythonCode.ToString());//复位y
+            var rawZResetFlag = await _mainWidget.ScriptDebugAsync(pythonCode.ToString());//复位Z
             var zResetFlag = _mainWidget.ParseScriptDebugResponse(rawZResetFlag);
             if (zResetFlag != null)
             {
@@ -1463,15 +1470,14 @@ namespace OctoFixFlow
             TopSettingPopup.Show(4, "PCR_1", 1);
         }
 
-        private void AddHeatingOscillModule()
+        private void AddHeatingOscillModule(int nowId, string nowPlate)//"P1" 
         {
             _heatingOscillCount++;
-            var newModule = new ModuleDatas { Name = $"shaker_{_heatingOscillCount}", Type = 5, PlatePosition = "P1" };
+            var newModule = new ModuleDatas { Name = $"shaker_{nowId}", Type = 5, PlatePosition = nowPlate };
             _heatingOscillModules.Add(newModule);
 
             var rowPanel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 5) };
 
-            // 1. 名称（shaker_1、shaker_2...）
             var nameText = new TextBlock
             {
                 Text = $"shaker_{_heatingOscillCount}",
@@ -1482,26 +1488,17 @@ namespace OctoFixFlow
             };
             rowPanel.Children.Add(nameText);
 
-            // 2. 板位下拉框（P1-P12）
-            var plateCombo = new ComboBox
+            var plateTextBox = new TextBox
             {
                 Margin = new Thickness(5, 0, 0, 0),
-                Style = (Style)FindResource("InputComboBoxStyle")
+                Text = nowPlate,
+                IsReadOnly = true,
+                Width = 60,
+                Style = (Style)FindResource("InputTextBoxStyle")
             };
-            // 添加P1-P12选项
-            for (int i = 1; i <= 12; i++)
-            {
-                plateCombo.Items.Add(new ComboBoxItem { Content = $"P{i}" });
-            }
-            plateCombo.SelectedIndex = 0;
 
-            plateCombo.SelectionChanged += (s, e) =>
-            {
-                newModule.PlatePosition = (plateCombo.SelectedItem as ComboBoxItem)?.Content.ToString();
-            };
-            rowPanel.Children.Add(plateCombo);
+            rowPanel.Children.Add(plateTextBox);
 
-            // 3. 编辑按钮
             var editBtn = new Button
             {
                 Width = 30,
@@ -1516,7 +1513,6 @@ namespace OctoFixFlow
             editBtn.Content = new System.Windows.Shapes.Path
             {
                 Data = Geometry.Parse("M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"),
-                //Fill = (SolidColorBrush)(new BrushConverter().ConvertFrom("#048B46")),
                 Fill = primaryColorBrush,
                 Stretch = Stretch.Uniform
             };
@@ -1526,20 +1522,18 @@ namespace OctoFixFlow
             };
             rowPanel.Children.Add(editBtn);
 
-            // 将行添加到容器
             heatingOscillContainer.Children.Add(rowPanel);
         }
         //磁吸模块添加
-        private void AddMagnetModule()
+        private void AddMagnetModule(int nowId, string nowPlate)
         {
             _magneticCount++;
-            var newModule = new ModuleDatas { Name = $"magnetic_{_magneticCount}", Type = 6, PlatePosition = "P1" };
+            var newModule = new ModuleDatas { Name = $"magnetic_{nowId}", Type = 6, PlatePosition = nowPlate };
 
             _magneticModules.Add(newModule);
 
             var rowPanel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 5) };
 
-            // 1. 名称（magnetic_1、magnetic_2...）
             var nameText = new TextBlock
             {
                 Text = $"magnetic_{_magneticCount}",
@@ -1550,26 +1544,17 @@ namespace OctoFixFlow
             };
             rowPanel.Children.Add(nameText);
 
-            // 2. 板位下拉框（P1-P12）
-            var plateCombo = new ComboBox
+            var plateTextBox = new TextBox
             {
                 Margin = new Thickness(5, 0, 0, 0),
-                Style = (Style)FindResource("InputComboBoxStyle")
+                Text = nowPlate,
+                IsReadOnly = true,
+                Width = 60,
+                Style = (Style)FindResource("InputTextBoxStyle")
             };
-            // 添加P1-P12选项
-            for (int i = 1; i <= 12; i++)
-            {
-                plateCombo.Items.Add(new ComboBoxItem { Content = $"P{i}" });
-            }
-            plateCombo.SelectedIndex = 0;
 
-            plateCombo.SelectionChanged += (s, e) =>
-            {
-                newModule.PlatePosition = (plateCombo.SelectedItem as ComboBoxItem)?.Content.ToString();
-            };
-            rowPanel.Children.Add(plateCombo);
+            rowPanel.Children.Add(plateTextBox);
 
-            // 3. 编辑按钮
             var editBtn = new Button
             {
                 Width = 30,
@@ -1593,11 +1578,10 @@ namespace OctoFixFlow
             };
             rowPanel.Children.Add(editBtn);
 
-            // 将行添加到容器
             magnetContainer.Children.Add(rowPanel);
         }
         //温控模块添加
-        private void AddTempControlModule()
+        private void AddTempControlModule(int nowId, string nowPlate)
         {
             _tempCount++;
             var newModule = new ModuleDatas { Name = $"tempctrl_{_tempCount}", Type = 7, PlatePosition = "P1" };
@@ -1605,7 +1589,6 @@ namespace OctoFixFlow
 
             var rowPanel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 5) };
 
-            // 1. 名称（tempctrl_1、tempctrl_2...）
             var nameText = new TextBlock
             {
                 Text = $"tempctrl_{_tempCount}",
@@ -1616,26 +1599,16 @@ namespace OctoFixFlow
             };
             rowPanel.Children.Add(nameText);
 
-            // 2. 板位下拉框（P1-P12）
-            var plateCombo = new ComboBox
+            var plateTextBox = new TextBox
             {
                 Margin = new Thickness(5, 0, 0, 0),
-                Style = (Style)FindResource("InputComboBoxStyle")
+                Text = nowPlate,
+                IsReadOnly = true,
+                Width = 60,
+                Style = (Style)FindResource("InputTextBoxStyle")
             };
-            // 添加P1-P12选项
-            for (int i = 1; i <= 12; i++)
-            {
-                plateCombo.Items.Add(new ComboBoxItem { Content = $"P{i}" });
-            }
-            plateCombo.SelectedIndex = 0;
+            rowPanel.Children.Add(plateTextBox);
 
-            plateCombo.SelectionChanged += (s, e) =>
-            {
-                newModule.PlatePosition = (plateCombo.SelectedItem as ComboBoxItem)?.Content.ToString();
-            };
-            rowPanel.Children.Add(plateCombo);
-
-            // 3. 编辑按钮
             var editBtn = new Button
             {
                 Width = 30,
@@ -1660,13 +1633,280 @@ namespace OctoFixFlow
             };
             rowPanel.Children.Add(editBtn);
 
-            // 将行添加到容器
             tempControlContainer.Children.Add(rowPanel);
         }
 
 
         #endregion
 
+        #region  移液器3D
+        private void InitPipette3D()
+        {
+            _pipetteContainer = new ContainerUIElement3D();
+            Pipette3DView.Children.Add(_pipetteContainer);
+
+            RefreshPipetteModel();
+        }
+        // 核心方法：刷新移液器模型（参数变化时调用）
+        private void RefreshPipetteModel()
+        {
+            if (_pipetteContainer == null) return;
+            _pipetteContainer.Children.Clear();
+
+            const float tipMaxCapacity = 1000f;
+            float preAir = liquidNew?.aisAirB ?? 0f;    // 前吸空气
+            float postAir = liquidNew?.aisAirA ?? 0f;  // 后吸空气
+            float liquidVol = tipMaxCapacity - preAir - postAir;
+            if (liquidVol < 0) liquidVol = 0;
+            if (preAir < 0) preAir = 0;
+            if (postAir < 0) postAir = 0;
+
+            var config = new PlateConfig
+            {
+                GTopHeight = 5.87,       // 挂台高度 (对应你 liquidNew 里的某个参数)
+                TopRadius = 3.4,          // 挂台半径
+                PassageTopRadius = 3.09,  // 通道顶半径
+                PassageHeight = 62.36,    // 通道高度
+                TailConeRadius = 2.6,     // 尾锥底半径
+                TailConeHeight = 27.98,   // 尾锥高度
+                TailEndRadiu = 0.5,       // 吸尖半径
+                FilterinHeight = 77.20,   // 滤芯所在高度
+                FilterHeight = 3.48        // 滤芯高度
+            };
+
+            // 2. 生成移液器 (0,0,0 为中心，放在容器里)
+            CreateLiquidColumn(config, preAir, postAir, liquidVol, tipMaxCapacity, 0, 0, 0, _pipetteContainer);
+
+
+            CreatePipetteInTab(config, 0, 0, 0, _pipetteContainer);
+
+
+            // 3. 稍微放大一点，方便观察
+            _pipetteContainer.Transform = new ScaleTransform3D(1.5, 1.5, 1.5, 0, 0, 0);
+        }
+
+        // 复用你 MainWindow 里的 CreateDynamicPipette 逻辑 (简化版)
+        private void CreatePipetteInTab(PlateConfig config, double offsetX, double offsetY, double offsetZ, ContainerUIElement3D container)
+        {
+            if (config == null) return;
+
+            // 材质：半透明塑料
+            Color plasticColor = Color.FromRgb(240, 240, 240);
+            Material tipMaterial = CreateTransparentPlastic(plasticColor, 180);
+            Material filterMaterial = MaterialHelper.CreateMaterial(Colors.Red); // 滤芯红色
+
+            double topRadius = config.TopRadius;
+            double topHeight = config.GTopHeight;
+            double passageRadius = config.PassageTopRadius;
+            double passageHeight = config.PassageHeight;
+            double tailConeRadius = config.TailConeRadius;
+            double tailConeHeight = config.TailConeHeight;
+            double tailEndRadiu = config.TailEndRadiu;
+            double filterinHeight = config.FilterinHeight;
+            double filterHeight = config.FilterHeight;
+
+            double currentZ = topHeight + passageHeight + tailConeHeight;
+
+            // 1. 顶部挂台
+            Point3D t1 = new Point3D(offsetX, offsetY, currentZ + offsetZ);
+            Point3D t2 = new Point3D(offsetX, offsetY, currentZ - topHeight + offsetZ);
+            container.Children.Add(AddCone(t1, t2, topRadius, topRadius, tipMaterial));
+            currentZ -= topHeight;
+
+            // 2. 中间通道
+            Point3D t3 = new Point3D(offsetX, offsetY, currentZ + offsetZ);
+            Point3D t4 = new Point3D(offsetX, offsetY, currentZ - passageHeight + offsetZ);
+            container.Children.Add(AddCone(t3, t4, passageRadius, tailConeRadius, tipMaterial));
+            currentZ -= passageHeight;
+
+            // 3. 尾部锥尖
+            Point3D t5 = new Point3D(offsetX, offsetY, currentZ + offsetZ);
+            Point3D t6 = new Point3D(offsetX, offsetY, currentZ - tailConeHeight + offsetZ);
+            container.Children.Add(AddCone(t5, t6, tailConeRadius, tailEndRadiu, tipMaterial));
+
+            // 4. 中间滤芯 (红色)
+            Point3D filterPos = new Point3D(offsetX, offsetY, filterinHeight + offsetZ);
+            double filterAvgR = CalculateFilterAverageRadius(
+                passageHeight, tailConeRadius, passageRadius,
+                filterinHeight - tailConeHeight, filterHeight) - 0.5;
+
+            container.Children.Add(AddCone(
+                filterPos,
+                new Point3D(filterPos.X, filterPos.Y, filterPos.Z + filterHeight),
+                filterAvgR, filterAvgR, filterMaterial));
+        }
+
+
+        private Material CreateTransparentPlastic(Color color, byte opacity = 120)
+        {
+            Color transparentColor = Color.FromArgb(opacity, color.R, color.G, color.B);
+            MaterialGroup group = new MaterialGroup();
+            group.Children.Add(new DiffuseMaterial(new SolidColorBrush(transparentColor)));
+            group.Children.Add(new SpecularMaterial(Brushes.White, 80));
+            return group;
+        }
+
+        private TruncatedConeVisual3D AddCone(Point3D p1, Point3D p2, double baseRadius, double topRadius, Material mat, int thetaDiv = 40)
+        {
+            Vector3D direction = p2 - p1;
+            double height = direction.Length;
+            direction.Normalize();
+
+            return new TruncatedConeVisual3D
+            {
+                Origin = p1,
+                Normal = direction,
+                Height = height,
+                BaseRadius = baseRadius,
+                TopRadius = topRadius,
+                Material = mat,
+                BackMaterial = mat,
+                ThetaDiv = thetaDiv
+            };
+        }
+
+        static double CalculateFilterAverageRadius(double pipeTotalHeight, double pipeMinRadius, double pipeMaxRadius, double filterBottomHeight, double filterHeight)
+        {
+            double slope = (pipeMaxRadius - pipeMinRadius) / pipeTotalHeight;
+            double rBottom = pipeMinRadius + slope * filterBottomHeight;
+            double rTop = pipeMinRadius + slope * (filterBottomHeight + filterHeight);
+            return (rBottom + rTop) / 2;
+        }
+        #endregion
+        #region 画水柱
+        //private void CreateLiquidColumn(PlateConfig config, float preAirVol, float postAirVol, float liquidVol, float tipMaxCapacity,
+        //    double offsetX, double offsetY, double offsetZ, ContainerUIElement3D container)
+        //{
+        //    // 1. 材质定义：液体蓝色，气封灰色
+        //    Color liquidColor = Color.FromRgb(74, 144, 226);
+        //    Material liquidMaterial = CreateTransparentPlastic(liquidColor, 200);
+        //    Color airColor = Color.FromRgb(160, 160, 160);
+        //    Material airMaterial = CreateTransparentPlastic(airColor, 120);
+
+        //    // 2. 枪头Z轴坐标系（从顶部往下画）
+        //    double passageTopZ = config.PassageHeight + config.TailConeHeight; // 液体上限（滤芯下方）
+        //    double tipTipZ = 0; // 枪头尖端（最底部）
+        //    double maxFillHeight = passageTopZ - tipTipZ; // 枪头可填充的总物理高度
+
+        //    // 3. 计算比例：1μL对应多少毫米高度
+        //    double heightPerUl = maxFillHeight / tipMaxCapacity;
+
+        //    // 4. 计算各部分的物理高度
+        //    double preAirHeight = preAirVol * heightPerUl;
+        //    double liquidHeight = liquidVol * heightPerUl;
+        //    double postAirHeight = postAirVol * heightPerUl;
+
+        //    // 5. 开始绘制（使用 currentZ 从顶部往下移动）
+        //    double currentZ = passageTopZ + offsetZ;
+
+        //    // --- 绘制前导气封 (最顶部，灰色) ---
+        //    if (preAirVol > 0.01)
+        //    {
+        //        double topZ = currentZ;
+        //        double bottomZ = currentZ - preAirHeight;
+
+        //        double rTop = GetRadiusAtZ(config, topZ - offsetZ);
+        //        double rBottom = GetRadiusAtZ(config, bottomZ - offsetZ);
+
+        //        container.Children.Add(AddCone(
+        //            new Point3D(offsetX, offsetY, bottomZ),
+        //            new Point3D(offsetX, offsetY, topZ),
+        //            rBottom, rTop, airMaterial));
+
+        //        currentZ = bottomZ; // 画完后，下移到气封底部
+        //    }
+
+        //    // --- 绘制液体柱 (中间，蓝色) ---
+        //    if (liquidVol > 0.01)
+        //    {
+        //        double topZ = currentZ;
+        //        double bottomZ = currentZ - liquidHeight;
+
+        //        double rTop = GetRadiusAtZ(config, topZ - offsetZ);
+        //        double rBottom = GetRadiusAtZ(config, bottomZ - offsetZ);
+
+        //        container.Children.Add(AddCone(
+        //            new Point3D(offsetX, offsetY, bottomZ),
+        //            new Point3D(offsetX, offsetY, topZ),
+        //            rBottom, rTop, liquidMaterial));
+
+        //        currentZ = bottomZ; // 画完后，下移到液体底部
+        //    }
+
+        //    // --- 绘制后导气封 (最底部，灰色，靠近枪尖) ---
+        //    if (postAirVol > 0.01)
+        //    {
+        //        double topZ = currentZ;
+        //        // 确保不会画到枪尖外面去
+        //        double bottomZ = Math.Max(currentZ - postAirHeight, tipTipZ + offsetZ);
+
+        //        double rTop = GetRadiusAtZ(config, topZ - offsetZ);
+        //        double rBottom = GetRadiusAtZ(config, bottomZ - offsetZ);
+
+        //        container.Children.Add(AddCone(
+        //            new Point3D(offsetX, offsetY, bottomZ),
+        //            new Point3D(offsetX, offsetY, topZ),
+        //            rBottom, rTop, airMaterial));
+        //    }
+        //}
+        private void CreateLiquidColumn(PlateConfig config, float preAirVol, float postAirVol, float liquidVol, float tipMaxCapacity,
+    double offsetX, double offsetY, double offsetZ, ContainerUIElement3D container)
+        {
+            // 没有液体就什么都不画
+            if (liquidVol <= 0.01f) return;
+
+            // 1. 实心液体材质（最后一个参数是透明度，255=完全实心不透明）
+            Color liquidColor = Color.FromRgb(74, 144, 226);
+            Material solidLiquidMaterial = CreateTransparentPlastic(liquidColor, 230);
+
+            // 2. 枪头坐标系
+            double passageTopZ = config.PassageHeight + config.TailConeHeight; // 液体最高不能超过滤芯
+            double tipTipZ = 0; // 枪头最尖端
+            double heightPerUl = (passageTopZ - tipTipZ) / tipMaxCapacity; // 1μL对应多少毫米
+
+            // 3. 【核心】只计算液体的上下边界，空气完全不画
+            double liquidTop = passageTopZ + offsetZ - preAirVol * heightPerUl;  // 液体顶部 = 滤芯下方 - 前气封高度
+            double liquidBottom = liquidTop - liquidVol * heightPerUl;          // 液体底部 = 液体顶部 - 液体高度
+            liquidBottom = Math.Max(liquidBottom, tipTipZ + offsetZ);           // 边界保护：不能低于枪尖
+
+            // 4. 只画一个实心液体柱！没有任何重叠，彻底解决闪烁
+            double rTop = GetRadiusAtZ(config, liquidTop - offsetZ);
+            double rBottom = GetRadiusAtZ(config, liquidBottom - offsetZ);
+
+            container.Children.Add(AddCone(
+                new Point3D(offsetX, offsetY, liquidBottom),
+                new Point3D(offsetX, offsetY, liquidTop),
+                rBottom, rTop, solidLiquidMaterial));
+        }
+        /// <summary>
+        /// 计算截锥体积（单位：μL，1cm³=1000μL）
+        /// </summary>
+        private double CalculateTruncatedConeVolume(double r1, double r2, double height)
+        {
+            // 体积公式：V = (1/3)πh(R² + Rr + r²)，单位转换为μL
+            double volumeCm3 = (1.0 / 3.0) * Math.PI * height / 10 * (Math.Pow(r1 / 10, 2) + (r1 / 10) * (r2 / 10) + Math.Pow(r2 / 10, 2));
+            return volumeCm3 * 1000; // 转换为μL
+        }
+
+        /// <summary>
+        /// 根据Z坐标获取枪头对应位置的半径（适配锥度）
+        /// </summary>
+        private double GetRadiusAtZ(PlateConfig config, double z)
+        {
+            if (z <= 0) return config.TailEndRadiu; // 尖端以下
+            if (z <= config.TailConeHeight) // 尾锥部分
+            {
+                double ratio = z / config.TailConeHeight;
+                return config.TailEndRadiu + ratio * (config.TailConeRadius - config.TailEndRadiu);
+            }
+            if (z <= config.TailConeHeight + config.PassageHeight) // 通道部分
+            {
+                double ratio = (z - config.TailConeHeight) / config.PassageHeight;
+                return config.TailConeRadius + ratio * (config.PassageTopRadius - config.TailConeRadius);
+            }
+            return config.PassageTopRadius; // 通道以上
+        }
+        #endregion
 
     }
 }

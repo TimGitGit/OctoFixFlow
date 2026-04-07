@@ -249,6 +249,9 @@
   <data name="MainWindowDetailUserEmpty" xml:space="preserve">
     <value>用户名为空</value>
   </data>
+  <data name="MainWindowNotConn" xml:space="preserve">
+    <value>设备未连接</value>
+  </data>
   <data name="OpenFileDialog_Empty" xml:space="preserve">
     <value>选择的文件为空</value>
   </data>
@@ -765,6 +768,9 @@
   <data name="SettingManualPCRStop" xml:space="preserve">
     <value>停止运行</value>
   </data>
+  <data name="SettingManualPCRWaitRun" xml:space="preserve">
+    <value>等待运行完成</value>
+  </data>
   <data name="SettingManualPipetteControl" xml:space="preserve">
     <value>移液器控制</value>
   </data>
@@ -990,6 +996,9 @@
   <data name="StepDetailPCRprocedure" xml:space="preserve">
     <value>PCR动作</value>
   </data>
+  <data name="StepDetailPushVolume" xml:space="preserve">
+    <value>推出体积(ul)：</value>
+  </data>
   <data name="StepDetailRowPrefix" xml:space="preserve">
     <value>行：</value>
   </data>
@@ -1155,6 +1164,9 @@
   <data name="WindowLogOut" xml:space="preserve">
     <value>登出</value>
   </data>
+  <data name="WindowLoopTip" xml:space="preserve">
+    <value>不支持循环嵌套</value>
+  </data>
   <data name="WindowOneclickdeletion" xml:space="preserve">
     <value>清除</value>
   </data>
@@ -1171,7 +1183,7 @@
     <value>步骤详情</value>
   </data>
   <data name="WindowTitle" xml:space="preserve">
-    <value>八通道移液工作站</value>
+    <value>高通量蛋白纯化工作站</value>
   </data>
   <data name="WindowUser" xml:space="preserve">
     <value>当前用户 :</value>

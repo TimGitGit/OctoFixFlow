@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -14,10 +15,12 @@ namespace OctoFixFlow
     }
     public class ConsumableCanvas : Canvas
     {
-        //选中的孔集合（排序去重）
+        //选中的孔集合
         private SortedSet<(int Row, int Col)> _selectedCells = new SortedSet<(int, int)>();
-        // 画布选择模式（单通道选单元格/八通道选整列）
 
+        // 8通道模式下的行偏移量（错位插枪头）
+        private int _columnRowOffset = 0;
+        private int _selectedRowCount = 8;
         public CanvasSelectionMode CurrentSelectionMode { get; set; } = CanvasSelectionMode.SingleCell;
 
         public bool IsInteractive { get; set; } = false;
@@ -89,7 +92,6 @@ namespace OctoFixFlow
 
             //绘制孔
             DrawAllHoles(dc, holePen, selectedCellPen, scale, offsetX, offsetY);
-
         }
 
         private PathGeometry DrawConsumableOutline(double scale, double offsetX, double offsetY)
@@ -185,7 +187,6 @@ namespace OctoFixFlow
             if (ConsData.numRows <= 0 || ConsData.numColumns <= 0)
                 return;
 
-            // 核心参数（与Qt变量对应）
             int m_cols = ConsData.numColumns;
             int m_rows = ConsData.numRows;
             double m_a1Distance = ConsData.distanceRowY; // 对应Qt的m_a1Distance
@@ -194,8 +195,8 @@ namespace OctoFixFlow
             double rowSpacing = ConsData.distanceRow * scale;   // 行间距（缩放后）
             var primaryBrush = (SolidColorBrush)FindResource("SuspendColor");
             Brush selectedFillBrush = primaryBrush;       // 选中列的孔填充色
-            Brush normalFillBrush = Brushes.Transparent;    // 未选中列的孔填充色（透明不遮挡背景）
-            // 1. TIP类型耗材（对应Qt的m_Type == 4）
+            Brush normalFillBrush = Brushes.Transparent;    // 未选中列的孔填充色（透明）
+            //TIP类型耗材
             if (ConsData.type == 4)
             {
                 double tipRadius = ConsData.TIPMAXRadius * scale;
@@ -203,26 +204,24 @@ namespace OctoFixFlow
                 {
                     for (int col = 0; col < m_cols; col++)
                     {
-                        // 计算孔中心坐标（与Qt逻辑完全对应）
+                        // 计算孔中心坐标
                         double centerX = offsetX + m_a1Distance * scale + col * colSpacing;
                         double centerY = offsetY + m_gap * scale + row * rowSpacing;
 
                         // 选中列的画笔
-                        //bool isColumnSelected = _selectedColumns.Contains(col + 1);
                         bool isCellSelected = _selectedCells.Contains((row + 1, col + 1));
 
                         Brush currentFillBrush = isCellSelected ? selectedFillBrush : normalFillBrush;
                         Pen currentPen = isCellSelected ? selectedPen : normalPen;
                         // 绘制圆孔
                         dc.DrawEllipse(currentFillBrush, currentPen, new Point(centerX, centerY), tipRadius, tipRadius);
-
                     }
                 }
                 return;
             }
 
             // 2. 非TIP类型耗材（区分圆孔和矩形孔）
-            if (ConsData.topShape == 0) // 圆孔（对应Qt的nowShope == 0）
+            if (ConsData.topShape == 0) // 圆孔
             {
                 double radius = ConsData.topRadius * scale;
                 for (int row = 0; row < m_rows; row++)
@@ -232,7 +231,6 @@ namespace OctoFixFlow
                         double centerX = offsetX + m_a1Distance * scale + col * colSpacing;
                         double centerY = offsetY + m_gap * scale + row * rowSpacing;
                         // 判断选中状态，切换填充和画笔
-                        //bool isColumnSelected = _selectedColumns.Contains(col + 1);
                         bool isCellSelected = _selectedCells.Contains((row + 1, col + 1));
                         Brush currentFillBrush = isCellSelected ? selectedFillBrush : normalFillBrush;
                         Pen currentPen = isCellSelected ? selectedPen : normalPen;
@@ -240,7 +238,7 @@ namespace OctoFixFlow
                     }
                 }
             }
-            else if (ConsData.topShape == 1) // 矩形孔（对应Qt的nowShope == 1）
+            else if (ConsData.topShape == 1) // 矩形孔
             {
                 double rectWidth = ConsData.topUpperX * scale;
                 double rectHeight = ConsData.topUpperY * scale;
@@ -248,7 +246,7 @@ namespace OctoFixFlow
                 {
                     for (int col = 0; col < m_cols; col++)
                     {
-                        // 计算矩形中心坐标（与Qt逻辑一致）
+                        // 计算矩形中心坐标
                         double centerX = offsetX + m_a1Distance * scale + col * colSpacing;
                         double centerY = offsetY + m_gap * scale + row * rowSpacing;
 
@@ -256,25 +254,135 @@ namespace OctoFixFlow
                         double left = centerX - rectWidth / 2;
                         double top = centerY - rectHeight / 2;
 
-                        //bool isColumnSelected = _selectedColumns.Contains(col + 1);
                         bool isCellSelected = _selectedCells.Contains((row + 1, col + 1));
                         Brush currentFillBrush = isCellSelected ? selectedFillBrush : normalFillBrush;
                         Pen currentPen = isCellSelected ? selectedPen : normalPen;
 
                         // 绘制矩形孔
                         dc.DrawRectangle(currentFillBrush, currentPen, new Rect(left, top, rectWidth, rectHeight));
-
                     }
                 }
             }
         }
 
+        // 【新增】重写鼠标滚轮事件，处理8通道错位
+        protected override void OnMouseWheel(MouseWheelEventArgs e)
+        {
+            base.OnMouseWheel(e);
+
+            // 只有在8通道模式且当前有选中的列时才响应滚轮
+            if (CurrentSelectionMode != CanvasSelectionMode.EntireColumn ||
+                _selectedCells.Count == 0 ||
+                ConsData == null) return;
+
+            int currentCol = _selectedCells.First().Col;
+
+            // 计算该耗材下的“满通道数”（如果耗材超过8行就按8行算，没超过就按实际行数算）
+            int fullChannelCount = Math.Min(8, ConsData.numRows);
+
+            // 滚轮向上 (e.Delta > 0)：想往上看 / 减少选中行数
+            if (e.Delta > 0)
+            {
+                // 1. 优先尝试减少偏移量（如果还在错位状态，先回正）
+                if (_columnRowOffset > 0)
+                {
+                    _columnRowOffset--;
+                }
+                // 2. 偏移量已经是0了，开始减少选中的行数（例如 1~8 变成 1~7）
+                else
+                {
+                    if (_selectedRowCount > 1) // 最少保留1行
+                    {
+                        _selectedRowCount--;
+                    }
+                }
+            }
+            // 滚轮向下 (e.Delta < 0)：想往下看 / 增加选中行数
+            else
+            {
+                // 1. 优先尝试恢复行数（如果之前行数被减少了，先补回8行）
+                if (_selectedRowCount < fullChannelCount)
+                {
+                    _selectedRowCount++;
+                }
+                // 2. 行数已经满了，开始增加偏移量（例如 1~8 变成 2~9）
+                else
+                {
+                    // 【核心边界限制】计算最大偏移量：
+                    // 公式：(起始行1 + 偏移量) + (总行数 - 1) <= 耗材总行数
+                    // 简化：偏移量 <= 耗材总行数 - 当前选中行数
+                    //int maxAllowOffset = ConsData.numRows - _selectedRowCount;
+
+                    if (_columnRowOffset < (ConsData.numRows - 1))
+                    {
+                        _columnRowOffset++;
+                    }
+
+                }
+            }
+            Debug.WriteLine(_columnRowOffset + "[]" + _selectedRowCount);
+            // 重新生成选中的孔
+            _selectedCells.Clear();
+            for (int r = 1; r <= _selectedRowCount; r++)
+            {
+                int targetRow = r + _columnRowOffset;
+                // 这里的二次保险虽然有了maxAllowOffset，但为了安全还是保留
+                if (targetRow >= 1 && targetRow <= ConsData.numRows)
+                {
+                    _selectedCells.Add((targetRow, currentCol));
+                }
+            }
+
+            InvalidateVisual();
+            SelectedColumnsChanged?.Invoke(PlateId, FormatSelectedColumns());
+
+            //// 获取当前选中的列
+            //int currentCol = _selectedCells.First().Col;
+
+            //// 计算偏移量：滚轮向上(e.Delta>0)，偏移量减小(往上错)；反之增大
+            //// 注意：WPF默认滚轮向上是正，向下是负，可根据实际手感调整
+            //int delta = e.Delta > 0 ? -1 : 1;
+            //int newOffset = _columnRowOffset + delta;
+
+            //// 计算最大允许偏移量 (假设是8通道，总行数 - 8)
+            //// 如果耗材不是8行，这里动态计算
+            ////int channelCount = 8;
+            ////int maxOffset = ConsData.numRows - channelCount;
+            //int maxOffset = ConsData.numRows;
+            //// 限制偏移量范围：0 <= offset <= maxOffset
+            //if (newOffset < 0) newOffset = 0;
+            //if (newOffset > maxOffset) newOffset = maxOffset;
+
+            //// 如果偏移量没变化，不执行操作
+            //if (newOffset == _columnRowOffset) return;
+
+            //_columnRowOffset = newOffset;
+
+            //// 重新生成选中的孔
+            //_selectedCells.Clear();
+            //for (int r = 1; r <= maxOffset; r++)
+            //{
+            //    int targetRow = r + _columnRowOffset;
+            //    // 确保行号不越界
+            //    if (targetRow >= 1 && targetRow <= ConsData.numRows)
+            //    {
+            //        _selectedCells.Add((targetRow, currentCol));
+            //    }
+            //}
+
+            //InvalidateVisual();
+            //SelectedColumnsChanged?.Invoke(PlateId, FormatSelectedColumns());
+        }
 
         protected override void OnMouseDown(MouseButtonEventArgs e)
         {
             base.OnMouseDown(e);
             if (!IsInteractive || ConsData == null || ConsData.numColumns <= 0)
                 return;
+
+            // 点击时重置偏移量（每次重新点击列，都从第1行开始）
+            _columnRowOffset = 0;
+            _selectedRowCount = Math.Min(8, ConsData.numRows);
 
             // 计算缩放因子（与绘制时完全一致）
             double scaleX = ActualWidth / (ConsData.labL + 20);
@@ -289,27 +397,17 @@ namespace OctoFixFlow
             // 计算有效点击区域（与绘制时的列间距完全对应）
             double colStartX = offsetX + ConsData.distanceRowY * scale; // 对应m_a1Distance的X起点
             double colSpacing = ConsData.distanceColumn * scale; // 与绘制时的列间距一致
-            double colEndX = colStartX + ConsData.numColumns * colSpacing;
 
             double rowStartY = offsetY + ConsData.distanceColumnX * scale; // 行起点Y（对应原有m_gap）
             double rowSpacing = ConsData.distanceRow * scale;             // 行间距
-            double rowEndY = rowStartY + ConsData.numRows * rowSpacing;
 
-            // 检查点击是否在有效列区域内
-            //if (mousePos.X >= startX - colSpacing * 0.1 && mousePos.X <= endX + colSpacing * 0.1)
-            //{
-            // 计算选中的列（核心修正：使用Math.Round避免浮点数精度问题）
-            //double rawColumn = (mousePos.X - startX) / colSpacing;
-            //int column = (int)Math.Round(rawColumn) + 1; // 四舍五入减少误差
-            //                                             // 强制限制列号在有效范围内（1 ~ 最大列数）
-            //column = Math.Clamp(column, 1, ConsData.numColumns);
             double rawCol = (mousePos.X - colStartX) / colSpacing;
             int col = Math.Clamp((int)Math.Round(rawCol) + 1, 1, ConsData.numColumns);
             double rawRow = (mousePos.Y - rowStartY) / rowSpacing;
             int row = Math.Clamp((int)Math.Round(rawRow) + 1, 1, ConsData.numRows);
+
             // 单选逻辑：先清空所有选中列，再添加当前列
             _selectedCells.Clear();
-            //_selectedCells.Add((row, col));
             if (CurrentSelectionMode == CanvasSelectionMode.EntirePlate)
             {
                 // 96通道：选中所有行+所有列（整板）
@@ -323,10 +421,20 @@ namespace OctoFixFlow
             }
             else if (CurrentSelectionMode == CanvasSelectionMode.EntireColumn)
             {
-                // 八通道：选中整列（当前列的所有行）
-                for (int r = 1; r <= ConsData.numRows; r++)
+                // 八通道：选中整列
+                //for (int r = 1; r <= ConsData.numRows; r++)
+                //{
+                //    _selectedCells.Add((r, col));
+                //}
+                int channelCount = 8; // 默认8通道
+                for (int r = 1; r <= channelCount; r++)
                 {
-                    _selectedCells.Add((r, col));
+                    // 实际行号 = 循环序号(1-8) + 偏移量(0)
+                    int targetRow = r + _columnRowOffset;
+                    if (targetRow >= 1 && targetRow <= ConsData.numRows)
+                    {
+                        _selectedCells.Add((targetRow, col));
+                    }
                 }
             }
             else
@@ -345,8 +453,10 @@ namespace OctoFixFlow
                 return "";
 
             var cells = _selectedCells.ToList();
+
             if (!cells.Any())
                 return "";
+
             var rows = cells.Select(c => c.Row).Distinct().OrderBy(r => r).ToList();
             var cols = cells.Select(c => c.Col).Distinct().OrderBy(c => c).ToList();
 
@@ -354,27 +464,6 @@ namespace OctoFixFlow
             string colText = FormatRange(cols);
 
             return $"{ResourceHelper.Instance.StepDetailRowPrefix}{rowText} {ResourceHelper.Instance.StepDetailColumnPrefix}{colText}";
-
-            //var ranges = new List<string>();
-            //int start = columns[0];
-            //int end = columns[0];
-
-            //for (int i = 1; i < columns.Count; i++)
-            //{
-            //    if (columns[i] == end + 1)
-            //    {
-            //        end = columns[i];
-            //    }
-            //    else
-            //    {
-            //        ranges.Add(start == end ? $"{start}" : $"{start}~{end}");
-            //        start = end = columns[i];
-            //    }
-            //}
-
-            //ranges.Add(start == end ? $"{start}" : $"{start}~{end}");
-
-            //return $"{ResourceHelper.Instance.StepDetailColumnPrefix}{string.Join("；", ranges)}";
         }
         // 将数字列表格式化为“X”或“X~Y”范围字符串
         private string FormatRange(List<int> numbers)
@@ -408,22 +497,15 @@ namespace OctoFixFlow
         public void ClearSelection()
         {
             _selectedCells.Clear();
+            _columnRowOffset = 0;
             InvalidateVisual();
         }
-        //根据列集合更新选中状态
-        //public void SetSelectedColumns(IEnumerable<int> columns)
-        //{
-        //    _selectedColumns.Clear();
-        //    if (columns != null)
-        //    {
-        //        foreach (var col in columns)
-        //            _selectedColumns.Add(col);
-        //    }
-        //    InvalidateVisual();
-        //}
+
         public void SetSelectedCells(IEnumerable<(int Row, int Col)> cells)
         {
             _selectedCells.Clear();
+            //_columnRowOffset = 0;
+
             if (cells != null)
             {
                 foreach (var cell in cells)
@@ -435,7 +517,24 @@ namespace OctoFixFlow
                         _selectedCells.Add(cell);
                     }
                 }
+                if (_selectedCells.Count > 0)
+                {
+                    var rows = _selectedCells.Select(c => c.Row).OrderBy(r => r).ToList();
+
+                    // 计算选中了多少行
+                    _selectedRowCount = rows.Last();
+
+                    // 计算偏移量：最小的行号 - 1
+                    // 例如：选中了 3,4,5,6,7,8 -> 最小行是3 -> Offset = 3 - 1 = 2
+                    _columnRowOffset = rows.First() - 1;
+                }
             }
+            else
+            {
+                _columnRowOffset = 0;
+                _selectedRowCount = Math.Min(8, ConsData?.numRows ?? 8);
+            }
+            Debug.WriteLine(":::" + _columnRowOffset + ";;;" + _selectedRowCount);
             InvalidateVisual();
         }
     }

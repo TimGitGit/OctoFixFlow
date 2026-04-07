@@ -6,8 +6,14 @@
     StartupUri="MainWindow.xaml">
     <Application.Resources>
         <!--  颜色定义  -->
+        <!--  镁伽红  -->
         <!--<SolidColorBrush x:Key="PrimaryColor" Color="#E75333" />-->
-        <SolidColorBrush x:Key="PrimaryColor" Color="#048B46" />
+        <!--  简石绿  -->
+        <!--<SolidColorBrush x:Key="PrimaryColor" Color="#048B46" />-->
+        <!--  青云青  -->
+        <!-- <SolidColorBrush x:Key="PrimaryColor" Color="#00B7D4" />-->
+        <!--  墨析深蓝  -->
+         <SolidColorBrush x:Key="PrimaryColor" Color="#00466E" />
         <SolidColorBrush x:Key="SecondaryColor" Color="#FFFFFF" />
         <SolidColorBrush x:Key="SuspendColor" Color="#FFDAD0" />
         <SolidColorBrush x:Key="PlateBackground" Color="#f8f9fa" />

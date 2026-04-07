@@ -457,6 +457,15 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 设备未连接 的本地化字符串。
+        /// </summary>
+        public static string MainWindowNotConn {
+            get {
+                return ResourceManager.GetString("MainWindowNotConn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 选择的文件为空 的本地化字符串。
         /// </summary>
         public static string OpenFileDialog_Empty {
@@ -2005,6 +2014,15 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 等待运行完成 的本地化字符串。
+        /// </summary>
+        public static string SettingManualPCRWaitRun {
+            get {
+                return ResourceManager.GetString("SettingManualPCRWaitRun", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 移液器控制 的本地化字符串。
         /// </summary>
         public static string SettingManualPipetteControl {
@@ -2680,6 +2698,15 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 推出体积(ul)： 的本地化字符串。
+        /// </summary>
+        public static string StepDetailPushVolume {
+            get {
+                return ResourceManager.GetString("StepDetailPushVolume", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 行： 的本地化字符串。
         /// </summary>
         public static string StepDetailRowPrefix {
@@ -3175,6 +3202,15 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 不支持循环嵌套 的本地化字符串。
+        /// </summary>
+        public static string WindowLoopTip {
+            get {
+                return ResourceManager.GetString("WindowLoopTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 清除 的本地化字符串。
         /// </summary>
         public static string WindowOneclickdeletion {
@@ -3220,7 +3256,7 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
-        ///   查找类似 八通道移液工作站 的本地化字符串。
+        ///   查找类似 高通量蛋白纯化工作站 的本地化字符串。
         /// </summary>
         public static string WindowTitle {
             get {
