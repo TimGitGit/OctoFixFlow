@@ -598,6 +598,24 @@
                                                 Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=StepDetailMagnetDown}"
                                                 Style="{StaticResource ActionButtonStyle}" />
                                         </StackPanel>
+                                        <Grid Margin="0,0,0,15">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock
+                                                Grid.Column="0"
+                                                VerticalAlignment="Center"
+                                                FontSize="13"
+                                                Foreground="#666666"
+                                                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=StepDetailMagnetDistance}" />
+                                            <TextBox
+                                                x:Name="MagneticHeightSetValue"
+                                                Grid.Column="1"
+                                                Width="100"
+                                                Style="{StaticResource InputTextBoxStyle}"
+                                                Text="25" />
+                                        </Grid>
                                     </StackPanel>
                                 </Border>
                             </Grid>

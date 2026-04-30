@@ -77,6 +77,7 @@ namespace OctoFixFlow
         public bool runFlag = false;
         public bool pauseFlag = false;
 
+        private readonly DispatcherTimer _timer;
 
 
         public MainWidget()
@@ -140,6 +141,24 @@ namespace OctoFixFlow
 
             ActionSelectComboBox.SelectedIndex = 0;
             InitTopSettingPopup();
+            _timer = new DispatcherTimer
+            {
+                // 设置间隔为1秒（每秒更新一次）
+                Interval = TimeSpan.FromSeconds(1)
+            };
+            // 订阅定时器触发事件
+            _timer.Tick += TimerOnTick;
+
+            // 立即启动定时器
+            _timer.Start();
+        }
+        private void TimerOnTick(object sender, EventArgs e)
+        {
+            UpdateCurrentTime();
+        }
+        private void UpdateCurrentTime()
+        {
+            DateTimeText.Text = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
         }
         private void InitializeLanguage()
         {
@@ -632,6 +651,21 @@ namespace OctoFixFlow
                 Grid.SetColumn(PlateBorder10, 0);
                 Grid.SetRowSpan(PlateBorder10, 1);
             }
+            //判断Fluo
+            if (AppGlobalConfig.Instance.IsFluoEnabled)
+            {
+                ActionFluoButton.Visibility = Visibility.Visible;
+                Grid.SetRow(PlateBorder10, 0);
+                Grid.SetColumn(PlateBorder10, 0);
+                Grid.SetRowSpan(PlateBorder10, 2);
+            }
+            else
+            {
+                ActionFluoButton.Visibility = Visibility.Collapsed;
+                Grid.SetRow(PlateBorder10, 1);
+                Grid.SetColumn(PlateBorder10, 0);
+                Grid.SetRowSpan(PlateBorder10, 1);
+            }
             //判断加热振荡
             if (AppGlobalConfig.Instance.HasHeatingShaking())
                 ActionShakeButton.Visibility = Visibility.Visible;
@@ -825,6 +859,8 @@ namespace OctoFixFlow
                 case "Other"://其他
                     SetAllButtonsVisibility(Visibility.Collapsed);
                     LoopButton.Visibility = Visibility.Visible;
+                    AnnoButton.Visibility = Visibility.Visible;
+                    VariateButton.Visibility = Visibility.Visible;
                     break;
             }
         }
@@ -848,8 +884,12 @@ namespace OctoFixFlow
             ActionMagneticButton.Visibility = Visibility.Collapsed;
             ActionTemperatureButton.Visibility = Visibility.Collapsed;
             ActionPCRButton.Visibility = Visibility.Collapsed;
+            ActionFluoButton.Visibility = Visibility.Collapsed;
+
             //其他按钮隐藏
             LoopButton.Visibility = Visibility.Collapsed;
+            AnnoButton.Visibility = Visibility.Collapsed;
+            VariateButton.Visibility = Visibility.Collapsed;
 
         }
         // 显示模块按钮，隐藏基础按钮
@@ -872,7 +912,10 @@ namespace OctoFixFlow
                 ActionPCRButton.Visibility = Visibility.Visible;
             else
                 ActionPCRButton.Visibility = Visibility.Collapsed;
-
+            if (AppGlobalConfig.Instance.IsFluoEnabled)
+                ActionFluoButton.Visibility = Visibility.Visible;
+            else
+                ActionFluoButton.Visibility = Visibility.Collapsed;
             // 基础按钮隐藏
             AspirateButton.Visibility = Visibility.Collapsed;
             DispenseButton.Visibility = Visibility.Collapsed;
@@ -883,6 +926,9 @@ namespace OctoFixFlow
             ActionMixButton.Visibility = Visibility.Collapsed;
             //其他按钮隐藏
             LoopButton.Visibility = Visibility.Collapsed;
+            AnnoButton.Visibility = Visibility.Collapsed;
+            VariateButton.Visibility = Visibility.Collapsed;
+
         }
 
         // 批量设置所有按钮可见性
@@ -897,9 +943,12 @@ namespace OctoFixFlow
             ActionMagneticButton.Visibility = visibility;
             ActionTemperatureButton.Visibility = visibility;
             ActionPCRButton.Visibility = visibility;
+            ActionFluoButton.Visibility = visibility;
             WaitButton.Visibility = visibility;
             ActionMixButton.Visibility = visibility;
             LoopButton.Visibility = visibility;
+            AnnoButton.Visibility = visibility;
+            VariateButton.Visibility = visibility;
 
             if (visibility == Visibility.Visible)
             {
@@ -907,46 +956,6 @@ namespace OctoFixFlow
             }
         }
         // 点击动作功能区按钮时添加流程步骤
-        //private void AddFlowStep(string type)
-        //{
-        //    int endStepIndex = FlowSteps.Count - 1;
-
-        //    var step = new FlowStep
-        //    {
-        //        Index = _stepIndex++,
-        //        Type = type,
-        //        Volume = 50,
-        //        TransferPosition = 0,
-        //        Position = "P1",
-        //        SelectedPipetteName = "pipette_1",
-        //        IsSelected = false,
-        //        IsSystemStep = false,
-        //        Level = 0
-        //    };
-        //    FlowSteps.Insert(_stepClickIndex, step);
-        //    _stepClickIndex++;
-        //    // 重新编号所有步骤（确保序号连续）
-        //    RebuildStepIndexes();
-        //    if (type.Equals("loop", StringComparison.OrdinalIgnoreCase))
-        //    {
-        //        var stepLoop = new FlowStep
-        //        {
-        //            Index = _stepIndex++,
-        //            Type = "endLoop",
-        //            Volume = 50,
-        //            TransferPosition = 0,
-        //            Position = "P1",
-        //            SelectedPipetteName = "pipette_1",
-        //            IsSelected = false,
-        //            IsSystemStep = false,
-        //            Level = 1
-        //        };
-        //        FlowSteps.Insert(_stepClickIndex, stepLoop);
-        //        _stepClickIndex++;
-        //        // 重新编号所有步骤（确保序号连续）
-        //        RebuildStepIndexes();
-        //    }
-        //}
 
         private void AddFlowStep(string type)
         {
@@ -1039,8 +1048,11 @@ namespace OctoFixFlow
                 step.IsSelected = true;
                 if (step.Type.Equals("endLoop", StringComparison.OrdinalIgnoreCase))
                     return;
-                TopSettingPopup.setStepDetail(step);
-                TopSettingPopup.Show(-1, ResourceHelper.Instance.WindowStepdetails, -1);
+                if (e.ChangedButton == MouseButton.Left)
+                {
+                    TopSettingPopup.setStepDetail(step);
+                    TopSettingPopup.Show(-1, ResourceHelper.Instance.WindowStepdetails, -1);
+                }
             }
             foreach (var plateId in _plateConsumableMap.Keys)
             {
@@ -1068,7 +1080,6 @@ namespace OctoFixFlow
                 }
             }
         }
-
         private void UpdatePlateInteractivity(string targetPlateId)
         {
             // 遍历所有可能的板位（1-12）
@@ -1088,28 +1099,22 @@ namespace OctoFixFlow
                 }
             }
         }
-
-
         private void AspirateButton_Click(object sender, RoutedEventArgs e)
         {
             AddFlowStep("Aspirate");
         }
-
         private void DispenseButton_Click(object sender, RoutedEventArgs e)
         {
             AddFlowStep("Dispense");
         }
-
         private void PickTipButton_Click(object sender, RoutedEventArgs e)
         {
             AddFlowStep("TipOn");
         }
-
         private void EjectTipButton_Click(object sender, RoutedEventArgs e)
         {
             AddFlowStep("TipOff");
         }
-
         private void WaitButton_Click(object sender, RoutedEventArgs e)
         {
             AddFlowStep("Wait");
@@ -1118,17 +1123,14 @@ namespace OctoFixFlow
         {
             AddFlowStep("Shake");
         }
-
         private void MagneticButton_Click(object sender, RoutedEventArgs e)
         {
             AddFlowStep("Magnetic");
         }
-
         private void TemperatureButton_Click(object sender, RoutedEventArgs e)
         {
             AddFlowStep("Temp Ctrl");
         }
-
         private void PCRButton_Click(object sender, RoutedEventArgs e)
         {
             AddFlowStep("PCR");
@@ -1145,18 +1147,27 @@ namespace OctoFixFlow
         {
             AddFlowStep("Loop");
         }
+        private void AnnoButton_Click(object sender, RoutedEventArgs e)
+        {
+            AddFlowStep("Annotation");
+        }
+        private void VariateButton_Click(object sender, RoutedEventArgs e)
+        {
+            AddFlowStep("Variate");
+        }
+        private void FluoButton_Click(object sender, RoutedEventArgs e)
+        {
+            AddFlowStep("Fluo");
+        }
         private void LogoutButton_Click(object sender, RoutedEventArgs e)
         {
 
         }
-
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
             DatabaseService.Instance.Close();
             Application.Current.Shutdown();
         }
-
-
         //设置界面
         private void SettingsButton_Click(object sender, RoutedEventArgs e)
         {
@@ -1672,12 +1683,28 @@ namespace OctoFixFlow
             pythonCode.AppendLine();
             pythonCode.AppendLine("def run():");
             pythonCode.AppendLine($"    Robot.reset()");
+            int indentLevel = 1;
+            string indentStr = new string(' ', 4 * indentLevel); // 4空格缩进
             foreach (var flowStep in FlowSteps)
             {
                 string stepType = MapStepType(flowStep.Type);
                 var pipperName = flowStep.SelectedPipetteName;
                 var moduleName = flowStep.ModuleName;
 
+                indentStr = new string(' ', 4 * indentLevel);
+                int pipetteType = -1;
+                //判断移液器的类型
+                if (pipperName != null)
+                {
+                    if (moduleIdDict.TryGetValue(pipperName, out string nowPipetteId))
+                    {
+                        var currentPipette = AppGlobalConfig.Instance.PlateModuleMap
+               .Values
+               .FirstOrDefault(module => module.Name == pipperName);
+                        pipetteType = currentPipette.Type;
+                        Debug.WriteLine("pipette", pipetteType);
+                    }
+                }
 
                 switch (stepType)
                 {
@@ -1685,85 +1712,256 @@ namespace OctoFixFlow
                         var (aspirateCons, aisAllRowNum) = GetConsumableVarNameByPlate(flowStep.Position);
                         if (moduleIdDict.TryGetValue(pipperName, out string aisPipetteId))
                         {
-                            var (aisRowNum, aisColNum) = ParsePipettePosition(flowStep.SelectedCells, aisAllRowNum);
-                            pythonCode.AppendLine($"    # 吸液（{flowStep.Position} {flowStep.WellPosition}，{flowStep.Volume}μL）");
-                            pythonCode.AppendLine($"    aspirate(pipe_id={aisPipetteId}, plate=\"{MapPlatePosition(flowStep.Position)}\",  cons={aspirateCons},row={aisRowNum}, col={aisColNum}, depth={aspirateCons}.bottom({flowStep.LiquidAisDistance:F2}), vol={flowStep.Volume:F2}, speed={flowStep.LiquidAisSpeed:F2}, post_air={flowStep.LiquidAisAirB:F2})");
+                            var (aisRowNum, aisColNum) = ParsePipettePosition(flowStep.SelectedCells, aisAllRowNum, pipetteType);
+                            #region 新增需求从距孔底距离从固定值改成list。比如从8.0改成8.0,4.0,0.4
+                            string depthParam;
+                            var distanceParts = flowStep.LiquidAisDistance.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                                        .Select(p => p.Trim());
+                            int count = distanceParts.Count();
+                            if (count == 1)
+                            {
+                                // 2. 单个数值：保持原有格式
+                                string singleDist = distanceParts.First();
+                                // 尝试格式化，确保是数字 (如果前端已保证是合法数字，可简化直接用 singleDist)
+                                if (float.TryParse(singleDist, out float distVal))
+                                {
+                                    depthParam = $"{aspirateCons}.bottom({distVal:F2})";
+                                }
+                                else
+                                {
+                                    // 容错处理，防止格式报错
+                                    depthParam = $"{aspirateCons}.bottom(1.00)";
+                                }
+                            }
+                            else
+                            {
+                                var depthCalls = distanceParts.Select(p =>
+                                {
+                                    if (float.TryParse(p, out float distVal))
+                                    {
+                                        return $"{aspirateCons}.bottom({distVal:F2})";
+                                    }
+                                    return $"{aspirateCons}.bottom(1.00)"; // 容错
+                                });
+
+                                depthParam = $"({string.Join(",", depthCalls)})";
+                            }
+                            #endregion
+                            pythonCode.AppendLine($"{indentStr}# 吸液（{flowStep.Position} {flowStep.WellPosition}，{flowStep.Volume}μL）");
+                            pythonCode.AppendLine($"{indentStr}aspirate(pipe_id={aisPipetteId}, plate=\"{MapPlatePosition(flowStep.Position)}\", cons={aspirateCons}, row={aisRowNum}, col={aisColNum}, depth={depthParam}, vol={flowStep.Volume:F2}, speed={flowStep.LiquidAisSpeed:F2}, post_air={flowStep.LiquidAisAirB:F2})");
+
+                            //pythonCode.AppendLine($"{indentStr}aspirate(pipe_id={aisPipetteId}, plate=\"{MapPlatePosition(flowStep.Position)}\",  cons={aspirateCons},row={aisRowNum}, col={aisColNum}, depth={aspirateCons}.bottom({flowStep.LiquidAisDistance:F2}), vol={flowStep.Volume:F2}, speed={flowStep.LiquidAisSpeed:F2}, post_air={flowStep.LiquidAisAirB:F2})");
                         }
                         break;
 
                     case "dispense":
                         var (dispenseCons, disAllRowNum) = GetConsumableVarNameByPlate(flowStep.Position);
-                        var (disRowNum, disColNum) = ParsePipettePosition(flowStep.SelectedCells, disAllRowNum);
+                        var (disRowNum, disColNum) = ParsePipettePosition(flowStep.SelectedCells, disAllRowNum, pipetteType);
                         if (moduleIdDict.TryGetValue(pipperName, out string disPipetteId))
                         {
-                            pythonCode.AppendLine($"    # 注液（{flowStep.Position} {flowStep.WellPosition}，{flowStep.Volume}μL）");
-                            pythonCode.AppendLine($"    dispense(pipe_id={disPipetteId}, plate=\"{MapPlatePosition(flowStep.Position)}\",  cons={dispenseCons},row={disRowNum},  col={disColNum}, depth={dispenseCons}.bottom({flowStep.LiquidDisDistance:F2}), vol={flowStep.Volume:F2}, speed={flowStep.LiquidDisSpeed:F2}, push_out={flowStep.PushOutvolume:F2})");
+                            #region 新增需求从距孔底距离从固定值改成list。比如从8.0改成8.0,4.0,0.4
+                            string depthParam;
+                            var distanceParts = flowStep.LiquidDisDistance.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                                        .Select(p => p.Trim());
+                            int count = distanceParts.Count();
+                            if (count == 1)
+                            {
+                                // 2. 单个数值：保持原有格式
+                                string singleDist = distanceParts.First();
+                                // 尝试格式化，确保是数字 (如果前端已保证是合法数字，可简化直接用 singleDist)
+                                if (float.TryParse(singleDist, out float distVal))
+                                {
+                                    depthParam = $"{dispenseCons}.bottom({distVal:F2})";
+                                }
+                                else
+                                {
+                                    // 容错处理，防止格式报错
+                                    depthParam = $"{dispenseCons}.bottom(1.00)";
+                                }
+                            }
+                            else
+                            {
+                                var depthCalls = distanceParts.Select(p =>
+                                {
+                                    if (float.TryParse(p, out float distVal))
+                                    {
+                                        return $"{dispenseCons}.bottom({distVal:F2})";
+                                    }
+                                    return $"{dispenseCons}.bottom(1.00)"; // 容错
+                                });
+
+                                depthParam = $"({string.Join(",", depthCalls)})";
+                            }
+                            #endregion
+                            pythonCode.AppendLine($"{indentStr}# 注液（{flowStep.Position} {flowStep.WellPosition}，{flowStep.Volume}μL）");
+                            pythonCode.AppendLine($"{indentStr}dispense(pipe_id={disPipetteId}, plate=\"{MapPlatePosition(flowStep.Position)}\",  cons={dispenseCons},row={disRowNum},  col={disColNum}, depth={depthParam}, vol={flowStep.Volume:F2}, speed={flowStep.LiquidDisSpeed:F2}, push_out={flowStep.PushOutvolume:F2})");
                         }
                         break;
                     case "mix":
                         var (mixingCons, misAllRowNum) = GetConsumableVarNameByPlate(flowStep.Position);
-                        var (misRowNum, misColNum) = ParsePipettePosition(flowStep.SelectedCells, misAllRowNum);
+                        var (misRowNum, misColNum) = ParsePipettePosition(flowStep.SelectedCells, misAllRowNum, pipetteType);
                         if (moduleIdDict.TryGetValue(pipperName, out string mixPipetteId))
                         {
-                            pythonCode.AppendLine($"    # 混合（{flowStep.MixVolume}μL，{flowStep.MixCount}轮）");
-                            pythonCode.AppendLine($"    mixing(pipe_id={mixPipetteId}, plate=\"{MapPlatePosition(flowStep.Position)}\", cons={mixingCons},row={misRowNum}, col={misColNum}, vol={flowStep.MixVolume:F2}, rounds={flowStep.MixCount}, speed={flowStep.LiquidAisSpeed:F2}, depth={mixingCons}.bottom({flowStep.LiquidAisDistance:F2}), push_out={flowStep.PushOutvolume:F2})");
+                            #region 新增需求从距孔底距离从固定值改成list。比如从8.0改成8.0,4.0,0.4
+                            string depthParam;
+                            var distanceParts = flowStep.LiquidAisDistance.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                                        .Select(p => p.Trim());
+                            int count = distanceParts.Count();
+                            if (count == 1)
+                            {
+                                // 2. 单个数值：保持原有格式
+                                string singleDist = distanceParts.First();
+                                // 尝试格式化，确保是数字 (如果前端已保证是合法数字，可简化直接用 singleDist)
+                                if (float.TryParse(singleDist, out float distVal))
+                                {
+                                    depthParam = $"{mixingCons}.bottom({distVal:F2})";
+                                }
+                                else
+                                {
+                                    // 容错处理，防止格式报错
+                                    depthParam = $"{mixingCons}.bottom(1.00)";
+                                }
+                            }
+                            else
+                            {
+                                var depthCalls = distanceParts.Select(p =>
+                                {
+                                    if (float.TryParse(p, out float distVal))
+                                    {
+                                        return $"{mixingCons}.bottom({distVal:F2})";
+                                    }
+                                    return $"{mixingCons}.bottom(1.00)"; // 容错
+                                });
+
+                                depthParam = $"({string.Join(",", depthCalls)})";
+                            }
+                            #endregion
+                            pythonCode.AppendLine($"{indentStr}# 混合（{flowStep.MixVolume}μL，{flowStep.MixCount}轮）");
+                            pythonCode.AppendLine($"{indentStr}mixing(pipe_id={mixPipetteId}, plate=\"{MapPlatePosition(flowStep.Position)}\", cons={mixingCons},row={misRowNum}, col={misColNum}, vol={flowStep.MixVolume:F2}, rounds={flowStep.MixCount}, speed={flowStep.LiquidAisSpeed:F2}, depth={depthParam}, push_out={flowStep.PushOutvolume:F2}, final_asp={flowStep.InhaVolume:F2})");
                         }
                         break;
                     case "tipon": // 取头
                         var (tiponCons, tipOnAllRowNum) = GetConsumableVarNameByPlate(flowStep.Position); // 根据板位获取耗材变量名
-                        var (tipOnRowNum, tipOnColNum) = ParsePipettePosition(flowStep.SelectedCells, tipOnAllRowNum);
+                        var (tipOnRowNum, tipOnColNum) = ParsePipettePosition(flowStep.SelectedCells, tipOnAllRowNum, pipetteType);
                         if (moduleIdDict.TryGetValue(pipperName, out string tipOnPipetteId))
                         {
-                            pythonCode.AppendLine($"    # 取头（{flowStep.Position} {flowStep.WellPosition}）");
-                            pythonCode.AppendLine($"    tipon(pipe_id={tipOnPipetteId}, plate=\"{MapPlatePosition(flowStep.Position)}\",  cons={tiponCons},row={tipOnRowNum},  col={tipOnColNum})");
+                            pythonCode.AppendLine($"{indentStr}# 取头（{flowStep.Position} {flowStep.WellPosition}）");
+                            pythonCode.AppendLine($"{indentStr}tipon(pipe_id={tipOnPipetteId}, plate=\"{MapPlatePosition(flowStep.Position)}\",  cons={tiponCons},row={tipOnRowNum},  col={tipOnColNum})");
                         }
                         break;
                     case "tipoff": // 退头
                         var (tipoffCons, tipOffAllRowNum) = GetConsumableVarNameByPlate(flowStep.Position);
-                        var (tipOffRowNum, tipOffColNum) = ParsePipettePosition(flowStep.SelectedCells, tipOffAllRowNum);
+                        var (tipOffRowNum, tipOffColNum) = ParsePipettePosition(flowStep.SelectedCells, tipOffAllRowNum, pipetteType);
                         if (moduleIdDict.TryGetValue(pipperName, out string tipOffPipetteId))
                         {
-                            pythonCode.AppendLine($"    # 退头（{flowStep.Position} {flowStep.WellPosition}）");
-                            pythonCode.AppendLine($"    tipoff(pipe_id={tipOffPipetteId}, plate=\"{MapPlatePosition(flowStep.Position)}\",   cons={tipoffCons},row={tipOffRowNum},  col={tipOffColNum})");
+                            pythonCode.AppendLine($"{indentStr}# 退头（{flowStep.Position} {flowStep.WellPosition}）");
+                            pythonCode.AppendLine($"{indentStr}tipoff(pipe_id={tipOffPipetteId}, plate=\"{MapPlatePosition(flowStep.Position)}\",   cons={tipoffCons},row={tipOffRowNum},  col={tipOffColNum})");
                         }
 
                         break;
 
                     case "wait":
-                        int waitTimeS = flowStep.WaitTime > 0 ? flowStep.WaitTime : 0;
-                        pythonCode.AppendLine($"    # 等待（{flowStep.WaitContent}）");
-                        pythonCode.AppendLine($"    wait(s={waitTimeS})");
+                        string waitParam;
+                        if (!string.IsNullOrEmpty(flowStep.WaitVariateName))
+                        {
+                            waitParam = flowStep.WaitVariateName;
+                        }
+                        else
+                        {
+                            waitParam = flowStep.WaitTime.ToString();
+                        }
+                        //int waitTimeS = flowStep.WaitTime > 0 ? flowStep.WaitTime : 0;
+                        pythonCode.AppendLine($"{indentStr}# 等待（{flowStep.WaitContent}）");
+                        pythonCode.AppendLine($"{indentStr}wait(s={waitParam})");
                         break;
                     case "shake":
                         if (moduleIdDict.TryGetValue(moduleName, out string shakeModuleId))
                         {
-                            pythonCode.AppendLine($"    # 混匀振荡（{flowStep.ShakeRPM}rpm，{flowStep.WaitTime}秒）");
-                            pythonCode.AppendLine($"    Shaker.start_temp(id={shakeModuleId}, temp={flowStep.ShakeTemp:F1})");
-                            pythonCode.AppendLine($"    Shaker.start_shaker(id={shakeModuleId}, rpm={flowStep.ShakeRPM}, time={flowStep.WaitTime})");
+                            pythonCode.AppendLine($"{indentStr}# 混匀振荡（{flowStep.ShakeRPM}rpm，{flowStep.WaitTime}秒）");
+                            string tempParam;
+                            if (!string.IsNullOrEmpty(flowStep.ShakerVariateTempName))
+                            {
+                                tempParam = flowStep.ShakerVariateTempName;
+                            }
+                            else
+                            {
+                                tempParam = flowStep.ShakeTemp.ToString("F1");
+                            }
+
+                            string rpmParam;
+                            if (!string.IsNullOrEmpty(flowStep.ShakerVariateSpeedName))
+                            {
+                                rpmParam = flowStep.ShakerVariateSpeedName;
+                            }
+                            else
+                            {
+                                rpmParam = flowStep.ShakeRPM.ToString();
+                            }
+                            string timeParam;
+                            if (!string.IsNullOrEmpty(flowStep.ShakerVariateTimeName))
+                            {
+                                timeParam = flowStep.ShakerVariateTimeName;
+                            }
+                            else
+                            {
+                                timeParam = flowStep.WaitTime.ToString();
+                            }
+
+                            pythonCode.AppendLine($"{indentStr}Shaker.start_temp(id={shakeModuleId}, temp={tempParam})");
+                            pythonCode.AppendLine($"{indentStr}Shaker.start_shaker(id={shakeModuleId}, rpm={rpmParam}, time={timeParam})");
+
+
+                            //pythonCode.AppendLine($"{indentStr}Shaker.start_temp(id={shakeModuleId}, temp={flowStep.ShakeTemp:F1})");
+                            //pythonCode.AppendLine($"{indentStr}Shaker.start_shaker(id={shakeModuleId}, rpm={flowStep.ShakeRPM}, time={flowStep.WaitTime})");
                         }
 
                         break;
                     case "magnetic":
                         if (moduleIdDict.TryGetValue(moduleName, out string magneticModuleId))
                         {
-                            string magneticAction = flowStep.IsMagnetUp ? "on" : "off";
-                            pythonCode.AppendLine($"    # 磁吸{(flowStep.IsMagnetUp ? "上升" : "下降")}");
-                            pythonCode.AppendLine($"    Magnetic.{magneticAction}(id={magneticModuleId})");
+                            if (flowStep.IsMagnetUp)
+                            {
+                                string magneParam;
+                                if (!string.IsNullOrEmpty(flowStep.MagnetVariateName))
+                                {
+                                    magneParam = flowStep.MagnetVariateName;
+                                }
+                                else
+                                {
+                                    magneParam = flowStep.MagnetNums.ToString("F1");
+                                }
+                                pythonCode.AppendLine($"{indentStr}# 磁吸{(flowStep.IsMagnetUp ? "上升" : "下降")}");
+                                pythonCode.AppendLine($"{indentStr}Magnetic.on(id={magneticModuleId}, p={magneParam})");
+                            }
+                            else if (flowStep.IsMagnetDown)
+                            {
+                                pythonCode.AppendLine($"{indentStr}# 磁吸{(flowStep.IsMagnetUp ? "上升" : "下降")}");
+                                pythonCode.AppendLine($"{indentStr}Magnetic.off(id={magneticModuleId})");
+                            }
                         }
 
                         break;
                     case "temp ctrl":
                         if (moduleIdDict.TryGetValue(moduleName, out string tempModuleId))
                         {
-                            if (flowStep.IsTempCtrlOpen)
+                            string tempParam;
+                            if (!string.IsNullOrEmpty(flowStep.TempControlVariateTempName))
                             {
-                                pythonCode.AppendLine($"    # 温控（{flowStep.ModuleName}，{flowStep.TempCtrlTemp}℃）");
-                                pythonCode.AppendLine($"    Cool.start(id={tempModuleId}, temp={flowStep.TempCtrlTemp})");
+                                tempParam = flowStep.TempControlVariateTempName;
                             }
                             else
                             {
-                                pythonCode.AppendLine($"    # 温控（{flowStep.ModuleName}，{flowStep.TempCtrlTemp}℃）");
-                                pythonCode.AppendLine($"    Cool.stop(id={tempModuleId})");
+                                tempParam = flowStep.TempCtrlTemp.ToString("F1");
+                            }
+                            if (flowStep.IsTempCtrlOpen)
+                            {
+                                pythonCode.AppendLine($"{indentStr}# 温控（{flowStep.ModuleName}，{tempParam}℃）");
+                                pythonCode.AppendLine($"{indentStr}Cool.start(id={tempModuleId}, temp={tempParam})");
+                            }
+                            else
+                            {
+                                pythonCode.AppendLine($"{indentStr}# 温控（{flowStep.ModuleName}，{tempParam}℃）");
+                                pythonCode.AppendLine($"{indentStr}Cool.stop(id={tempModuleId})");
                             }
 
                         }
@@ -1776,38 +1974,84 @@ namespace OctoFixFlow
                             string usedCons = !string.IsNullOrEmpty(shiftFronCons)
         ? shiftFronCons
         : shiftToCons;
-                            pythonCode.AppendLine($"    # 移板（{flowStep.FromPos} → {flowStep.ToPos}）");
-                            pythonCode.AppendLine($"    movePlate(id={shiftModuleId},cons={usedCons}, from_plate=\"{MapPlatePosition(flowStep.FromPos)}\", to_plate=\"{MapPlatePosition(flowStep.ToPos)}\", pushing={flowStep.TransferPosition})");
+                            pythonCode.AppendLine($"{indentStr}# 移板（{flowStep.FromPos} → {flowStep.ToPos}）");
+                            pythonCode.AppendLine($"{indentStr}movePlate(id={shiftModuleId},cons={usedCons}, from_plate=\"{MapPlatePosition(flowStep.FromPos)}\", to_plate=\"{MapPlatePosition(flowStep.ToPos)}\", pushing={flowStep.TransferPosition})");
                         }
 
                         break;
                     case "pcr":
                         if (flowStep.PcrStep == _res.SettingManualPCRStart)
                         {
-                            pythonCode.AppendLine($"    # PCR（{flowStep.PcrStep}）");
-                            pythonCode.AppendLine($"    Pcr.run(id={1},data=\"{flowStep.PcrScriptAdress}\")");
+                            pythonCode.AppendLine($"{indentStr}# PCR（{flowStep.PcrStep}）");
+                            pythonCode.AppendLine($"{indentStr}Pcr.run(id={1},data=\"{flowStep.PcrScriptAdress}\")");
                         }
                         else if (flowStep.PcrStep == _res.SettingManualPCRStop)
                         {
-                            pythonCode.AppendLine($"    # PCR（{flowStep.PcrStep}）");
-                            pythonCode.AppendLine($"    Pcr.stop(id={1})");
+                            pythonCode.AppendLine($"{indentStr}# PCR（{flowStep.PcrStep}）");
+                            pythonCode.AppendLine($"{indentStr}Pcr.stop(id={1})");
                         }
                         else if (flowStep.PcrStep == _res.SettingManualPCROpen)
                         {
-                            pythonCode.AppendLine($"    # PCR（{flowStep.PcrStep}）");
-                            pythonCode.AppendLine($"    Pcr.opendoor(id={1})");
+                            pythonCode.AppendLine($"{indentStr}# PCR（{flowStep.PcrStep}）");
+                            pythonCode.AppendLine($"{indentStr}Pcr.opendoor(id={1})");
                         }
                         else if (flowStep.PcrStep == _res.SettingManualPCRClose)
                         {
-                            pythonCode.AppendLine($"    # PCR（{flowStep.PcrStep}）");
-                            pythonCode.AppendLine($"    Pcr.closedoor(id={1})");
+                            pythonCode.AppendLine($"{indentStr}# PCR（{flowStep.PcrStep}）");
+                            pythonCode.AppendLine($"{indentStr}Pcr.closedoor(id={1})");
                         }
                         else if (flowStep.PcrStep == _res.SettingManualPCRWaitRun)
                         {
-                            pythonCode.AppendLine($"    # PCR（{flowStep.PcrStep}）");
-                            pythonCode.AppendLine($"    Pcr.wait_end(id={1})");
+                            pythonCode.AppendLine($"{indentStr}# PCR（{flowStep.PcrStep}）");
+                            pythonCode.AppendLine($"{indentStr}Pcr.wait_end(id={1})");
                         }
 
+                        break;
+                    case "loop":
+                        int loopStartNumber = flowStep.LoopStartNum;
+                        int loopEndNumber = flowStep.LoopEndNum;
+                        int loopAddNumber = flowStep.LoopAddNum;
+                        pythonCode.AppendLine($"{indentStr}# 循环（从 {loopStartNumber} 到 {loopEndNumber}，步长 {loopAddNumber}）");
+                        pythonCode.AppendLine($"{indentStr}for i in range({loopStartNumber}, {loopEndNumber} + 1, {loopAddNumber}):");
+
+                        // 缩进级别 +1
+                        indentLevel++;
+                        break;
+                    case "endloop":
+                        indentLevel = Math.Max(1, indentLevel - 1);
+                        break;
+                    case "annotation":
+                        string annotationText = flowStep.AnnoValue;//注释的内容
+                        pythonCode.AppendLine($"{indentStr}# --- {annotationText} ---");
+                        break;
+                    case "variate":
+                        string variateName = flowStep.VariateScriptName;//变量的名字
+                        float variateNum = flowStep.VariateNum;//变量的值
+                        if (flowStep.VariateStep == _res.SettingManualVariateEqual)
+                        {
+                            pythonCode.AppendLine($"{indentStr}# Variate（{flowStep.VariateStep}）");
+                            pythonCode.AppendLine($"{indentStr}{variateName}={variateNum}");
+                        }
+                        else if (flowStep.VariateStep == _res.SettingManualVariateAdd)
+                        {
+                            pythonCode.AppendLine($"{indentStr}# Variate（{flowStep.VariateStep}）");
+                            pythonCode.AppendLine($"{indentStr}{variateName}+={variateNum}");
+                        }
+                        else if (flowStep.VariateStep == _res.SettingManualVariateMinus)
+                        {
+                            pythonCode.AppendLine($"{indentStr}# Variate（{flowStep.VariateStep}）");
+                            pythonCode.AppendLine($"{indentStr}{variateName}-={variateNum}");
+                        }
+                        else if (flowStep.VariateStep == _res.SettingManualVariateMultiply)
+                        {
+                            pythonCode.AppendLine($"{indentStr}# Variate（{flowStep.VariateStep}）");
+                            pythonCode.AppendLine($"{indentStr}{variateName}*={variateNum}");
+                        }
+                        else if (flowStep.VariateStep == _res.SettingManualVariateDivide)
+                        {
+                            pythonCode.AppendLine($"{indentStr}# Variate（{flowStep.VariateStep}）");
+                            pythonCode.AppendLine($"{indentStr}{variateName}/={variateNum}");
+                        }
                         break;
                 }
                 pythonCode.AppendLine();
@@ -1909,6 +2153,9 @@ namespace OctoFixFlow
                 "混合" => "mixing",
                 "循环" => "loop",
                 "结束循环" => "endloop",
+                "注释" => "annotation",
+                "变量" => "variate",
+
                 _ => flowStepType.ToLower()
             };
         }
@@ -2006,7 +2253,7 @@ namespace OctoFixFlow
         /// 单通道/8通道返回对应行列表；96通道返回(0,0)；解析失败返回(0,0)
         /// </returns>
         /// <exception cref="ArgumentException">格式非法时抛出</exception>
-        private Tuple<int, int> ParsePipettePosition(string positionStr, int nowRow)
+        private Tuple<int, int> ParsePipettePosition(string positionStr, int nowRow, int pipetteType)
         {
             // 空值/空字符串校验
             if (string.IsNullOrWhiteSpace(positionStr))
@@ -2017,7 +2264,7 @@ namespace OctoFixFlow
             string[] allParts = positionStr.Split(';', StringSplitOptions.RemoveEmptyEntries);
 
             // 分支1：96通道格式解析（96组孔位）
-            if (allParts.Length == 96)
+            if (pipetteType == 2)
             {
                 // 存储所有解析后的(row, col)
                 var cellList = new List<(int Row, int Col)>();
@@ -2054,8 +2301,7 @@ namespace OctoFixFlow
                 // 96通道返回约定值(0,0)代表整板
                 return Tuple.Create(1, 1);
             }
-            // 分支2：8通道格式解析（8组孔位）
-            else if (allParts.Length >= 1 && allParts.Length <= 8)
+            else if (pipetteType == 1)
             {
                 int? commonCol = null;
                 int firstRow = 0;
@@ -2105,23 +2351,49 @@ namespace OctoFixFlow
                 // 返回8通道结果：首行 + 公共列
                 return Tuple.Create(firstRow, commonCol.Value);
             }
+            else if (pipetteType == 0)
+            {
+                string[] rowCol = allParts[0].Split(',', StringSplitOptions.RemoveEmptyEntries);
+                if (rowCol.Length != 2 || !int.TryParse(rowCol[0], out int row) || !int.TryParse(rowCol[1], out int col))
+                {
+                    throw new ArgumentException($"单孔位格式错误：{positionStr}，正确格式应为\"行,列\"", nameof(positionStr));
+                }
+
+                // 校验行列有效性（可选）
+                if (row < 1 || row > 8 || col < 1 || col > 12)
+                {
+                    throw new ArgumentException($"单孔位行列值非法：行={row}，列={col}，标准96孔板行范围1~8，列范围1~12", nameof(positionStr));
+                }
+
+                // 返回单孔位结果
+                return Tuple.Create(row, col);
+            }
+            //if (allParts.Length == 96)
+            //{
+
+            //}
+            //// 分支2：8通道格式解析（8组孔位）
+            //else if (allParts.Length >= 1 && allParts.Length <= 8)
+            //{
+
+            //}
             // 分支3：单通道格式解析（仅1组孔位）
             //else if (allParts.Length == 1)
             //{
-            //    string[] rowCol = allParts[0].Split(',', StringSplitOptions.RemoveEmptyEntries);
-            //    if (rowCol.Length != 2 || !int.TryParse(rowCol[0], out int row) || !int.TryParse(rowCol[1], out int col))
-            //    {
-            //        throw new ArgumentException($"单孔位格式错误：{positionStr}，正确格式应为\"行,列\"", nameof(positionStr));
-            //    }
+            //string[] rowCol = allParts[0].Split(',', StringSplitOptions.RemoveEmptyEntries);
+            //if (rowCol.Length != 2 || !int.TryParse(rowCol[0], out int row) || !int.TryParse(rowCol[1], out int col))
+            //{
+            //    throw new ArgumentException($"单孔位格式错误：{positionStr}，正确格式应为\"行,列\"", nameof(positionStr));
+            //}
 
-            //    // 校验行列有效性（可选）
-            //    if (row < 1 || row > 8 || col < 1 || col > 12)
-            //    {
-            //        throw new ArgumentException($"单孔位行列值非法：行={row}，列={col}，标准96孔板行范围1~8，列范围1~12", nameof(positionStr));
-            //    }
+            //// 校验行列有效性（可选）
+            //if (row < 1 || row > 8 || col < 1 || col > 12)
+            //{
+            //    throw new ArgumentException($"单孔位行列值非法：行={row}，列={col}，标准96孔板行范围1~8，列范围1~12", nameof(positionStr));
+            //}
 
-            //    // 返回单孔位结果
-            //    return Tuple.Create(row, col);
+            //// 返回单孔位结果
+            //return Tuple.Create(row, col);
             //}
             // 格式不匹配（既不是1/8/96组）
             else
@@ -2370,6 +2642,7 @@ namespace OctoFixFlow
                 }
             }
         }
+
         private async void LoadScriptFromPython(string scriptContent)
         {
             try
@@ -2392,23 +2665,17 @@ namespace OctoFixFlow
 
                     Match protoNameMatch = Regex.Match(metadataContent, @"\""protocolName\""\s*:\s*\""(.*?)\""");
                     if (protoNameMatch.Success)
-                    {
                         AppGlobalConfig.Instance.GuideProtocolName = protoNameMatch.Groups[1].Value;
-                    }
 
                     // 解析author
                     Match authorMatch = Regex.Match(metadataContent, @"\""author\""\s*:\s*\""(.*?)\""");
                     if (authorMatch.Success)
-                    {
                         AppGlobalConfig.Instance.GuideProtocolAuthor = authorMatch.Groups[1].Value;
-                    }
 
                     // 解析description
                     Match descMatch = Regex.Match(metadataContent, @"\""description\""\s*:\s*\""(.*?)\""");
                     if (descMatch.Success)
-                    {
                         AppGlobalConfig.Instance.GuideProtocolDescription = descMatch.Groups[1].Value;
-                    }
                 }
                 #endregion
                 #region plate_modules 模块列表
@@ -2810,19 +3077,21 @@ namespace OctoFixFlow
                 #endregion
                 #region 流程
                 // 添加开始步骤
-                FlowSteps.Add(new FlowStep
+                var startStep = new FlowStep
                 {
                     Index = 1,
-                    //Name = "开始",
                     Type = "start",
                     IsSelected = false,
-                    IsSystemStep = true
-                });
+                    IsSystemStep = true,
+                    Level = 0
+                };
+                startStep.UpdateStepDescription();
+                FlowSteps.Add(startStep);
                 string[] allPythonLines = scriptContent.Split(
-    new[] { Environment.NewLine, "\n", "\r" },
-    StringSplitOptions.RemoveEmptyEntries);
+                    new[] { Environment.NewLine, "\n", "\r" },
+                    StringSplitOptions.RemoveEmptyEntries);
                 bool isEnterRunFunction = false;
-                List<string> runFunctionLines = new List<string>();
+                List<(string Line, int IndentLevel)> runFunctionLinesWithIndent = new List<(string, int)>();
                 foreach (string singleLine in allPythonLines)
                 {
                     string trimLine = singleLine.Trim();
@@ -2840,34 +3109,161 @@ namespace OctoFixFlow
                         break;
                     }
 
-                    if (isEnterRunFunction && originalLine.StartsWith("    ") && !string.IsNullOrWhiteSpace(trimLine))
+                    if (isEnterRunFunction && !string.IsNullOrWhiteSpace(trimLine))
                     {
-
-                        string lineWithoutIndent = originalLine.TrimStart(' ', '\t');
-                        runFunctionLines.Add(lineWithoutIndent); // 存入无缩进的行，便于解析
-                                                                 // 若需要保留原始缩进，直接存入 originalLine 即可
-                                                                 // runFunctionLines.Add(originalLine);
+                        // 计算缩进级别（每4个空格=1级）
+                        int leadingSpaces = originalLine.TakeWhile(c => c == ' ').Count();
+                        int lineIndentLevel = leadingSpaces / 4;
+                        runFunctionLinesWithIndent.Add((trimLine, lineIndentLevel));
                     }
                 }
+                int currentParseLevel = 1;
+                Stack<int> loopEndExpectStack = new Stack<int>();
                 string shakerTemp = "";
-                foreach (string targetLine in runFunctionLines)
+                //Debug.WriteLine(runFunctionLinesWithIndent.Count);
+                for (int i = 0; i < runFunctionLinesWithIndent.Count; i++)
                 {
+                    var (targetLine, lineIndent) = runFunctionLinesWithIndent[i];
+
+                    if (loopEndExpectStack.Count > 0 && lineIndent < currentParseLevel)
+                    {
+                        var endLoopStep = new FlowStep
+                        {
+                            Index = _stepIndex++,
+                            Type = "endLoop",
+                            IsSelected = false,
+                            IsSystemStep = false,
+                            Level = loopEndExpectStack.Pop()
+                        };
+                        endLoopStep.UpdateStepDescription();
+                        FlowSteps.Add(endLoopStep);
+                        currentParseLevel = lineIndent;
+                    }
+                    if (targetLine.StartsWith("#"))
+                    {
+                        string annoText = targetLine.TrimStart('#', ' ', '-').TrimEnd(' ', '-');
+                        if (targetLine.Contains("---"))
+                        {
+                            var annoStep = new FlowStep
+                            {
+                                Index = _stepIndex++,
+                                Type = "Annotation",
+                                IsSelected = false,
+                                IsSystemStep = false,
+                                Level = currentParseLevel, // 使用当前缩进级别
+                                AnnoValue = annoText
+                            };
+                            annoStep.UpdateStepDescription();
+                            FlowSteps.Add(annoStep);
+                        }
+
+                        // 注释行处理完，跳过后面的函数匹配
+                        continue;
+                    }
+                    #region 变量
+                    // 1. 赋值 =  例：test=1  辉煌=2
+                    var assignMatch = Regex.Match(targetLine, @"^([a-zA-Z_\u4e00-\u9fa5][\w\u4e00-\u9fa5]*)\s*=\s*(\d+(?:\.\d+)?)$");
+                    // 2. 加 +=  例：test+=2
+                    var addMatch = Regex.Match(targetLine, @"^([a-zA-Z_\u4e00-\u9fa5][\w\u4e00-\u9fa5]*)\s*\+=\s*(\d+(?:\.\d+)?)$");
+                    // 3. 减 -=  例：test-=1
+                    var minusMatch = Regex.Match(targetLine, @"^([a-zA-Z_\u4e00-\u9fa5][\w\u4e00-\u9fa5]*)\s*-=\s*(\d+(?:\.\d+)?)$");
+                    // 4. 乘 *=  例：test*=3
+                    var multiplyMatch = Regex.Match(targetLine, @"^([a-zA-Z_\u4e00-\u9fa5][\w\u4e00-\u9fa5]*)\s*\*=\s*(\d+(?:\.\d+)?)$");
+                    // 5. 除 /=  例：test/=2
+                    var divideMatch = Regex.Match(targetLine, @"^([a-zA-Z_\u4e00-\u9fa5][\w\u4e00-\u9fa5]*)\s*/=\s*(\d+(?:\.\d+)?)$");
+                    if (assignMatch.Success || addMatch.Success || minusMatch.Success || multiplyMatch.Success || divideMatch.Success)
+                    {
+                        var variateStep = new FlowStep
+                        {
+                            Index = _stepIndex++,
+                            Type = "Variate",
+                            IsSelected = false,
+                            IsSystemStep = false,
+                            Level = currentParseLevel // 继承当前缩进级别，完美支持循环内的变量操作
+                        };
+
+                        // 匹配对应操作类型，和你的导出逻辑完全一一对应
+                        if (assignMatch.Success)
+                        {
+                            variateStep.VariateScriptName = assignMatch.Groups[1].Value;
+                            variateStep.VariateNum = float.Parse(assignMatch.Groups[2].Value);
+                            variateStep.VariateStep = _res.SettingManualVariateEqual;
+                        }
+                        else if (addMatch.Success)
+                        {
+                            variateStep.VariateScriptName = addMatch.Groups[1].Value;
+                            variateStep.VariateNum = float.Parse(addMatch.Groups[2].Value);
+                            variateStep.VariateStep = _res.SettingManualVariateAdd;
+                        }
+                        else if (minusMatch.Success)
+                        {
+                            variateStep.VariateScriptName = minusMatch.Groups[1].Value;
+                            variateStep.VariateNum = float.Parse(minusMatch.Groups[2].Value);
+                            variateStep.VariateStep = _res.SettingManualVariateMinus;
+                        }
+                        else if (multiplyMatch.Success)
+                        {
+                            variateStep.VariateScriptName = multiplyMatch.Groups[1].Value;
+                            variateStep.VariateNum = float.Parse(multiplyMatch.Groups[2].Value);
+                            variateStep.VariateStep = _res.SettingManualVariateMultiply;
+                        }
+                        else if (divideMatch.Success)
+                        {
+                            variateStep.VariateScriptName = divideMatch.Groups[1].Value;
+                            variateStep.VariateNum = float.Parse(divideMatch.Groups[2].Value);
+                            variateStep.VariateStep = _res.SettingManualVariateDivide;
+                        }
+
+                        FlowSteps.Add(variateStep);
+
+                        continue;
+                    }
+                    #endregion
                     if (targetLine.Contains("(") && targetLine.Contains(")"))
                     {
+                        if (targetLine.TrimStart().StartsWith("for"))
+                        {
+                            Match rangeMatch = Regex.Match(targetLine, @"range\((\d+),\s*(\d+)\s*\+\s*1,\s*(\d+)\)");
+                            if (rangeMatch.Success)
+                            {
+                                var flowStep = new FlowStep
+                                {
+                                    Index = _stepIndex++,
+                                    Type = "Loop",
+                                    IsSelected = false,
+                                    IsSystemStep = false,
+                                    Level = currentParseLevel,
+                                    LoopStartNum = int.Parse(rangeMatch.Groups[1].Value),
+                                    LoopEndNum = int.Parse(rangeMatch.Groups[2].Value),
+                                    LoopAddNum = int.Parse(rangeMatch.Groups[3].Value)
+                                };
+                                //flowStep.UpdateStepDescription();
+                                FlowSteps.Add(flowStep);
+
+                                // 记录栈，以便后续生成 EndLoop
+                                loopEndExpectStack.Push(currentParseLevel);
+                                currentParseLevel++; // 下一行缩进+1
+                            }
+                            continue;
+                        }
                         string pattern = @"^([\w\.]+)\((.*)\)";
+
                         Match funcMatch = Regex.Match(targetLine, pattern);
+
                         if (funcMatch.Success)
                         {
                             var flowStep = new FlowStep
                             {
                                 Index = _stepIndex++,
                                 IsSelected = false,
-                                IsSystemStep = false
+                                IsSystemStep = false,
+                                Level = currentParseLevel // 使用当前解析级别
                             };
                             string funcName = funcMatch.Groups[1].Value;
                             string paramContent = funcMatch.Groups[2].Value;
-                            Debug.WriteLine($"    → 函数名：{funcName}，括号内参数：{paramContent}");
                             int nowAllNum = 0;
+
+
                             switch (funcName)
                             {
                                 case "tipon":
@@ -2878,10 +3274,8 @@ namespace OctoFixFlow
                                     flowStep.Position = MapPlatePositionBack(tiponPlate);
                                     flowStep.Type = "TipOn";
                                     if (flowStep.Position.StartsWith("P"))
-                                    {
-
                                         nowAllNum = _plateConsumableMap[flowStep.Position.Substring(1)].Settings.numRows;
-                                    }
+
                                     if (tiponID == "1")
                                     {
                                         flowStep.SelectedPipetteName = "pipette_1";
@@ -2894,7 +3288,7 @@ namespace OctoFixFlow
                                         flowStep.SelectedCells = ReverseParsePipettePosition(int.Parse(tiponRow), int.Parse(tiponCol), nowAllNum, isRightSigna);
                                         flowStep.WellPosition = ReverseParsePipetteWellPosition(int.Parse(tiponRow), int.Parse(tiponCol), nowAllNum, isRightSigna);
                                     }
-                                    flowStep.UpdateStepDescription();
+                                    //flowStep.UpdateStepDescription();
                                     FlowSteps.Add(flowStep);
                                     break;
                                 case "aspirate":
@@ -2907,23 +3301,21 @@ namespace OctoFixFlow
                                     string aspPostAir = "";
                                     if (paramContent.Contains("post_air"))
                                         aspPostAir = ExtractSingleParamValue(paramContent, "post_air");
-                                    string aspDepth = ExtractSingleParamValue(paramContent, "depth");
-                                    float aspDepthValue = ExtractFloatValueFromBracket(aspDepth);
+                                    string aspDepth = ExtractComplexParamValue(paramContent, "depth");
+                                    //float aspDepthValue = ExtractFloatValueFromBracket(aspDepth);
+                                    flowStep.LiquidAisDistance = ParseDepthParamToString(aspDepth);
 
                                     flowStep.Position = MapPlatePositionBack(aspPlate);
                                     flowStep.Type = "Aspirate";
                                     flowStep.Volume = float.Parse(aspVol);
                                     flowStep.LiquidAisSpeed = float.Parse(aspSpeed);
-                                    flowStep.LiquidAisDistance = aspDepthValue;
+                                    //flowStep.LiquidAisDistance = aspDepthValue;
                                     if (aspPostAir != "")
                                         flowStep.LiquidAisAirB = float.Parse(aspPostAir);
 
-
                                     if (flowStep.Position.StartsWith("P"))
-                                    {
-
                                         nowAllNum = _plateConsumableMap[flowStep.Position.Substring(1)].Settings.numRows;
-                                    }
+
                                     if (aspID == "1")
                                     {
                                         flowStep.SelectedPipetteName = "pipette_1";
@@ -2936,7 +3328,7 @@ namespace OctoFixFlow
                                         flowStep.SelectedCells = ReverseParsePipettePosition(int.Parse(aspRow), int.Parse(aspCol), nowAllNum, isRightSigna);
                                         flowStep.WellPosition = ReverseParsePipetteWellPosition(int.Parse(aspRow), int.Parse(aspCol), nowAllNum, isRightSigna);
                                     }
-                                    flowStep.UpdateStepDescription();
+                                    //flowStep.UpdateStepDescription();
                                     FlowSteps.Add(flowStep);
                                     break;
                                 case "dispense":
@@ -2947,24 +3339,23 @@ namespace OctoFixFlow
                                     string disVol = ExtractSingleParamValue(paramContent, "vol");
                                     string disPushOutVol = ExtractSingleParamValue(paramContent, "push_out");
                                     string disSpeed = ExtractSingleParamValue(paramContent, "speed");
-                                    string disDepth = ExtractSingleParamValue(paramContent, "depth");
-                                    float disDepthValue = ExtractFloatValueFromBracket(disDepth);
+                                    string disDepth = ExtractComplexParamValue(paramContent, "depth");
+                                    //float disDepthValue = ExtractFloatValueFromBracket(disDepth);
+                                    flowStep.LiquidDisDistance = ParseDepthParamToString(disDepth);
 
                                     flowStep.Position = MapPlatePositionBack(disPlate);
                                     flowStep.Type = "Dispense";
                                     flowStep.Volume = float.Parse(disVol);
                                     flowStep.LiquidDisSpeed = float.Parse(disSpeed);
-                                    flowStep.LiquidDisDistance = disDepthValue;
+                                    //flowStep.LiquidDisDistance = disDepthValue;
                                     if (disPushOutVol == "")
                                         flowStep.PushOutvolume = 0;
                                     else
                                         flowStep.PushOutvolume = float.Parse(disPushOutVol);
 
                                     if (flowStep.Position.StartsWith("P"))
-                                    {
-
                                         nowAllNum = _plateConsumableMap[flowStep.Position.Substring(1)].Settings.numRows;
-                                    }
+
                                     if (disID == "1")
                                     {
                                         flowStep.SelectedPipetteName = "pipette_1";
@@ -2977,7 +3368,7 @@ namespace OctoFixFlow
                                         flowStep.SelectedCells = ReverseParsePipettePosition(int.Parse(disRow), int.Parse(disCol), nowAllNum, isRightSigna);
                                         flowStep.WellPosition = ReverseParsePipetteWellPosition(int.Parse(disRow), int.Parse(disCol), nowAllNum, isRightSigna);
                                     }
-                                    flowStep.UpdateStepDescription();
+                                    //flowStep.UpdateStepDescription();
                                     FlowSteps.Add(flowStep);
                                     break;
                                 case "tipoff":
@@ -2988,10 +3379,8 @@ namespace OctoFixFlow
                                     flowStep.Position = MapPlatePositionBack(tipoffPlate);
                                     flowStep.Type = "TipOff";
                                     if (flowStep.Position.StartsWith("P"))
-                                    {
-
                                         nowAllNum = _plateConsumableMap[flowStep.Position.Substring(1)].Settings.numRows;
-                                    }
+
                                     if (tipoffID == "1")
                                     {
                                         flowStep.SelectedPipetteName = "pipette_1";
@@ -3004,15 +3393,14 @@ namespace OctoFixFlow
                                         flowStep.SelectedCells = ReverseParsePipettePosition(int.Parse(tipoffRow), int.Parse(tipoffCol), nowAllNum, isRightSigna);
                                         flowStep.WellPosition = ReverseParsePipetteWellPosition(int.Parse(tipoffRow), int.Parse(tipoffCol), nowAllNum, isRightSigna);
                                     }
-                                    flowStep.UpdateStepDescription();
+                                    //flowStep.UpdateStepDescription();
                                     FlowSteps.Add(flowStep);
                                     break;
                                 case "wait":
                                     string waitTime = ExtractSingleParamValue(paramContent, "s");
-                                    //string waitValue = ExtractSingleParamValue(paramContent, "value");
                                     flowStep.Type = "Wait";
                                     flowStep.WaitTime = int.Parse(waitTime);
-                                    flowStep.UpdateStepDescription();
+                                    //flowStep.UpdateStepDescription();
                                     FlowSteps.Add(flowStep);
                                     break;
                                 case "mixing":
@@ -3022,10 +3410,12 @@ namespace OctoFixFlow
                                     string mixCol = ExtractSingleParamValue(paramContent, "col");
                                     string mixVol = ExtractSingleParamValue(paramContent, "vol");
                                     string misPushOutVol = ExtractSingleParamValue(paramContent, "push_out");
+                                    string misInhaVol = ExtractSingleParamValue(paramContent, "final_asp");
                                     string mixRound = ExtractSingleParamValue(paramContent, "rounds");
                                     string mixSpeed = ExtractSingleParamValue(paramContent, "speed");
-                                    string mixDepth = ExtractSingleParamValue(paramContent, "depth");
-                                    float mixDepthValue = ExtractFloatValueFromBracket(mixDepth);
+                                    string mixDepth = ExtractComplexParamValue(paramContent, "depth");
+                                    //float mixDepthValue = ExtractFloatValueFromBracket(mixDepth);
+                                    flowStep.LiquidAisDistance = ParseDepthParamToString(mixDepth);
 
                                     flowStep.Position = MapPlatePositionBack(mixPlate);
                                     flowStep.Type = "Mix";
@@ -3033,17 +3423,19 @@ namespace OctoFixFlow
                                     flowStep.MixCount = int.Parse(mixRound);
                                     flowStep.LiquidAisSpeed = float.Parse(mixSpeed);
                                     flowStep.LiquidDisSpeed = float.Parse(mixSpeed);
-                                    flowStep.LiquidAisDistance = mixDepthValue;
-                                    flowStep.LiquidDisDistance = mixDepthValue;
+                                    //flowStep.LiquidAisDistance = mixDepthValue;
+                                    //flowStep.LiquidDisDistance = mixDepthValue;
                                     if (misPushOutVol == "")
                                         flowStep.PushOutvolume = 0;
                                     else
                                         flowStep.PushOutvolume = float.Parse(misPushOutVol);
+                                    if (misInhaVol == "")
+                                        flowStep.InhaVolume = 0;
+                                    else
+                                        flowStep.InhaVolume = float.Parse(misInhaVol);
                                     if (flowStep.Position.StartsWith("P"))
-                                    {
-
                                         nowAllNum = _plateConsumableMap[flowStep.Position.Substring(1)].Settings.numRows;
-                                    }
+
                                     if (mixID == "1")
                                     {
                                         flowStep.SelectedPipetteName = "pipette_1";
@@ -3056,7 +3448,7 @@ namespace OctoFixFlow
                                         flowStep.SelectedCells = ReverseParsePipettePosition(int.Parse(mixRow), int.Parse(mixCol), nowAllNum, isRightSigna);
                                         flowStep.WellPosition = ReverseParsePipetteWellPosition(int.Parse(mixRow), int.Parse(mixCol), nowAllNum, isRightSigna);
                                     }
-                                    flowStep.UpdateStepDescription();
+                                    //flowStep.UpdateStepDescription();
                                     FlowSteps.Add(flowStep);
                                     break;
                                 case "movePlate":
@@ -3072,7 +3464,7 @@ namespace OctoFixFlow
                                         flowStep.TransferPosition = 0;
                                     else
                                         flowStep.TransferPosition = float.Parse(transferPosition);
-                                    flowStep.UpdateStepDescription();
+                                    //flowStep.UpdateStepDescription();
                                     FlowSteps.Add(flowStep);
                                     break;
                                 case "Shaker.start_temp":
@@ -3086,18 +3478,19 @@ namespace OctoFixFlow
                                     flowStep.ModuleName = "shaker_" + shakerID;
                                     int targetShakerIndex = plateModules.IndexOf(flowStep.ModuleName);
 
-
                                     string finalResult = $"P{targetShakerIndex + 1}";
                                     flowStep.Type = "Shake";
                                     flowStep.Position = finalResult;
                                     flowStep.ShakeTemp = float.Parse(shakerTemp);
                                     flowStep.ShakeRPM = int.Parse(shakerRPM);
                                     flowStep.WaitTime = int.Parse(shakerTime);
-                                    flowStep.UpdateStepDescription();
+                                    //flowStep.UpdateStepDescription();
                                     FlowSteps.Add(flowStep);
                                     break;
                                 case "Magnetic.on":
                                     string magneticENID = ExtractSingleParamValue(paramContent, "id");
+                                    string magneticHeight = ExtractSingleParamValue(paramContent, "p");
+
                                     flowStep.ModuleName = "magnetic_" + magneticENID;
                                     int targetMagneticonIndex = plateModules.IndexOf(flowStep.ModuleName);
 
@@ -3106,7 +3499,9 @@ namespace OctoFixFlow
                                     flowStep.Position = finalmagneticENResult;
                                     flowStep.IsMagnetUp = true;
                                     flowStep.IsMagnetDown = false;
-                                    flowStep.UpdateStepDescription();
+                                    flowStep.MagnetNums = float.Parse(magneticHeight);
+
+                                    //flowStep.UpdateStepDescription();
                                     FlowSteps.Add(flowStep);
                                     break;
                                 case "Magnetic.off"://magnetic
@@ -3119,7 +3514,7 @@ namespace OctoFixFlow
                                     flowStep.Position = finalmagneticDisResult;
                                     flowStep.IsMagnetUp = false;
                                     flowStep.IsMagnetDown = true;
-                                    flowStep.UpdateStepDescription();
+                                    //flowStep.UpdateStepDescription();
                                     FlowSteps.Add(flowStep);
                                     break;
                                 case "Cool.start":
@@ -3135,7 +3530,7 @@ namespace OctoFixFlow
                                     flowStep.Position = finalcoolResult;
                                     flowStep.IsTempCtrlOpen = true;
                                     flowStep.IsTempCtrlClose = false;
-                                    flowStep.UpdateStepDescription();
+                                    //flowStep.UpdateStepDescription();
                                     FlowSteps.Add(flowStep);
                                     break;
                                 case "Cool.stop":
@@ -3148,25 +3543,25 @@ namespace OctoFixFlow
                                     flowStep.Position = finalcoolStopResult;
                                     flowStep.IsTempCtrlOpen = false;
                                     flowStep.IsTempCtrlClose = true;
-                                    flowStep.UpdateStepDescription();
+                                    //flowStep.UpdateStepDescription();
                                     FlowSteps.Add(flowStep);
                                     break;
                                 case "Pcr.opendoor":
                                     flowStep.PcrStep = _res.SettingManualPCROpen;
                                     flowStep.Type = "PCR";
-                                    flowStep.UpdateStepDescription();
+                                    //flowStep.UpdateStepDescription();
                                     FlowSteps.Add(flowStep);
                                     break;
                                 case "Pcr.closedoor":
                                     flowStep.PcrStep = _res.SettingManualPCRClose;
                                     flowStep.Type = "PCR";
-                                    flowStep.UpdateStepDescription();
+                                    //flowStep.UpdateStepDescription();
                                     FlowSteps.Add(flowStep);
                                     break;
                                 case "Pcr.stop":
                                     flowStep.PcrStep = _res.SettingManualPCRStop;
                                     flowStep.Type = "PCR";
-                                    flowStep.UpdateStepDescription();
+                                    //flowStep.UpdateStepDescription();
                                     FlowSteps.Add(flowStep);
                                     break;
                                 case "Pcr.run":
@@ -3174,13 +3569,13 @@ namespace OctoFixFlow
                                     flowStep.PcrStep = _res.SettingManualPCRStart;
                                     flowStep.PcrScriptAdress = PcrrunValue;
                                     flowStep.Type = "PCR";
-                                    flowStep.UpdateStepDescription();
+                                    //flowStep.UpdateStepDescription();
                                     FlowSteps.Add(flowStep);
                                     break;
                                 case "Pcr.wait_end":
                                     flowStep.PcrStep = _res.SettingManualPCRWaitRun;
                                     flowStep.Type = "PCR";
-                                    flowStep.UpdateStepDescription();
+                                    //flowStep.UpdateStepDescription();
                                     FlowSteps.Add(flowStep);
                                     break;
                                 default:
@@ -3188,7 +3583,20 @@ namespace OctoFixFlow
                             }
                         }
                     }
-
+                }
+                if (currentParseLevel > 1)
+                {
+                    var endLoopStep = new FlowStep
+                    {
+                        Index = _stepIndex++,
+                        Type = "endLoop",
+                        IsSelected = false,
+                        IsSystemStep = false,
+                        Level = loopEndExpectStack.Pop()
+                    };
+                    endLoopStep.UpdateStepDescription();
+                    FlowSteps.Add(endLoopStep);
+                    currentParseLevel -= 1;
                 }
                 // 添加结束步骤
                 FlowSteps.Add(new FlowStep
@@ -3196,7 +3604,8 @@ namespace OctoFixFlow
                     Index = _stepIndex++,
                     Type = "end",
                     IsSelected = false,
-                    IsSystemStep = true
+                    IsSystemStep = true,
+                    Level = 0
                 });
 
                 // 重新编号步骤
@@ -3221,51 +3630,7 @@ namespace OctoFixFlow
         /// <param name="channelType">通道类型：0=单通道，1=8通道，2=96通道</param>
         /// <returns>还原后的SelectedCells字符串</returns>
         /// <exception cref="ArgumentOutOfRangeException">行/列号小于1时抛出（非法孔位）</exception>
-        /*
-        private string ReverseParsePipettePosition(int row, int col, int is8Channel)
-        {
-            // 基础参数校验：行号、列号必须大于0（孔位无0行0列）
-            if (row < 1 || col < 1)
-            {
-                throw new ArgumentOutOfRangeException($"行号（{row}）和列号（{col}）必须大于0", nameof(row));
-            }
 
-            // 场景1：单通道（0）→ 格式："行,列"
-            if (is8Channel == 0)
-            {
-                return $"{row},{col}";
-            }
-            // 场景2：8通道（1）→ 格式："1,4;2,4;...;8,4"
-            else if (is8Channel == 1)
-            {
-                List<string> channelPositionList = new List<string>();
-                for (int i = 0; i < 8; i++)
-                {
-                    int currentRow = row + i; // 首行+偏移量0~7，生成8行
-                    channelPositionList.Add($"{currentRow},{col}");
-                }
-                return string.Join(";", channelPositionList);
-            }
-            // 场景3：96通道（2）→ 按需自定义格式（以下为默认实现，可根据你的业务调整）
-            else if (is8Channel == 2)
-            {
-                List<string> channelPositionList = new List<string>();
-                // 96通道默认：生成12行×8列（可根据你的实际格式修改循环逻辑）
-                // 若你需要和8通道类似的“公共列+连续行”格式，可保留以下逻辑；若有其他格式，直接调整即可
-                for (int i = 0; i < 96; i++)
-                {
-                    int currentRow = row + i; // 首行+偏移量0~95，生成96行（或按你的96通道格式调整）
-                    channelPositionList.Add($"{currentRow},{col}");
-                }
-                return string.Join(";", channelPositionList);
-            }
-            // 场景4：非法通道类型（兜底分支，避免无返回值，同时抛出明确异常）
-            else
-            {
-                throw new ArgumentException($"非法的通道类型：{is8Channel}，仅支持0（单通道）、1（8通道）、2（96通道）", nameof(is8Channel));
-            }
-        }
-        */
 
         private string ReverseParsePipettePosition(int row, int col, int allRow, int channelType)
         {
@@ -3408,45 +3773,7 @@ namespace OctoFixFlow
                 throw new ArgumentException($"非法的通道类型：{channelType}，仅支持0（单通道）、1（8通道）、2（96通道）", nameof(channelType));
             }
         }
-        /*
-        private string ReverseParsePipetteWellPosition(int row, int col, int is8Channel)
-        {
-            // 基础参数校验：行号、列号必须大于0（孔位无0行0列）
-            if (row < 1 || col < 1)
-            {
-                throw new ArgumentOutOfRangeException($"行号（{row}）和列号（{col}）必须大于0", nameof(row));
-            }
 
-            // 场景1：单通道（0）→ 格式："行,列"
-            if (is8Channel == 0)
-            {
-                return $"{ResourceHelper.Instance.StepDetailRowPrefix}{row} {ResourceHelper.Instance.StepDetailColumnPrefix}{col}";
-            }
-            // 场景2：8通道（1）→ 格式："1,4;2,4;...;8,4"
-            else if (is8Channel == 1)
-            {
-                return $"{ResourceHelper.Instance.StepDetailRowPrefix}{"1~8"} {ResourceHelper.Instance.StepDetailColumnPrefix}{col}";
-            }
-            // 场景3：96通道（2）→ 按需自定义格式（以下为默认实现，可根据你的业务调整）
-            else if (is8Channel == 2)
-            {
-                List<string> channelPositionList = new List<string>();
-                // 96通道默认：生成12行×8列（可根据你的实际格式修改循环逻辑）
-                // 若你需要和8通道类似的“公共列+连续行”格式，可保留以下逻辑；若有其他格式，直接调整即可
-                for (int i = 0; i < 96; i++)
-                {
-                    int currentRow = row + i; // 首行+偏移量0~95，生成96行（或按你的96通道格式调整）
-                    channelPositionList.Add($"{currentRow},{col}");
-                }
-                return string.Join(";", channelPositionList);
-            }
-            // 场景4：非法通道类型（兜底分支，避免无返回值，同时抛出明确异常）
-            else
-            {
-                throw new ArgumentException($"非法的通道类型：{is8Channel}，仅支持0（单通道）、1（8通道）、2（96通道）", nameof(is8Channel));
-            }
-        }
-        */
         private string ExtractSingleParamValue(string paramContent, string targetParamName)
         {
             if (string.IsNullOrWhiteSpace(paramContent) || string.IsNullOrWhiteSpace(targetParamName))
@@ -3506,6 +3833,67 @@ namespace OctoFixFlow
             // 匹配失败或解析失败，返回默认值
             return defaultValue;
         }
+        // 方法 1: 智能提取参数，能处理 depth=(...) 这种复杂情况
+        private string ExtractComplexParamValue(string paramContent, string keyName)
+        {
+            // 1. 找到 key= 的位置
+            string keyPattern = keyName + "=";
+            int keyIndex = paramContent.IndexOf(keyPattern);
+            if (keyIndex == -1) return "";
+
+            // 2. 从 key= 之后开始截取
+            int startIndex = keyIndex + keyPattern.Length;
+            string remaining = paramContent.Substring(startIndex);
+
+            // 3. 核心逻辑：遍历字符，处理括号嵌套，找到这个参数真正的结束位置
+            int bracketCount = 0;
+            int endIndex = remaining.Length;
+
+            for (int i = 0; i < remaining.Length; i++)
+            {
+                char c = remaining[i];
+                if (c == '(') bracketCount++;
+                else if (c == ')') bracketCount--;
+
+                // 如果遇到逗号，且此时括号层级为0，说明这是参数分隔符，循环结束
+                if (c == ',' && bracketCount == 0)
+                {
+                    endIndex = i;
+                    break;
+                }
+            }
+
+            // 4. 提取结果并去除首尾空白
+            return remaining.Substring(0, endIndex).Trim();
+        }
+        /// <summary>
+        /// 解析 depth 参数字符串
+        /// 输入示例 1: "cons_12WellHigh.bottom(2.00)"
+        /// 输入示例 2: "(cons_12WellHigh.bottom(8.00),cons_12WellHigh.bottom(4.00))"
+        /// 输出对应: "2.00" 或 "8.00,4.00"
+        /// </summary>
+        private string ParseDepthParamToString(string depthParam)
+        {
+            if (string.IsNullOrWhiteSpace(depthParam)) return "1.00";
+
+            // 使用正则匹配所有 bottom(...) 括号内的数值
+            // 这个模式会匹配 "bottom(" 开头， ")" 结尾，中间是数字的部分
+            var pattern = @"bottom\((\d+\.?\d*)\)";
+            var matches = System.Text.RegularExpressions.Regex.Matches(depthParam, pattern);
+
+            if (matches.Count > 0)
+            {
+                // 提取所有匹配到的数值
+                var values = matches.Cast<System.Text.RegularExpressions.Match>()
+                                    .Select(m => m.Groups[1].Value); // Groups[1] 是括号内的数字
+
+                // 用逗号连接，直接赋值给 string 类型的 LiquidAisDistance
+                return string.Join(",", values);
+            }
+
+            // 容错处理
+            return "1.00";
+        }
         private Border FindParentBorder(DependencyObject childControl)
         {
             if (childControl == null) return null;
@@ -3549,29 +3937,124 @@ namespace OctoFixFlow
                 ShowNotification(_res.ScriptStartEmpty, NotificationControl.NotificationType.Warn);
                 return;
             }
-            var invalidSteps = new List<int>();
+            //var invalidSteps = new List<int>();
             foreach (var step in FlowSteps)
             {
+                //if (step.Type == "Aspirate")
+                //{
+
+                //}
+                //else if (step.Type == "Dispense")
+                //{
+
+                //}
                 // 只校验吸液和注液步骤
-                if ((step.Type == "吸液" || step.Type == "注液") &&
+                if ((step.Type == "Aspirate" || step.Type == "Dispense") &&
                     !step.IsSystemStep) // 排除系统步骤（开始/结束）
                 {
                     // 检查液体参数是否未选择
                     if (step.SelectedLiquid == null || string.IsNullOrEmpty(step.SelectedLiquid.name))
                     {
-                        invalidSteps.Add(step.Index); // 记录未选择液体参数的步骤序号
+                        //string stepNumbers = string.Join("、", invalidSteps);
+                        //string message = $"{_res.ScriptStartLiquidEmpty}{step.Index}）";
+
+                        //ShowNotification(message, NotificationControl.NotificationType.Error);
+                        //return; 
+                    }
+                }
+                else if (step.Type == "Shake")
+                {
+                    if (step.ShakeTemp == 0 || step.ShakeRPM == 0 || step.WaitTime == 0)
+                    {
+                        string message = $"{_res.ScriptStartLiquidEmpty}{step.Index}）";
+
+                        ShowNotification(message, NotificationControl.NotificationType.Error);
+                        return;
+                    }
+                    if (float.TryParse(step.ShakerVariateTempValue, out float temp))
+                    {
+                        if (temp > 105 || temp < 4)
+                        {
+                            step.ShakerVariateTempValue = "";
+                            step.ShakerVariateTempName = "";
+                        }
+                    }
+                    if (int.TryParse(step.ShakerVariateSpeedValue, out int speed))
+                    {
+                        if (speed > 2500 || speed < 100)
+                        {
+                            step.ShakerVariateSpeedValue = "";
+                            step.ShakerVariateSpeedName = "";
+                        }
+                    }
+                }
+                else if (step.Type == "Temp Ctrl")
+                {
+                    if (step.TempCtrlTemp == 0)
+                    {
+                        string message = $"{_res.ScriptStartLiquidEmpty}{step.Index}）";
+
+                        ShowNotification(message, NotificationControl.NotificationType.Error);
+                        return;
+                    }
+                    if (float.TryParse(step.TempControlVariateTempValue, out float temp))
+                    {
+                        if (temp > 105 || temp < 4)
+                        {
+                            step.TempControlVariateTempValue = "";
+                            step.TempControlVariateTempName = "";
+                        }
+                    }
+                }
+                else if (step.Type == "Magnetic")
+                {
+                    if (step.MagnetNums == 0)
+                    {
+                        string message = $"{_res.ScriptStartLiquidEmpty}{step.Index}）";
+
+                        ShowNotification(message, NotificationControl.NotificationType.Error);
+                        return;
+                    }
+                    if (float.TryParse(step.MagnetVariateValue, out float height))
+                    {
+                        if (height > 25 || height < 0)
+                        {
+                            step.MagnetVariateValue = "";
+                            step.MagnetVariateName = "";
+                        }
+                    }
+                }
+                else if (step.Type == "Wait")
+                {
+                    if (step.WaitTime == 0)
+                    {
+                        string message = $"{_res.ScriptStartLiquidEmpty}{step.Index}）";
+
+                        ShowNotification(message, NotificationControl.NotificationType.Error);
+                        return;
+                    }
+                }
+                else if (step.Type == "Annotation")
+                {
+                    if (string.IsNullOrEmpty(step.AnnoValue))
+                    {
+                        string message = $"{_res.ScriptStartLiquidEmpty}{step.Index}）";
+
+                        ShowNotification(message, NotificationControl.NotificationType.Error);
+                        return;
                     }
                 }
             }
 
             // 如果存在未选择液体参数的步骤，提示并终止流程
-            if (invalidSteps.Count > 0)
-            {
-                string stepNumbers = string.Join("、", invalidSteps);
-                ShowNotification(_res.ScriptStartLiquidEmpty,
-                    NotificationControl.NotificationType.Error);
-                return; // 不继续执行后续流程
-            }
+            //if (invalidSteps.Count > 0)
+            //{
+            //    string stepNumbers = string.Join("、", invalidSteps);
+            //    string message = $"{_res.ScriptStartLiquidEmpty}{stepNumbers}）";
+
+            //    ShowNotification(message, NotificationControl.NotificationType.Error);
+            //    return; // 不继续执行后续流程
+            //}
             try
             {
                 // 1. 创建脚本Python
@@ -4188,5 +4671,7 @@ namespace OctoFixFlow
             ResourceHelper.Instance.SwitchToEnglish();
             ShowNotification("It has been switched to English", NotificationControl.NotificationType.Info);
         }
+
+
     }
 }

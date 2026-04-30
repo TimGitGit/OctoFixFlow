@@ -186,6 +186,12 @@
   <data name="GuideBtnDeckLayoutTitile" xml:space="preserve">
     <value>Configure Your Workstation Modules</value>
   </data>
+  <data name="GuideBtnDeviceAddFluoModule" xml:space="preserve">
+    <value>Add your Fluorescence Detection Module</value>
+  </data>
+  <data name="GuideBtnDeviceAddFluoModuleToolTip" xml:space="preserve">
+    <value>Core for fluorescence capture &amp; precise detection.</value>
+  </data>
   <data name="GuideBtnDeviceAddGripper" xml:space="preserve">
     <value>Add your gripper</value>
   </data>
@@ -370,7 +376,7 @@
     <value>Start process failed</value>
   </data>
   <data name="ScriptStartLiquidEmpty" xml:space="preserve">
-    <value>Some steps lack liquid parameters</value>
+    <value>Parameter missing (Step:</value>
   </data>
   <data name="ScriptStartSucc" xml:space="preserve">
     <value>Process starting execution</value>
@@ -401,6 +407,9 @@
   </data>
   <data name="SettingCons2D" xml:space="preserve">
     <value>Consumable 2D Drawing</value>
+  </data>
+  <data name="SettingCons3D" xml:space="preserve">
+    <value>Consumable 3D Drawing</value>
   </data>
   <data name="SettingConsA1XDistance" xml:space="preserve">
     <value>A1 Well X Dist.</value>
@@ -509,6 +518,9 @@
   </data>
   <data name="SettingConsPipetteTipParams" xml:space="preserve">
     <value>Pipette Tip Params</value>
+  </data>
+  <data name="SettingConsPreviewTitle" xml:space="preserve">
+    <value>Preview</value>
   </data>
   <data name="SettingConsRemove" xml:space="preserve">
     <value>Remove</value>
@@ -627,6 +639,9 @@
   <data name="SettingLiquidRemove" xml:space="preserve">
     <value>Remove</value>
   </data>
+  <data name="SettingMagneticHeightInvalid" xml:space="preserve">
+    <value>Valid 0~25 required</value>
+  </data>
   <data name="SettingManualArrowKeys" xml:space="preserve">
     <value>ArrowKeys</value>
   </data>
@@ -675,6 +690,9 @@
   </data>
   <data name="SettingManualEjectTip" xml:space="preserve">
     <value>Eject Tip</value>
+  </data>
+  <data name="SettingManualEnableFluo" xml:space="preserve">
+    <value>Enable Fluorescence Detection Module?</value>
   </data>
   <data name="SettingManualEnableGripper" xml:space="preserve">
     <value>Enable gripper?</value>
@@ -883,6 +901,30 @@
   <data name="SettingManualTitile" xml:space="preserve">
     <value>Manual Control</value>
   </data>
+  <data name="SettingManualVariateAdd" xml:space="preserve">
+    <value>+</value>
+  </data>
+  <data name="SettingManualVariateDivide" xml:space="preserve">
+    <value>÷</value>
+  </data>
+  <data name="SettingManualVariateEqual" xml:space="preserve">
+    <value>=</value>
+  </data>
+  <data name="SettingManualVariateMinus" xml:space="preserve">
+    <value>-</value>
+  </data>
+  <data name="SettingManualVariateMultiply" xml:space="preserve">
+    <value>×</value>
+  </data>
+  <data name="SettingManualVariateScriptName" xml:space="preserve">
+    <value>Variable Name</value>
+  </data>
+  <data name="SettingManualVariateScriptStep" xml:space="preserve">
+    <value>Variable action</value>
+  </data>
+  <data name="SettingManualVariateScriptValue" xml:space="preserve">
+    <value>Variable value</value>
+  </data>
   <data name="SettingManualVolume" xml:space="preserve">
     <value>Volume (μl):</value>
   </data>
@@ -966,6 +1008,9 @@
   </data>
   <data name="StepDetailEnableMix" xml:space="preserve">
     <value>Enable Mixing</value>
+  </data>
+  <data name="StepDetailInhaVolume" xml:space="preserve">
+    <value>InhalationVolume(ul):</value>
   </data>
   <data name="StepDetailLiquidParams" xml:space="preserve">
     <value>Liquid parameters:</value>
@@ -1051,6 +1096,9 @@
   <data name="StepDetailWellSelectionArea" xml:space="preserve">
     <value>Well Position Selection Area:</value>
   </data>
+  <data name="WindowActionAnno" xml:space="preserve">
+    <value>Annotation</value>
+  </data>
   <data name="WindowActionAspirate" xml:space="preserve">
     <value>Aspirate</value>
   </data>
@@ -1062,6 +1110,9 @@
   </data>
   <data name="WindowActionEndLoop" xml:space="preserve">
     <value>endLoop</value>
+  </data>
+  <data name="WindowActionFluo" xml:space="preserve">
+    <value>Fluo</value>
   </data>
   <data name="WindowActionFunctionAll" xml:space="preserve">
     <value>All</value>
@@ -1128,6 +1179,9 @@
     <value>UV</value>
     <comment>紫外灯</comment>
   </data>
+  <data name="WindowActionVariate" xml:space="preserve">
+    <value>Variate</value>
+  </data>
   <data name="WindowActionWait" xml:space="preserve">
     <value>Wait</value>
   </data>
@@ -1176,6 +1230,15 @@
   </data>
   <data name="WindowLogOut" xml:space="preserve">
     <value>LogOut</value>
+  </data>
+  <data name="WindowLoopEnd" xml:space="preserve">
+    <value>End Index</value>
+  </data>
+  <data name="WindowLoopStart" xml:space="preserve">
+    <value>Start Index</value>
+  </data>
+  <data name="WindowLoopStep" xml:space="preserve">
+    <value>Step Size</value>
   </data>
   <data name="WindowLoopTip" xml:space="preserve">
     <value>Nested loops not supported</value>

@@ -64,8 +64,9 @@ namespace OctoFixFlow
         private List<ModuleDatas> _tempModules = new List<ModuleDatas>(); // 温控模块列表
         private float _currentJumpSize = 0.1f;
 
-        //移液器3D
-        private ContainerUIElement3D _pipetteContainer; // 用来容纳移液器的容器，方便刷新
+        //3D
+        private ContainerUIElement3D _pipetteContainer;
+        private ContainerUIElement3D _consContainer;
 
         public PlateSettingsDialog(MainWidget mainWidget)
         {
@@ -91,7 +92,7 @@ namespace OctoFixFlow
             {
                 await loadSqlData();
                 InitPipette3D();
-
+                InitCons3D();
             };
             AddHeatingOscillModule(1, "P9");
             AddMagnetModule(1, "P6");
@@ -295,6 +296,7 @@ namespace OctoFixFlow
             // 5. 强制刷新所有绑定
             this.DataContext = null;
             this.DataContext = this;
+            RefreshConsModel(newCons);
 
             // 6. 更新顶部形状显示
             UpdateTopShapeVisibility(consNew.topShape);
@@ -522,12 +524,12 @@ namespace OctoFixFlow
                     aisAirA = 0,
                     aisSpeed = 0,
                     aisDelay = 0,
-                    aisDistance = 0,
+                    aisDistance = "0",
                     disAirB = 0,
                     disAirA = 0,
                     disSpeed = 0,
                     disDelay = 0,
-                    disDistance = 0
+                    disDistance = "0"
                 };
                 liquidNew.PropertyChanged += LiquidNew_PropertyChanged;
                 oldLiquidName = newLiquidName;
@@ -622,14 +624,14 @@ namespace OctoFixFlow
                 aisDelay = ParseXmlNodeValue<float>(liquidAttr, "A_Delay", 0.5f),
                 aisAirB = ParseXmlNodeValue<float>(liquidAttr, "A_Preair", 0f),
                 aisAirA = ParseXmlNodeValue<float>(liquidAttr, "A_Postair", 0f),
-                aisDistance = ParseXmlNodeValue<float>(liquidAttr, "A_DisfwBottom", 1.5f),
+                aisDistance = GetXmlNodeValue(liquidAttr, "A_DisfwBottom", ""),
 
                 // 注液参数 (D_开头对应dis属性)
                 disSpeed = ParseXmlNodeValue<float>(liquidAttr, "D_Speed", 100f),
                 disDelay = ParseXmlNodeValue<float>(liquidAttr, "D_Delay", 0.5f),
                 disAirB = ParseXmlNodeValue<float>(liquidAttr, "D_Preair", 0f),
                 disAirA = ParseXmlNodeValue<float>(liquidAttr, "D_Postair", 0f),
-                disDistance = ParseXmlNodeValue<float>(liquidAttr, "D_DisfwBottom", 1.5f)
+                disDistance = GetXmlNodeValue(liquidAttr, "D_DisfwBottom", "")
             };
 
             return liquid;
@@ -670,7 +672,7 @@ namespace OctoFixFlow
             AddXmlNode(xmlDoc, liquidAttr, "A_PreairDelay", "0");
             AddXmlNode(xmlDoc, liquidAttr, "A_Postair", liquid.aisAirA.ToString("F2"));
             AddXmlNode(xmlDoc, liquidAttr, "A_PostairDelay", "0");
-            AddXmlNode(xmlDoc, liquidAttr, "A_DisfwBottom", liquid.aisDistance.ToString("F2"));
+            AddXmlNode(xmlDoc, liquidAttr, "A_DisfwBottom", liquid.aisDistance.ToString());
 
             // 添加注液参数 (D_开头)
             AddXmlNode(xmlDoc, liquidAttr, "D_Speed", liquid.disSpeed.ToString("F2"));
@@ -681,7 +683,7 @@ namespace OctoFixFlow
             AddXmlNode(xmlDoc, liquidAttr, "D_PreairDelay", "0");
             AddXmlNode(xmlDoc, liquidAttr, "D_Postair", liquid.disAirA.ToString("F2"));
             AddXmlNode(xmlDoc, liquidAttr, "D_PostairDelay", "0");
-            AddXmlNode(xmlDoc, liquidAttr, "D_DisfwBottom", liquid.disDistance.ToString("F2"));
+            AddXmlNode(xmlDoc, liquidAttr, "D_DisfwBottom", liquid.disDistance.ToString());
 
             // 添加其他必要的固定参数
             AddXmlNode(xmlDoc, liquidAttr, "A_MSIntoWell", "100");
@@ -1638,7 +1640,142 @@ namespace OctoFixFlow
 
 
         #endregion
+        #region 微孔板
+        private void InitCons3D()
+        {
+            _consContainer = new ContainerUIElement3D();
+            Consumable3DViewport.Children.Add(_consContainer);
 
+        }
+        private void RefreshConsModel(ConsSettings consConfig)
+        {
+            if (_consContainer == null) return;
+            _consContainer.Children.Clear();
+
+            var config = new PlateConfig
+            {
+                QbWidth = 85.15,
+                QbLength = 127.23,
+                QbHeight = 2.46,
+                Width = 83.20,
+                Length = 125.39,
+                Height = 42.36,
+                TopWidth = 77.39,
+                TopLength = 120.21,
+                Rows = 8,
+                Cols = 12,
+                WallThickness = 1.0,
+                HoleDiameter = 5.0,
+                ColSpacing = 9.0,
+                RowSpacing = 9.0,
+                ConeHeight = 15.48
+            };
+
+
+
+            //CreateOrificePlate(consConfig, 0, 0, 0, _consContainer);
+
+
+            // 3. 稍微放大一点，方便观察
+            _consContainer.Transform = new ScaleTransform3D(1.5, 1.5, 1.5, 0, 0, 0);
+        }
+        //private void CreateOrificePlate(ConsSettings config, double offsetX, double offsetY, double offsetZ, ContainerUIElement3D container)
+        //{
+        //    double BottomWidth = config.labW;
+        //    double BottomLength = config.labL;
+        //    double BottomHeight = config.labH;
+        //    double CenterWidth = config.labW;
+        //    double CenterLength = config.labL;
+        //    double CenterHeight = config.labH;
+        //    int rows = config.numRows;
+        //    int cols = config.numColumns;
+        //    double wallThickness = config.WallThickness;
+        //    double holeRadius = config.HoleDiameter / 2.0;
+        //    double spacingX = config.distanceColumn;
+        //    double spacingY = config.distanceRow;
+        //    double startX = -((cols - 1) * spacingX) / 2;
+        //    double startY = -((rows - 1) * spacingY) / 2;
+        //    double coneHeight = config.ConeHeight;
+        //    double z = CenterHeight + wallThickness;
+
+        //    Color plasticBaseColor = Color.FromRgb(210, 210, 210);
+        //    Material transparentPlastic = CreateTransparentPlastic(plasticBaseColor, 150);
+
+        //    for (int i = 0; i < cols; i++)
+        //    {
+        //        for (int j = 0; j < rows; j++)
+        //        {
+        //            double x = startX + i * spacingX + offsetX;
+        //            double y = startY + j * spacingY + offsetY;
+        //            Point3D pipeStart = new Point3D(x, y, z - wallThickness / 2 - 0.05 + offsetZ);
+        //            Point3D pipeEnd = new Point3D(x, y, z + wallThickness / 2 + 0.05 + offsetZ);
+        //            container.Children.Add(AddPipe(pipeStart, pipeEnd, holeRadius * 2, transparentPlastic));
+        //            Point3D coneBase = new Point3D(x, y, z - wallThickness / 2 + offsetZ);
+        //            Point3D coneTip = new Point3D(x, y, z - wallThickness / 2 - coneHeight + offsetZ);
+        //            container.Children.Add(AddCone(coneBase, coneTip, holeRadius, 0.0, transparentPlastic));
+        //            container.Children.Add(AddSphere(coneTip, 1.0, transparentPlastic));
+        //        }
+        //    }
+
+        //    container.Children.Add(CreateBox(BottomLength, wallThickness, BottomHeight, new Point3D(offsetX, offsetY - BottomWidth / 2, offsetZ - BottomHeight / 2), transparentPlastic));
+        //    container.Children.Add(CreateBox(BottomLength, wallThickness, BottomHeight, new Point3D(offsetX, offsetY + BottomWidth / 2, offsetZ - BottomHeight / 2), transparentPlastic));
+        //    container.Children.Add(CreateBox(wallThickness, BottomWidth, BottomHeight, new Point3D(offsetX - BottomLength / 2, offsetY, offsetZ - BottomHeight / 2), transparentPlastic));
+        //    container.Children.Add(CreateBox(wallThickness, BottomWidth, BottomHeight, new Point3D(offsetX + BottomLength / 2, offsetY, offsetZ - BottomHeight / 2), transparentPlastic));
+
+        //    container.Children.Add(CreateBox(BottomLength, wallThickness, wallThickness, new Point3D(offsetX, offsetY + BottomWidth / 2 - 1, offsetZ), transparentPlastic));
+        //    container.Children.Add(CreateBox(BottomLength, wallThickness, wallThickness, new Point3D(offsetX, offsetY - BottomWidth / 2 + 1, offsetZ), transparentPlastic));
+        //    container.Children.Add(CreateBox(wallThickness, BottomWidth, wallThickness, new Point3D(offsetX + BottomLength / 2 - 1, offsetY, offsetZ), transparentPlastic));
+        //    container.Children.Add(CreateBox(wallThickness, BottomWidth, wallThickness, new Point3D(offsetX - BottomLength / 2 + 1, offsetY, offsetZ), transparentPlastic));
+
+        //    container.Children.Add(CreateBox(wallThickness, CenterWidth, CenterHeight, new Point3D(offsetX - CenterLength / 2, offsetY, offsetZ + CenterHeight / 2), transparentPlastic));
+        //    container.Children.Add(CreateBox(wallThickness, CenterWidth, CenterHeight, new Point3D(offsetX + CenterLength / 2, offsetY, offsetZ + CenterHeight / 2), transparentPlastic));
+        //    container.Children.Add(CreateBox(CenterLength, wallThickness, CenterHeight, new Point3D(offsetX, offsetY - CenterWidth / 2, offsetZ + CenterHeight / 2), transparentPlastic));
+        //    container.Children.Add(CreateBox(CenterLength, wallThickness, CenterHeight, new Point3D(offsetX, offsetY + CenterWidth / 2, offsetZ + CenterHeight / 2), transparentPlastic));
+
+        //    container.Children.Add(CreateBox(CenterLength, CenterWidth, wallThickness, new Point3D(offsetX, offsetY, offsetZ + CenterHeight + wallThickness / 2), transparentPlastic));
+        //    container.Transform = new ScaleTransform3D(
+        //        1.3, 1.3, 1.3,        // 缩放倍数
+        //        offsetX, offsetY, offsetZ  // 缩放中心 = 板位中心（真正不飘的核心！）
+        //    );
+
+        //}
+        private PipeVisual3D AddPipe(Point3D p1, Point3D p2, double diameter, Material mat, int thetaDiv = 40)
+        {
+            return new PipeVisual3D
+            {
+                Point1 = p1,
+                Point2 = p2,
+                Diameter = diameter,
+                Material = mat,
+                BackMaterial = mat,
+                ThetaDiv = thetaDiv
+            };
+        }
+        private SphereVisual3D AddSphere(Point3D center, double radius, Material mat, int thetaDiv = 20, int phiDiv = 20)
+        {
+            return new SphereVisual3D
+            {
+                Center = center,
+                Radius = radius,
+                Material = mat,
+                BackMaterial = mat,
+                ThetaDiv = thetaDiv,
+                PhiDiv = phiDiv
+            };
+        }
+        private BoxVisual3D CreateBox(double l, double w, double h, Point3D center, Material mat)
+        {
+            return new BoxVisual3D
+            {
+                Length = l,
+                Width = w,
+                Height = h,
+                Center = center,
+                Material = mat,
+                BackMaterial = mat
+            };
+        }
+        #endregion
         #region  移液器3D
         private void InitPipette3D()
         {
@@ -1685,12 +1822,11 @@ namespace OctoFixFlow
             _pipetteContainer.Transform = new ScaleTransform3D(1.5, 1.5, 1.5, 0, 0, 0);
         }
 
-        // 复用你 MainWindow 里的 CreateDynamicPipette 逻辑 (简化版)
+        // 移液器
         private void CreatePipetteInTab(PlateConfig config, double offsetX, double offsetY, double offsetZ, ContainerUIElement3D container)
         {
             if (config == null) return;
 
-            // 材质：半透明塑料
             Color plasticColor = Color.FromRgb(240, 240, 240);
             Material tipMaterial = CreateTransparentPlastic(plasticColor, 180);
             Material filterMaterial = MaterialHelper.CreateMaterial(Colors.Red); // 滤芯红色
@@ -1774,81 +1910,6 @@ namespace OctoFixFlow
         }
         #endregion
         #region 画水柱
-        //private void CreateLiquidColumn(PlateConfig config, float preAirVol, float postAirVol, float liquidVol, float tipMaxCapacity,
-        //    double offsetX, double offsetY, double offsetZ, ContainerUIElement3D container)
-        //{
-        //    // 1. 材质定义：液体蓝色，气封灰色
-        //    Color liquidColor = Color.FromRgb(74, 144, 226);
-        //    Material liquidMaterial = CreateTransparentPlastic(liquidColor, 200);
-        //    Color airColor = Color.FromRgb(160, 160, 160);
-        //    Material airMaterial = CreateTransparentPlastic(airColor, 120);
-
-        //    // 2. 枪头Z轴坐标系（从顶部往下画）
-        //    double passageTopZ = config.PassageHeight + config.TailConeHeight; // 液体上限（滤芯下方）
-        //    double tipTipZ = 0; // 枪头尖端（最底部）
-        //    double maxFillHeight = passageTopZ - tipTipZ; // 枪头可填充的总物理高度
-
-        //    // 3. 计算比例：1μL对应多少毫米高度
-        //    double heightPerUl = maxFillHeight / tipMaxCapacity;
-
-        //    // 4. 计算各部分的物理高度
-        //    double preAirHeight = preAirVol * heightPerUl;
-        //    double liquidHeight = liquidVol * heightPerUl;
-        //    double postAirHeight = postAirVol * heightPerUl;
-
-        //    // 5. 开始绘制（使用 currentZ 从顶部往下移动）
-        //    double currentZ = passageTopZ + offsetZ;
-
-        //    // --- 绘制前导气封 (最顶部，灰色) ---
-        //    if (preAirVol > 0.01)
-        //    {
-        //        double topZ = currentZ;
-        //        double bottomZ = currentZ - preAirHeight;
-
-        //        double rTop = GetRadiusAtZ(config, topZ - offsetZ);
-        //        double rBottom = GetRadiusAtZ(config, bottomZ - offsetZ);
-
-        //        container.Children.Add(AddCone(
-        //            new Point3D(offsetX, offsetY, bottomZ),
-        //            new Point3D(offsetX, offsetY, topZ),
-        //            rBottom, rTop, airMaterial));
-
-        //        currentZ = bottomZ; // 画完后，下移到气封底部
-        //    }
-
-        //    // --- 绘制液体柱 (中间，蓝色) ---
-        //    if (liquidVol > 0.01)
-        //    {
-        //        double topZ = currentZ;
-        //        double bottomZ = currentZ - liquidHeight;
-
-        //        double rTop = GetRadiusAtZ(config, topZ - offsetZ);
-        //        double rBottom = GetRadiusAtZ(config, bottomZ - offsetZ);
-
-        //        container.Children.Add(AddCone(
-        //            new Point3D(offsetX, offsetY, bottomZ),
-        //            new Point3D(offsetX, offsetY, topZ),
-        //            rBottom, rTop, liquidMaterial));
-
-        //        currentZ = bottomZ; // 画完后，下移到液体底部
-        //    }
-
-        //    // --- 绘制后导气封 (最底部，灰色，靠近枪尖) ---
-        //    if (postAirVol > 0.01)
-        //    {
-        //        double topZ = currentZ;
-        //        // 确保不会画到枪尖外面去
-        //        double bottomZ = Math.Max(currentZ - postAirHeight, tipTipZ + offsetZ);
-
-        //        double rTop = GetRadiusAtZ(config, topZ - offsetZ);
-        //        double rBottom = GetRadiusAtZ(config, bottomZ - offsetZ);
-
-        //        container.Children.Add(AddCone(
-        //            new Point3D(offsetX, offsetY, bottomZ),
-        //            new Point3D(offsetX, offsetY, topZ),
-        //            rBottom, rTop, airMaterial));
-        //    }
-        //}
         private void CreateLiquidColumn(PlateConfig config, float preAirVol, float postAirVol, float liquidVol, float tipMaxCapacity,
     double offsetX, double offsetY, double offsetZ, ContainerUIElement3D container)
         {

@@ -104,12 +104,12 @@ namespace OctoFixFlow
         aisAirA REAL,                     -- 吸液后吸空气
         aisSpeed REAL,                    -- 吸液速度
         aisDelay REAL,                    -- 吸液延迟
-        aisDistance REAL,                 -- 吸液距孔底距离
+        aisDistance TEXT,                 -- 吸液距孔底距离
         disAirB REAL,                     -- 排液前吸空气
         disAirA REAL,                     -- 排液后吸空气
         disSpeed REAL,                    -- 排液速度
         disDelay REAL,                    -- 排液延迟
-        disDistance REAL                  -- 排液距孔底距离
+        disDistance TEXT                  -- 排液距孔底距离
     );";
             // 设备模块表
             string createDeviceModulesQuery = @"  
@@ -894,12 +894,12 @@ namespace OctoFixFlow
                             aisAirA = reader.GetFloat(reader.GetOrdinal("aisAirA")),
                             aisSpeed = reader.GetFloat(reader.GetOrdinal("aisSpeed")),
                             aisDelay = reader.GetFloat(reader.GetOrdinal("aisDelay")),
-                            aisDistance = reader.GetFloat(reader.GetOrdinal("aisDistance")),
+                            aisDistance = reader.GetString(reader.GetOrdinal("aisDistance")),
                             disAirB = reader.GetFloat(reader.GetOrdinal("disAirB")),
                             disAirA = reader.GetFloat(reader.GetOrdinal("disAirA")),
                             disSpeed = reader.GetFloat(reader.GetOrdinal("disSpeed")),
                             disDelay = reader.GetFloat(reader.GetOrdinal("disDelay")),
-                            disDistance = reader.GetFloat(reader.GetOrdinal("disDistance"))
+                            disDistance = reader.GetString(reader.GetOrdinal("disDistance"))
                         };
                     }
                 }
@@ -962,12 +962,12 @@ namespace OctoFixFlow
                             aisAirA = reader.GetFloat(reader.GetOrdinal("aisAirA")),
                             aisSpeed = reader.GetFloat(reader.GetOrdinal("aisSpeed")),
                             aisDelay = reader.GetFloat(reader.GetOrdinal("aisDelay")),
-                            aisDistance = reader.GetFloat(reader.GetOrdinal("aisDistance")),
+                            aisDistance = reader.GetString(reader.GetOrdinal("aisDistance")),
                             disAirB = reader.GetFloat(reader.GetOrdinal("disAirB")),
                             disAirA = reader.GetFloat(reader.GetOrdinal("disAirA")),
                             disSpeed = reader.GetFloat(reader.GetOrdinal("disSpeed")),
                             disDelay = reader.GetFloat(reader.GetOrdinal("disDelay")),
-                            disDistance = reader.GetFloat(reader.GetOrdinal("disDistance"))
+                            disDistance = reader.GetString(reader.GetOrdinal("disDistance"))
                         };
                         allLiquids.Add(liquid);
                     }

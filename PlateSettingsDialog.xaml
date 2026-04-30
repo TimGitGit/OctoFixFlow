@@ -42,7 +42,7 @@
                                             <ColorAnimation
                                                 Storyboard.TargetName="border"
                                                 Storyboard.TargetProperty="BorderBrush.Color"
-                                                To="#048B46"
+                                                To="{StaticResource PrimaryColorValue}"
                                                 Duration="0:0:0.2" />
                                             <!--  边框厚度动画（替换为ThicknessAnimation）  -->
                                             <ThicknessAnimation
@@ -516,12 +516,70 @@
                                         FontSize="14"
                                         FontWeight="Medium"
                                         Foreground="{StaticResource PrimaryColor}"
-                                        Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingCons2D}" />
-                                    <local:ConsumableCanvas
-                                        Height="250"
-                                        Margin="5"
-                                        Background="#F9F9F9"
-                                        ConsData="{Binding consNew}" />
+                                        Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingConsPreviewTitle}" />
+                                    <TabControl
+                                        x:Name="ConsumableViewTab"
+                                        Background="Transparent"
+                                        BorderThickness="0">
+                                        <TabControl.Resources>
+                                            <Style TargetType="TabItem">
+                                                <Setter Property="Background" Value="#F5F5F5" />
+                                                <Setter Property="Foreground" Value="{StaticResource PrimaryColor}" />
+                                                <Setter Property="BorderThickness" Value="1,1,1,0" />
+                                                <Setter Property="BorderBrush" Value="#E0E0E0" />
+                                                <Setter Property="Padding" Value="12,6" />
+                                                <Setter Property="Margin" Value="0,0,2,0" />
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="TabItem">
+                                                            <Border
+                                                                Name="Border"
+                                                                Background="{TemplateBinding Background}"
+                                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                                CornerRadius="4,4,0,0">
+                                                                <ContentPresenter
+                                                                    Margin="{TemplateBinding Padding}"
+                                                                    HorizontalAlignment="Center"
+                                                                    VerticalAlignment="Center"
+                                                                    ContentSource="Header" />
+                                                            </Border>
+                                                            <ControlTemplate.Triggers>
+                                                                <Trigger Property="IsSelected" Value="True">
+                                                                    <Setter TargetName="Border" Property="Background" Value="White" />
+                                                                    <Setter TargetName="Border" Property="BorderThickness" Value="1,1,1,0" />
+                                                                </Trigger>
+                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                    <Setter TargetName="Border" Property="Background" Value="#E8F0FE" />
+                                                                </Trigger>
+                                                            </ControlTemplate.Triggers>
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Style>
+                                        </TabControl.Resources>
+                                        <!--  2D 视图页  -->
+                                        <TabItem Header="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingCons2D}">
+                                            <Border Background="#F9F9F9">
+                                                <local:ConsumableCanvas Height="250" ConsData="{Binding consNew}" />
+                                            </Border>
+                                        </TabItem>
+
+                                        <!--  3D 视图页  -->
+                                        <TabItem Header="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingCons3D}">
+                                            <Border Background="#F9F9F9">
+                                                <helix:HelixViewport3D
+                                                    x:Name="Consumable3DViewport"
+                                                    Height="250"
+                                                    ShowCoordinateSystem="False"
+                                                    ZoomExtentsWhenLoaded="True">
+
+                                                    <helix:DefaultLights />
+
+                                                </helix:HelixViewport3D>
+                                            </Border>
+                                        </TabItem>
+                                    </TabControl>
                                 </StackPanel>
                             </Border>
                         </StackPanel>

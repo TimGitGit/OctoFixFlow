@@ -51,11 +51,10 @@
                                 <Trigger.EnterActions>
                                     <BeginStoryboard>
                                         <Storyboard>
-                                            <!--  边框颜色动画（不变）  -->
                                             <ColorAnimation
                                                 Storyboard.TargetName="border"
                                                 Storyboard.TargetProperty="BorderBrush.Color"
-                                                To="#048B46"
+                                                To="{StaticResource PrimaryColorValue}"
                                                 Duration="0:0:0.2" />
                                             <!--  边框厚度动画（替换为ThicknessAnimation）  -->
                                             <ThicknessAnimation
@@ -206,7 +205,8 @@
                         Margin="0,5,0,0"
                         HorizontalAlignment="Center"
                         FontSize="14"
-                        Foreground="#666666" />
+                        Foreground="#666666"
+                        Text="" />
                 </StackPanel>
 
                 <!--  用户名输入框  -->

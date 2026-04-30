@@ -13,7 +13,9 @@
         <!--  青云青  -->
         <!-- <SolidColorBrush x:Key="PrimaryColor" Color="#00B7D4" />-->
         <!--  墨析深蓝  -->
-         <SolidColorBrush x:Key="PrimaryColor" Color="#00466E" />
+        <Color x:Key="PrimaryColorValue">#00466E</Color>
+        <SolidColorBrush x:Key="PrimaryColor" Color="{StaticResource PrimaryColorValue}" />
+
         <SolidColorBrush x:Key="SecondaryColor" Color="#FFFFFF" />
         <SolidColorBrush x:Key="SuspendColor" Color="#FFDAD0" />
         <SolidColorBrush x:Key="PlateBackground" Color="#f8f9fa" />
@@ -204,7 +206,7 @@
                                             <ColorAnimation
                                                 Storyboard.TargetName="border"
                                                 Storyboard.TargetProperty="BorderBrush.Color"
-                                                To="#048B46"
+                                                To="{StaticResource PrimaryColorValue}"
                                                 Duration="0:0:0.2" />
                                             <ThicknessAnimation
                                                 Storyboard.TargetName="border"
@@ -288,7 +290,7 @@
                                             <ColorAnimation
                                                 Storyboard.TargetName="border"
                                                 Storyboard.TargetProperty="BorderBrush.Color"
-                                                To="#048B46"
+                                                To="{StaticResource PrimaryColorValue}"
                                                 Duration="0:0:0.2" />
                                             <!--  边框厚度动画（替换为ThicknessAnimation）  -->
                                             <ThicknessAnimation

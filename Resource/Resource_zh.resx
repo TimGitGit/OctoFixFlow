@@ -186,6 +186,12 @@
   <data name="GuideBtnDeckLayoutTitile" xml:space="preserve">
     <value>配置您的工作站模块</value>
   </data>
+  <data name="GuideBtnDeviceAddFluoModule" xml:space="preserve">
+    <value>添加您的荧光检测模块</value>
+  </data>
+  <data name="GuideBtnDeviceAddFluoModuleToolTip" xml:space="preserve">
+    <value>荧光采集核心，信号精准检测。</value>
+  </data>
   <data name="GuideBtnDeviceAddGripper" xml:space="preserve">
     <value>添加您的抓手</value>
   </data>
@@ -370,7 +376,7 @@
     <value>开始流程失败</value>
   </data>
   <data name="ScriptStartLiquidEmpty" xml:space="preserve">
-    <value>部分步骤缺少液体参数</value>
+    <value>参数缺少（步骤：</value>
   </data>
   <data name="ScriptStartSucc" xml:space="preserve">
     <value>流程开始执行</value>
@@ -401,6 +407,9 @@
   </data>
   <data name="SettingCons2D" xml:space="preserve">
     <value>耗材平面图</value>
+  </data>
+  <data name="SettingCons3D" xml:space="preserve">
+    <value>耗材三维图</value>
   </data>
   <data name="SettingConsA1XDistance" xml:space="preserve">
     <value>A1孔距X的距离</value>
@@ -509,6 +518,9 @@
   </data>
   <data name="SettingConsPipetteTipParams" xml:space="preserve">
     <value>枪头参数</value>
+  </data>
+  <data name="SettingConsPreviewTitle" xml:space="preserve">
+    <value>预览</value>
   </data>
   <data name="SettingConsRemove" xml:space="preserve">
     <value>删除</value>
@@ -627,6 +639,9 @@
   <data name="SettingLiquidRemove" xml:space="preserve">
     <value>删除</value>
   </data>
+  <data name="SettingMagneticHeightInvalid" xml:space="preserve">
+    <value>有效值(0~25)</value>
+  </data>
   <data name="SettingManualArrowKeys" xml:space="preserve">
     <value>方向键</value>
   </data>
@@ -674,6 +689,9 @@
   </data>
   <data name="SettingManualEjectTip" xml:space="preserve">
     <value>退头</value>
+  </data>
+  <data name="SettingManualEnableFluo" xml:space="preserve">
+    <value>是否启用荧光检测？</value>
   </data>
   <data name="SettingManualEnableGripper" xml:space="preserve">
     <value>是否启用抓手？</value>
@@ -879,6 +897,30 @@
   <data name="SettingManualTitile" xml:space="preserve">
     <value>手动控制</value>
   </data>
+  <data name="SettingManualVariateAdd" xml:space="preserve">
+    <value>加</value>
+  </data>
+  <data name="SettingManualVariateDivide" xml:space="preserve">
+    <value>除</value>
+  </data>
+  <data name="SettingManualVariateEqual" xml:space="preserve">
+    <value>赋值</value>
+  </data>
+  <data name="SettingManualVariateMinus" xml:space="preserve">
+    <value>减</value>
+  </data>
+  <data name="SettingManualVariateMultiply" xml:space="preserve">
+    <value>乘</value>
+  </data>
+  <data name="SettingManualVariateScriptName" xml:space="preserve">
+    <value>变量名称</value>
+  </data>
+  <data name="SettingManualVariateScriptStep" xml:space="preserve">
+    <value>变量动作</value>
+  </data>
+  <data name="SettingManualVariateScriptValue" xml:space="preserve">
+    <value>变量值</value>
+  </data>
   <data name="SettingManualVolume" xml:space="preserve">
     <value>容量 (μl)：</value>
   </data>
@@ -962,6 +1004,9 @@
   </data>
   <data name="StepDetailEnableMix" xml:space="preserve">
     <value>启用混合</value>
+  </data>
+  <data name="StepDetailInhaVolume" xml:space="preserve">
+    <value>吸入体积(ul)：</value>
   </data>
   <data name="StepDetailLiquidParams" xml:space="preserve">
     <value>液体参数：</value>
@@ -1047,6 +1092,9 @@
   <data name="StepDetailWellSelectionArea" xml:space="preserve">
     <value>孔位选择区：</value>
   </data>
+  <data name="WindowActionAnno" xml:space="preserve">
+    <value>注释</value>
+  </data>
   <data name="WindowActionAspirate" xml:space="preserve">
     <value>吸液</value>
   </data>
@@ -1058,6 +1106,9 @@
   </data>
   <data name="WindowActionEndLoop" xml:space="preserve">
     <value>结束循环</value>
+  </data>
+  <data name="WindowActionFluo" xml:space="preserve">
+    <value>荧光检测</value>
   </data>
   <data name="WindowActionFunctionAll" xml:space="preserve">
     <value>全部</value>
@@ -1122,6 +1173,9 @@
   <data name="WindowActionUV" xml:space="preserve">
     <value>紫外灯</value>
   </data>
+  <data name="WindowActionVariate" xml:space="preserve">
+    <value>变量</value>
+  </data>
   <data name="WindowActionWait" xml:space="preserve">
     <value>等待</value>
   </data>
@@ -1163,6 +1217,15 @@
   </data>
   <data name="WindowLogOut" xml:space="preserve">
     <value>登出</value>
+  </data>
+  <data name="WindowLoopEnd" xml:space="preserve">
+    <value>结束值</value>
+  </data>
+  <data name="WindowLoopStart" xml:space="preserve">
+    <value>起始值</value>
+  </data>
+  <data name="WindowLoopStep" xml:space="preserve">
+    <value>步长</value>
   </data>
   <data name="WindowLoopTip" xml:space="preserve">
     <value>不支持循环嵌套</value>

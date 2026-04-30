@@ -70,9 +70,20 @@ namespace OctoFixFlow
         public string WindowActionLoop => IsEnglish ? Resource.Resource_en.WindowActionLoop : Resource.Resource_zh.WindowActionLoop;
         //结束循环 /endLoop
         public string WindowActionEndLoop => IsEnglish ? Resource.Resource_en.WindowActionEndLoop : Resource.Resource_zh.WindowActionEndLoop;
+        //起始值  /Start Index
+        public string WindowLoopStart => IsEnglish ? Resource.Resource_en.WindowLoopStart : Resource.Resource_zh.WindowLoopStart;
+        //结束值  /End Index
+        public string WindowLoopEnd => IsEnglish ? Resource.Resource_en.WindowLoopEnd : Resource.Resource_zh.WindowLoopEnd;
+        //步长  /Step Size
+        public string WindowLoopStep => IsEnglish ? Resource.Resource_en.WindowLoopStep : Resource.Resource_zh.WindowLoopStep;
         //不支持循环嵌套 Nested loops not supported
         public string WindowLoopTip => IsEnglish ? Resource.Resource_en.WindowLoopTip : Resource.Resource_zh.WindowLoopTip;
-
+        //注释 /Annotation
+        public string WindowActionAnno => IsEnglish ? Resource.Resource_en.WindowActionAnno : Resource.Resource_zh.WindowActionAnno;
+        //变量 /Variate
+        public string WindowActionVariate => IsEnglish ? Resource.Resource_en.WindowActionVariate : Resource.Resource_zh.WindowActionVariate;
+        //荧光检测 /Fluo
+        public string WindowActionFluo => IsEnglish ? Resource.Resource_en.WindowActionFluo : Resource.Resource_zh.WindowActionFluo;
         public string WindowBoardPosition => IsEnglish ? Resource.Resource_en.WindowBoardPosition : Resource.Resource_zh.WindowBoardPosition;
         public string WindowBoardToopTip => IsEnglish ? Resource.Resource_en.WindowBoardToopTip : Resource.Resource_zh.WindowBoardToopTip;
         public string WindowConsumablesWarehouse => IsEnglish ? Resource.Resource_en.WindowConsumablesWarehouse : Resource.Resource_zh.WindowConsumablesWarehouse;
@@ -125,7 +136,11 @@ namespace OctoFixFlow
         public string SettingConsSerialNum => IsEnglish ? Resource.Resource_en.SettingConsSerialNum : Resource.Resource_zh.SettingConsSerialNum;
         public string SettingConsType => IsEnglish ? Resource.Resource_en.SettingConsType : Resource.Resource_zh.SettingConsType;
         public string SettingConsDescription => IsEnglish ? Resource.Resource_en.SettingConsDescription : Resource.Resource_zh.SettingConsDescription;
+        public string SettingConsPreviewTitle => IsEnglish ? Resource.Resource_en.SettingConsPreviewTitle : Resource.Resource_zh.SettingConsPreviewTitle;
+
         public string SettingCons2D => IsEnglish ? Resource.Resource_en.SettingCons2D : Resource.Resource_zh.SettingCons2D;
+        public string SettingCons3D => IsEnglish ? Resource.Resource_en.SettingCons3D : Resource.Resource_zh.SettingCons3D;
+
         public string SettingConsTypeMicroplate => IsEnglish ? Resource.Resource_en.SettingConsTypeMicroplate : Resource.Resource_zh.SettingConsTypeMicroplate;
         public string SettingConsTypeReservoir => IsEnglish ? Resource.Resource_en.SettingConsTypeReservoir : Resource.Resource_zh.SettingConsTypeReservoir;
         public string SettingConsTypeTipBox => IsEnglish ? Resource.Resource_en.SettingConsTypeTipBox : Resource.Resource_zh.SettingConsTypeTipBox;
@@ -275,6 +290,8 @@ namespace OctoFixFlow
         public string SettingManualMagneticUp => IsEnglish ? Resource.Resource_en.SettingManualMagneticUp : Resource.Resource_zh.SettingManualMagneticUp;
         // 下降磁吸 (Down the mnetic）
         public string SettingManualMagneticDown => IsEnglish ? Resource.Resource_en.SettingManualMagneticDown : Resource.Resource_zh.SettingManualMagneticDown;
+        // 下降磁吸 (Down the mnetic）
+        public string SettingMagneticHeightInvalid => IsEnglish ? Resource.Resource_en.SettingMagneticHeightInvalid : Resource.Resource_zh.SettingMagneticHeightInvalid;
         //加热振荡控制/Shaker control
         public string SettingManualShakerControl => IsEnglish ? Resource.Resource_en.SettingManualShakerControl : Resource.Resource_zh.SettingManualShakerControl;
         //温度控制/Temp control
@@ -316,6 +333,22 @@ namespace OctoFixFlow
         //脚本选择/Script Selection
         public string SettingManualPCRSelection => IsEnglish ? Resource.Resource_en.SettingManualPCRSelection : Resource.Resource_zh.SettingManualPCRSelection;
         public string SettingManualClose => IsEnglish ? Resource.Resource_en.SettingManualClose : Resource.Resource_zh.SettingManualClose;
+        //变量名称/Variable Name
+        public string SettingManualVariateScriptName => IsEnglish ? Resource.Resource_en.SettingManualVariateScriptName : Resource.Resource_zh.SettingManualVariateScriptName;
+        //变量动作/Variable action
+        public string SettingManualVariateScriptStep => IsEnglish ? Resource.Resource_en.SettingManualVariateScriptStep : Resource.Resource_zh.SettingManualVariateScriptStep;
+        //赋值/=
+        public string SettingManualVariateEqual => IsEnglish ? Resource.Resource_en.SettingManualVariateEqual : Resource.Resource_zh.SettingManualVariateEqual;
+        //加/+
+        public string SettingManualVariateAdd => IsEnglish ? Resource.Resource_en.SettingManualVariateAdd : Resource.Resource_zh.SettingManualVariateAdd;
+        //减/-
+        public string SettingManualVariateMinus => IsEnglish ? Resource.Resource_en.SettingManualVariateMinus : Resource.Resource_zh.SettingManualVariateMinus;
+        //乘/×
+        public string SettingManualVariateMultiply => IsEnglish ? Resource.Resource_en.SettingManualVariateMultiply : Resource.Resource_zh.SettingManualVariateMultiply;
+        //除/÷
+        public string SettingManualVariateDivide => IsEnglish ? Resource.Resource_en.SettingManualVariateDivide : Resource.Resource_zh.SettingManualVariateDivide;
+        //变量值/Variable value
+        public string SettingManualVariateScriptValue => IsEnglish ? Resource.Resource_en.SettingManualVariateScriptValue : Resource.Resource_zh.SettingManualVariateScriptValue;
         public string QuickTitile => IsEnglish ? Resource.Resource_en.QuickTitile : Resource.Resource_zh.QuickTitile;
         public string QuickSampleQty => IsEnglish ? Resource.Resource_en.QuickSampleQty : Resource.Resource_zh.QuickSampleQty;
         public string QuickTipPickPos => IsEnglish ? Resource.Resource_en.QuickTipPickPos : Resource.Resource_zh.QuickTipPickPos;
@@ -350,6 +383,8 @@ namespace OctoFixFlow
         public string SettingManualEnableGripper => IsEnglish ? Resource.Resource_en.SettingManualEnableGripper : Resource.Resource_zh.SettingManualEnableGripper;
         //是否启用PCR？  Enable Thermocycler Module??
         public string SettingManualEnablePCR => IsEnglish ? Resource.Resource_en.SettingManualEnablePCR : Resource.Resource_zh.SettingManualEnablePCR;
+        //是否启用荧光检测？  Enable Fluorescence Detection Module?
+        public string SettingManualEnableFluo => IsEnglish ? Resource.Resource_en.SettingManualEnableFluo : Resource.Resource_zh.SettingManualEnableFluo;
         //是否启用垃圾桶？  Enable labware waste bin?
         public string SettingManualEnableTrash => IsEnglish ? Resource.Resource_en.SettingManualEnableTrash : Resource.Resource_zh.SettingManualEnableTrash;
         //确认  Confirm
@@ -378,6 +413,10 @@ namespace OctoFixFlow
         public string GuideBtnDeviceAddPCRModule => IsEnglish ? Resource.Resource_en.GuideBtnDeviceAddPCRModule : Resource.Resource_zh.GuideBtnDeviceAddPCRModule;
         // 基因扩增核心，热循环控制。  Core for gene amplification & thermal cycling.
         public string GuideBtnDeviceAddPCRModuleToolTip => IsEnglish ? Resource.Resource_en.GuideBtnDeviceAddPCRModuleToolTip : Resource.Resource_zh.GuideBtnDeviceAddPCRModuleToolTip;
+        // 添加您的荧光检测模块  Add your Fluorescence Detection Module
+        public string GuideBtnDeviceAddFluoModule => IsEnglish ? Resource.Resource_en.GuideBtnDeviceAddFluoModule : Resource.Resource_zh.GuideBtnDeviceAddFluoModule;
+        // 荧光采集核心，信号精准检测。  Core for fluorescence capture & precise detection.
+        public string GuideBtnDeviceAddFluoModuleToolTip => IsEnglish ? Resource.Resource_en.GuideBtnDeviceAddFluoModuleToolTip : Resource.Resource_zh.GuideBtnDeviceAddFluoModuleToolTip;
         // 添加您的耗材回收桶  Add your labware waste bin
         public string GuideBtnDeviceAddWasteBin => IsEnglish ? Resource.Resource_en.GuideBtnDeviceAddWasteBin : Resource.Resource_zh.GuideBtnDeviceAddWasteBin;
         // 收纳废弃耗材，保持实验整洁。  Store waste consumables, keep lab tidy.
@@ -436,6 +475,8 @@ namespace OctoFixFlow
         public string StepDetailVolume => IsEnglish ? Resource.Resource_en.StepDetailVolume : Resource.Resource_zh.StepDetailVolume;
         // 推出体积（“PushOutVolume(ul):”/“推出体积(ul)：”）
         public string StepDetailPushVolume => IsEnglish ? Resource.Resource_en.StepDetailPushVolume : Resource.Resource_zh.StepDetailPushVolume;
+        // 吸入体积（“InhalationVolume(ul):”/“吸入体积(ul)：”）
+        public string StepDetailInhaVolume => IsEnglish ? Resource.Resource_en.StepDetailInhaVolume : Resource.Resource_zh.StepDetailInhaVolume;
         // 混合次数（“Mixing Times:”/“混合次数：”）
         public string StepDetailMixCount => IsEnglish ? Resource.Resource_en.StepDetailMixCount : Resource.Resource_zh.StepDetailMixCount;
         // 混合体积（“Mixing Volumes(ul):”/“混合体积(ul)：”）

@@ -1,9 +1,11 @@
 ﻿using Microsoft.Win32;
 using Newtonsoft.Json;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
@@ -26,6 +28,167 @@ namespace OctoFixFlow
             InitializeComponent();
             _mainWidget = mainWidget;
         }
+        #region 变量的新增方法
+        private bool _isUpdatingRowVariableCombo = false; // 行下拉框专属锁
+        private bool _isUpdatingColVariableCombo = false; // 列下拉框专属锁
+        /// <summary>
+        /// 创建支持变量的输入行：文本框+已定义变量下拉框
+        /// </summary>
+        /// <param name="step">当前步骤</param>
+        /// <param name="propertyName">绑定的属性名</param>
+        /// <param name="labelText">行标签</param>
+        /// <param name="isInt">是否为整数类型</param>
+        /// <returns>封装好的行控件</returns>
+        private StackPanel CreateVariableInputRow(FlowStep step, string propertyName, string labelText, bool isInt, string variateNamePropName, string variateValuePropName)
+        {
+            var variableValues = CalculateVariableValues(step.Index);
+            var varNamePropInfo = step.GetType().GetProperty(variateNamePropName);
+            var varValuePropInfo = step.GetType().GetProperty(variateValuePropName);
+
+            var inputTextBox = new TextBox
+            {
+                Style = (Style)FindResource("InputTextBoxStyle"),
+                Width = 100,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            inputTextBox.SetBinding(TextBox.TextProperty, new Binding
+            {
+                Source = step,
+                Path = new PropertyPath(propertyName),
+                Mode = BindingMode.TwoWay,
+                UpdateSourceTrigger = UpdateSourceTrigger.LostFocus
+            });
+
+            // 变量下拉框
+            var variableCombo = new ComboBox
+            {
+                Style = (Style)FindResource("InputComboBoxStyle"),
+                Width = 80,
+                Margin = new Thickness(5, 0, 0, 0),
+                VerticalAlignment = VerticalAlignment.Center,
+                ItemsSource = variableValues.Keys.ToList()
+            };
+            variableCombo.SetBinding(Selector.SelectedItemProperty, new Binding
+            {
+                Source = step,
+                Path = new PropertyPath(variateNamePropName),
+                Mode = BindingMode.TwoWay,
+                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+            });
+            inputTextBox.TextChanged += (s, e) =>
+            {
+                if (inputTextBox.IsFocused)
+                {
+                    // 清空当前专属变量
+                    varNamePropInfo?.SetValue(step, null);
+                    varValuePropInfo?.SetValue(step, null);
+                    variableCombo.SelectedItem = null;
+                }
+            };
+            variableCombo.SelectionChanged += (s, e) =>
+            {
+                if (variableCombo.SelectedItem is string selectedVar)
+                {
+                    if (variableValues.TryGetValue(selectedVar, out float calculatedVal))
+                    {
+                        bool isValueInteger = Math.Abs(calculatedVal - Math.Round(calculatedVal)) <= 0.0001f;//true:int  false:float
+                        if (isInt)
+                        {
+                            if (isValueInteger)
+                            {
+                                varNamePropInfo?.SetValue(step, selectedVar);
+                                varValuePropInfo?.SetValue(step, calculatedVal.ToString());
+                                int intVal = (int)Math.Round(calculatedVal);
+                                inputTextBox.Text = intVal.ToString();
+                                var bindingExpr = inputTextBox.GetBindingExpression(TextBox.TextProperty);
+                                bindingExpr?.UpdateSource();
+                            }
+                            else
+                            {
+                                variableCombo.SelectedItem = null;
+                                varNamePropInfo?.SetValue(step, null);
+                                varValuePropInfo?.SetValue(step, null);
+                                inputTextBox.Text = calculatedVal.ToString();
+                            }
+                        }
+                        else
+                        {
+                            varNamePropInfo?.SetValue(step, selectedVar);
+                            varValuePropInfo?.SetValue(step, calculatedVal.ToString());
+                            inputTextBox.Text = calculatedVal.ToString();
+                            var bindingExpr = inputTextBox.GetBindingExpression(TextBox.TextProperty);
+                            bindingExpr?.UpdateSource();
+                        }
+                    }
+                }
+            };
+
+            // 4. 封装成横向布局
+            var inputPanel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            inputPanel.Children.Add(inputTextBox);
+            inputPanel.Children.Add(variableCombo);
+            // 5. 封装成详情行
+            return CreateDetailRow(labelText, inputPanel);
+        }
+        /// <summary>
+        /// 模拟执行流程，计算在指定步骤之前，所有变量的最终值
+        /// </summary>
+        /// <param name="beforeStepIndex">当前步骤的Index</param>
+        /// <returns>字典: Key是变量名, Value是最终计算值</returns>
+        private Dictionary<string, float> CalculateVariableValues(int beforeStepIndex)
+        {
+            var resultDict = new Dictionary<string, float>();
+
+            // 1. 找出当前步骤之前的所有变量步骤，并按顺序排列
+            var priorSteps = _mainWidget.FlowSteps
+                .Where(s => s.Type == "Variate" && s.Index < beforeStepIndex)
+                .OrderBy(s => s.Index) // 必须按时间顺序执行
+                .ToList();
+
+            foreach (var step in priorSteps)
+            {
+                string varName = step.VariateScriptName;
+                float num = step.VariateNum;
+
+                // 2. 根据操作类型更新字典中的值
+                // 注意：这里需要匹配你之前代码中的 _res.SettingManualVariateXxx
+                // 如果你的 VariateStep 里存的是枚举，请自行修改 switch 判断
+
+                // 初始化：如果变量名不存在，先给个默认值0 (虽然正常流程是先赋值)
+                if (varName != null && !resultDict.ContainsKey(varName)) resultDict[varName] = 0;
+
+
+                // 判断操作类型
+                if (step.VariateStep == _mainWidget._res.SettingManualVariateEqual) // 赋值 =
+                {
+                    resultDict[varName] = num;
+                }
+                else if (step.VariateStep == _mainWidget._res.SettingManualVariateAdd) // 加 +=
+                {
+                    resultDict[varName] += num;
+                }
+                else if (step.VariateStep == _mainWidget._res.SettingManualVariateMinus) // 减 -=
+                {
+                    resultDict[varName] -= num;
+                }
+                else if (step.VariateStep == _mainWidget._res.SettingManualVariateMultiply) // 乘 *=
+                {
+                    resultDict[varName] *= num;
+                }
+                else if (step.VariateStep == _mainWidget._res.SettingManualVariateDivide) // 除 /=
+                {
+                    if (num != 0) // 简单的防除零保护
+                        resultDict[varName] /= num;
+                }
+            }
+
+            return resultDict;
+        }
+        #endregion
         // 辅助方法：创建详情行（Label + 输入控件）
         private StackPanel CreateDetailRow(string labelText, UIElement inputControl)
         {
@@ -160,6 +323,9 @@ namespace OctoFixFlow
                 "Transfer" => res.WindowActionTransfer,
                 "Mix" => res.WindowActionMix,
                 "Loop" => res.WindowActionLoop,
+                "Annotation" => res.WindowActionAnno,
+                "Variate" => res.WindowActionVariate,
+
                 _ => step.Type // 未知类型默认显示原始值
             };
             // 添加通用详情标题
@@ -171,21 +337,23 @@ namespace OctoFixFlow
             });
             if (step.Type == "Wait")
             {
-                // 等待时间输入（秒）
-                var waitTimeTextBox = new TextBox
-                {
-                    Style = (Style)FindResource("InputTextBoxStyle"),
-                    Width = 140,
-                    VerticalAlignment = VerticalAlignment.Center
-                };
-                waitTimeTextBox.SetBinding(TextBox.TextProperty, new Binding
-                {
-                    Source = step,
-                    Path = new PropertyPath("WaitTime"),
-                    Mode = BindingMode.TwoWay,
-                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-                });
-                StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailWaitTime, waitTimeTextBox));
+                //// 等待时间输入（秒）
+                //var waitTimeTextBox = new TextBox
+                //{
+                //    Style = (Style)FindResource("InputTextBoxStyle"),
+                //    Width = 140,
+                //    VerticalAlignment = VerticalAlignment.Center
+                //};
+                //waitTimeTextBox.SetBinding(TextBox.TextProperty, new Binding
+                //{
+                //    Source = step,
+                //    Path = new PropertyPath("WaitTime"),
+                //    Mode = BindingMode.TwoWay,
+                //    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                //});
+                //StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailWaitTime, waitTimeTextBox));
+                var waitTimePanel = CreateVariableInputRow(step, nameof(step.WaitTime), res.StepDetailWaitTime, true, nameof(step.WaitVariateName), nameof(step.WaitVariateValue));
+                StepDetailPanel.Children.Add(waitTimePanel);
                 return;
             }
             else if (step.Type == "Shake")//加热振荡
@@ -225,59 +393,67 @@ namespace OctoFixFlow
                     {
                         string selectedPlatePosition = newPosition.Replace("P", "");
                         var matchedModule = AppGlobalConfig.Instance.PlateModuleMap
-        .Values
-        .FirstOrDefault(module =>
-            module.Type == 5 &&
-            module.PlatePosition == selectedPlatePosition);
+                            .Values
+                            .FirstOrDefault(module =>
+                                module.Type == 5 &&
+                                module.PlatePosition == selectedPlatePosition);
                         step.ModuleName = matchedModule.Name;
                     }
                 };
                 StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailOperationPosition, posiShakeCombo));
-                // 振荡时间输入（秒）
-                var shakeTimeTextBox = new TextBox
-                {
-                    Style = (Style)FindResource("InputTextBoxStyle"),
-                    Width = 140,
-                    VerticalAlignment = VerticalAlignment.Center
-                };
-                shakeTimeTextBox.SetBinding(TextBox.TextProperty, new Binding
-                {
-                    Source = step,
-                    Path = new PropertyPath("WaitTime"),
-                    Mode = BindingMode.TwoWay,
-                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-                });
-                StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailWaitTime, shakeTimeTextBox));
-                // 振荡转速输入
-                var shakeRPMTextBox = new TextBox
-                {
-                    Style = (Style)FindResource("InputTextBoxStyle"),
-                    Width = 140,
-                    VerticalAlignment = VerticalAlignment.Center
-                };
-                shakeRPMTextBox.SetBinding(TextBox.TextProperty, new Binding
-                {
-                    Source = step,
-                    Path = new PropertyPath("ShakeRPM"),
-                    Mode = BindingMode.TwoWay,
-                    UpdateSourceTrigger = UpdateSourceTrigger.LostFocus
-                });
-                StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailShakeSpeed, shakeRPMTextBox));
-                // 振荡温度输入
-                var shakeTempTextBox = new TextBox
-                {
-                    Style = (Style)FindResource("InputTextBoxStyle"),
-                    Width = 140,
-                    VerticalAlignment = VerticalAlignment.Center
-                };
-                shakeTempTextBox.SetBinding(TextBox.TextProperty, new Binding
-                {
-                    Source = step,
-                    Path = new PropertyPath("ShakeTemp"),
-                    Mode = BindingMode.TwoWay,
-                    UpdateSourceTrigger = UpdateSourceTrigger.LostFocus
-                });
-                StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailShakeTemp, shakeTempTextBox));
+                //// 振荡时间输入（秒）
+                //var shakeTimeTextBox = new TextBox
+                //{
+                //    Style = (Style)FindResource("InputTextBoxStyle"),
+                //    Width = 140,
+                //    VerticalAlignment = VerticalAlignment.Center
+                //};
+                //shakeTimeTextBox.SetBinding(TextBox.TextProperty, new Binding
+                //{
+                //    Source = step,
+                //    Path = new PropertyPath("WaitTime"),
+                //    Mode = BindingMode.TwoWay,
+                //    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                //});
+                //StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailWaitTime, shakeTimeTextBox));
+                var shakeTimePanel = CreateVariableInputRow(step, nameof(step.WaitTime), res.StepDetailWaitTime, true, nameof(step.ShakerVariateTimeName), nameof(step.ShakerVariateTimeValue));
+                StepDetailPanel.Children.Add(shakeTimePanel);
+                //var shakeTimePanel = CreateVariableInputRow(step, nameof(step.WaitTime), res.StepDetailWaitTime, true);
+                //StepDetailPanel.Children.Add(shakeTimePanel);
+                //// 振荡转速输入
+                //var shakeRPMTextBox = new TextBox
+                //{
+                //    Style = (Style)FindResource("InputTextBoxStyle"),
+                //    Width = 140,
+                //    VerticalAlignment = VerticalAlignment.Center
+                //};
+                //shakeRPMTextBox.SetBinding(TextBox.TextProperty, new Binding
+                //{
+                //    Source = step,
+                //    Path = new PropertyPath("ShakeRPM"),
+                //    Mode = BindingMode.TwoWay,
+                //    UpdateSourceTrigger = UpdateSourceTrigger.LostFocus
+                //});
+                //StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailShakeSpeed, shakeRPMTextBox));
+                var shakeSpeedPanel = CreateVariableInputRow(step, nameof(step.ShakeRPM), res.StepDetailShakeSpeed, true, nameof(step.ShakerVariateSpeedName), nameof(step.ShakerVariateSpeedValue));
+                StepDetailPanel.Children.Add(shakeSpeedPanel);
+                //// 振荡温度输入
+                //var shakeTempTextBox = new TextBox
+                //{
+                //    Style = (Style)FindResource("InputTextBoxStyle"),
+                //    Width = 140,
+                //    VerticalAlignment = VerticalAlignment.Center
+                //};
+                //shakeTempTextBox.SetBinding(TextBox.TextProperty, new Binding
+                //{
+                //    Source = step,
+                //    Path = new PropertyPath("ShakeTemp"),
+                //    Mode = BindingMode.TwoWay,
+                //    UpdateSourceTrigger = UpdateSourceTrigger.LostFocus
+                //});
+                //StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailShakeTemp, shakeTempTextBox));
+                var shakeTempPanel = CreateVariableInputRow(step, nameof(step.ShakeTemp), res.StepDetailShakeTemp, false, nameof(step.ShakerVariateTempName), nameof(step.ShakerVariateTempValue));
+                StepDetailPanel.Children.Add(shakeTempPanel);
                 return;
             }
             else if (step.Type == "Magnetic")//磁吸
@@ -377,6 +553,23 @@ namespace OctoFixFlow
                 magnetDirectionPanel.Children.Add(magneticUpCheckBox);
                 magnetDirectionPanel.Children.Add(magneticDownCheckBox);
                 StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailMagnetLiftDrop, magnetDirectionPanel));
+                //// 磁吸高度输入
+                //var magnetHeightTextBox = new TextBox
+                //{
+                //    Style = (Style)FindResource("InputTextBoxStyle"),
+                //    Width = 140,
+                //    VerticalAlignment = VerticalAlignment.Center
+                //};
+                //magnetHeightTextBox.SetBinding(TextBox.TextProperty, new Binding
+                //{
+                //    Source = step,
+                //    Path = new PropertyPath("MagnetNums"),
+                //    Mode = BindingMode.TwoWay,
+                //    UpdateSourceTrigger = UpdateSourceTrigger.LostFocus
+                //});
+                //StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailMagnetDistance, magnetHeightTextBox));
+                var magnetHeightPanel = CreateVariableInputRow(step, nameof(step.MagnetNums), res.StepDetailMagnetDistance, false, nameof(step.MagnetVariateName), nameof(step.MagnetVariateValue));
+                StepDetailPanel.Children.Add(magnetHeightPanel);
                 return;
             }
             else if (step.Type == "Temp Ctrl")//温控
@@ -423,21 +616,23 @@ namespace OctoFixFlow
                     }
                 };
                 StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailOperationPosition, posiTempCtrlCombo));
-                // 温控温度输入
-                var tempCtrlTempTextBox = new TextBox
-                {
-                    Style = (Style)FindResource("InputTextBoxStyle"),
-                    Width = 140,
-                    VerticalAlignment = VerticalAlignment.Center
-                };
-                tempCtrlTempTextBox.SetBinding(TextBox.TextProperty, new Binding
-                {
-                    Source = step,
-                    Path = new PropertyPath("TempCtrlTemp"),
-                    Mode = BindingMode.TwoWay,
-                    UpdateSourceTrigger = UpdateSourceTrigger.LostFocus
-                });
-                StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailShakeTemp, tempCtrlTempTextBox));
+                //// 温控温度输入
+                //var tempCtrlTempTextBox = new TextBox
+                //{
+                //    Style = (Style)FindResource("InputTextBoxStyle"),
+                //    Width = 140,
+                //    VerticalAlignment = VerticalAlignment.Center
+                //};
+                //tempCtrlTempTextBox.SetBinding(TextBox.TextProperty, new Binding
+                //{
+                //    Source = step,
+                //    Path = new PropertyPath("TempCtrlTemp"),
+                //    Mode = BindingMode.TwoWay,
+                //    UpdateSourceTrigger = UpdateSourceTrigger.LostFocus
+                //});
+                //StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailShakeTemp, tempCtrlTempTextBox));
+                var tempControlTempPanel = CreateVariableInputRow(step, nameof(step.TempCtrlTemp), res.StepDetailShakeTemp, false, nameof(step.TempControlVariateTempName), nameof(step.TempControlVariateTempValue));
+                StepDetailPanel.Children.Add(tempControlTempPanel);
                 // 打开
                 var tempOpenCheckBox = new CheckBox
                 {
@@ -613,57 +808,137 @@ namespace OctoFixFlow
             }
             else if (step.Type == "Loop")//循环
             {
-                // 起始板位
-                var posFromCombo = new ComboBox
-                {
-                    Style = (Style)FindResource("InputComboBoxStyle"),
-                    ItemsSource = new List<string> { "P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "P11", "P12", "P13", "P14", "P15" },
-                    Width = 140,
-                    VerticalAlignment = VerticalAlignment.Center
-                };
-                var posFromBinding = new Binding
-                {
-                    Source = step,
-                    Path = new PropertyPath("FromPos"),
-                    Mode = BindingMode.TwoWay,
-                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-                };
-                posFromCombo.SetBinding(ComboBox.SelectedItemProperty, posFromBinding);
-
-                StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailTransferFrom, posFromCombo));
-                // 终止板位
-                var posToCombo = new ComboBox
-                {
-                    Style = (Style)FindResource("InputComboBoxStyle"),
-                    ItemsSource = new List<string> { "P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "P11", "P12", "P13", "P14", "P15" },
-                    Width = 140,
-                    VerticalAlignment = VerticalAlignment.Center
-                };
-                var posToBinding = new Binding
-                {
-                    Source = step,
-                    Path = new PropertyPath("ToPos"),
-                    Mode = BindingMode.TwoWay,
-                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-                };
-                posToCombo.SetBinding(ComboBox.SelectedItemProperty, posToBinding);
-
-                StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailTransferTo, posToCombo));
-                // 抓板下压距离
-                var TransferPositionTextBox = new TextBox
+                // 循环起始数字
+                var LoopStartNumTextBox = new TextBox
                 {
                     Style = (Style)FindResource("InputTextBoxStyle"),
                     Width = 140,
                     VerticalAlignment = VerticalAlignment.Center
                 };
-                TransferPositionTextBox.SetBinding(TextBox.TextProperty, new Binding
+                LoopStartNumTextBox.SetBinding(TextBox.TextProperty, new Binding
                 {
                     Source = step,
-                    Path = new PropertyPath("TransferPosition"),
+                    Path = new PropertyPath("LoopStartNum"),
                     Mode = BindingMode.TwoWay,
                     UpdateSourceTrigger = UpdateSourceTrigger.LostFocus
                 });
-                StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailTransferPosition, TransferPositionTextBox));
+                StepDetailPanel.Children.Add(CreateDetailRow(res.WindowLoopStart, LoopStartNumTextBox));
+                // 循环结束数字
+                var LoopEndNumTextBox = new TextBox
+                {
+                    Style = (Style)FindResource("InputTextBoxStyle"),
+                    Width = 140,
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                LoopEndNumTextBox.SetBinding(TextBox.TextProperty, new Binding
+                {
+                    Source = step,
+                    Path = new PropertyPath("LoopEndNum"),
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.LostFocus
+                });
+                StepDetailPanel.Children.Add(CreateDetailRow(res.WindowLoopEnd, LoopEndNumTextBox));
+                // 循环自增量
+                var LoopAddNumTextBox = new TextBox
+                {
+                    Style = (Style)FindResource("InputTextBoxStyle"),
+                    Width = 140,
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                LoopAddNumTextBox.SetBinding(TextBox.TextProperty, new Binding
+                {
+                    Source = step,
+                    Path = new PropertyPath("LoopAddNum"),
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.LostFocus
+                });
+                StepDetailPanel.Children.Add(CreateDetailRow(res.WindowLoopStep, LoopAddNumTextBox));
+                return;
+            }
+            else if (step.Type == "Annotation")
+            {
+                // 注释内容 
+
+                var annoValueTextBox = new TextBox
+                {
+                    Style = (Style)FindResource("InputTextBoxStyle"),
+                    Width = 140,
+                    Height = 90,
+                    AcceptsReturn = true,
+                    TextWrapping = TextWrapping.Wrap,
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                annoValueTextBox.SetBinding(TextBox.TextProperty, new Binding
+                {
+                    Source = step,
+                    Path = new PropertyPath("AnnoValue"),
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                });
+                StepDetailPanel.Children.Add(CreateDetailRow(res.WindowActionAnno, annoValueTextBox));
+                return;
+            }
+            else if (step.Type == "Variate")//变量
+            {
+                var VariateScriptNameTextBox = new TextBox
+                {
+                    Style = (Style)FindResource("InputTextBoxStyle"),
+                    Width = 140,
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                VariateScriptNameTextBox.SetBinding(TextBox.TextProperty, new Binding
+                {
+                    Source = step,
+                    Path = new PropertyPath("VariateScriptName"),
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                });
+                VariateScriptNameTextBox.PreviewTextInput += (s, e) =>
+                {
+                    var textBox = s as TextBox;
+                    string newText = textBox.Text + e.Text;
+
+                    // 第一个不能为数字
+                    if (newText.Length == 1 && char.IsDigit(e.Text[0]))
+                    {
+                        e.Handled = true;
+                    }
+                };
+                StepDetailPanel.Children.Add(CreateDetailRow(res.SettingManualVariateScriptName, VariateScriptNameTextBox));
+                // 动作
+                var posVariateFromCombo = new ComboBox
+                {
+                    Style = (Style)FindResource("InputComboBoxStyle"),
+                    ItemsSource = new List<string> { res.SettingManualVariateEqual, res.SettingManualVariateAdd, res.SettingManualVariateMinus, res.SettingManualVariateMultiply, res.SettingManualVariateDivide },
+                    Width = 140,
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                var posFromVariateBinding = new Binding
+                {
+                    Source = step,
+                    Path = new PropertyPath("VariateStep"),
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                };
+                posVariateFromCombo.SetBinding(ComboBox.SelectedItemProperty, posFromVariateBinding);
+
+                StepDetailPanel.Children.Add(CreateDetailRow(res.SettingManualVariateScriptStep, posVariateFromCombo));
+                // 变量值
+                var variateValueTextBox = new TextBox
+                {
+                    Style = (Style)FindResource("InputTextBoxStyle"),
+                    Width = 140,
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                variateValueTextBox.SetBinding(TextBox.TextProperty, new Binding
+                {
+                    Source = step,
+                    Path = new PropertyPath("VariateNum"),
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
+                    Delay = 300
+                });
+                StepDetailPanel.Children.Add(CreateDetailRow(res.SettingManualVariateScriptValue, variateValueTextBox));
                 return;
             }
             // -------------------------- 通用控件（吸液/注液/取头/退头） --------------------------
@@ -695,14 +970,7 @@ namespace OctoFixFlow
                 HorizontalAlignment = HorizontalAlignment.Left,
                 PlateId = step.Position.Replace("P", "")
             };
-            // 绑定画布的选中列变更事件
-            wellSelectionCanvas.SelectedColumnsChanged += (plateId, columnText) =>
-            {
-                step.WellPosition = columnText;
-                var selectedCells = _mainWidget._selectedCellsFromText(columnText);
-                step.SelectedCells = string.Join(";", selectedCells.Select(c => $"{c.Row},{c.Col}"));
 
-            };
             // 耗材名称显示控件
             TextBlock consumableNameText = new TextBlock
             {
@@ -719,7 +987,7 @@ namespace OctoFixFlow
                     // 更新当前选中的板位ID
                     _mainWidget._currentSelectedPlateId = newPosition.Replace("P", "");
                     wellSelectionCanvas.PlateId = _mainWidget._currentSelectedPlateId;
-                    wellSelectionCanvas.ClearSelection();                    // 清空之前的选择
+                    wellSelectionCanvas.ClearSelection();
                     wellSelectionCanvas.IsInteractive = false;
 
                     // 绑定画布的耗材数据（从板位映射中获取）
@@ -727,6 +995,8 @@ namespace OctoFixFlow
                     {
                         // 显示当前耗材名称
                         step.ConsName = string.Format(res.StepDetailCurrentCons, consumable.Name);
+                        step.ConsRows = consumable.Settings.numRows;
+                        step.ConsCols = consumable.Settings.numColumns;
                         consumableNameText.Text = step.ConsName;
                         wellSelectionCanvas.ConsData = consumable.Settings;  // 关联当前板位的耗材数据
                         int consType = consumable.Settings.type;
@@ -856,6 +1126,306 @@ pipetteCombo));
             wellPositionTextBox.IsReadOnly = true;
             StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailWellPosition, wellPositionTextBox));
 
+            // 变量下拉框
+            var variableValues = CalculateVariableValues(step.Index);
+            var variableRowCombo = new ComboBox
+            {
+                Style = (Style)FindResource("InputComboBoxStyle"),
+                Width = 80,
+                Margin = new Thickness(5, 0, 0, 0),
+                VerticalAlignment = VerticalAlignment.Center,
+                ItemsSource = variableValues.Keys.ToList()
+            };
+            variableRowCombo.SetBinding(Selector.SelectedItemProperty, new Binding
+            {
+                Source = step,
+                Path = new PropertyPath("WellRowVariateName"),
+                Mode = BindingMode.TwoWay,
+                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+            });
+
+            variableRowCombo.SelectionChanged += (s, e) =>
+            {
+                if (_isUpdatingRowVariableCombo) return;
+                _isUpdatingRowVariableCombo = true;
+                try
+                {
+                    if (variableRowCombo.SelectedItem is string selectedVar)
+                    {
+                        var variableValues = CalculateVariableValues(step.Index);
+                        if (variableValues.TryGetValue(selectedVar, out float calculatedVal))
+                        {
+                            bool isValueInteger = Math.Abs(calculatedVal - Math.Round(calculatedVal)) <= 0.0001f;//true:int  false:float
+                            Debug.WriteLine(selectedVar);
+                            Debug.WriteLine(calculatedVal);
+
+                            if (isValueInteger)
+                            {
+                                step.WellRowVariateName = selectedVar;
+                                step.WellRowVariateValue = calculatedVal.ToString();
+                                //进行设置画布 selectwells
+                                if (step.WellRowVariateName != "")
+                                {
+                                    int rowVal = int.Parse((step.WellRowVariateValue));
+
+                                    Debug.WriteLine("厕所" + rowVal);
+                                    if (step.SelectedCells == null)
+                                        return;
+                                    if (wellSelectionCanvas.CurrentSelectionMode == CanvasSelectionMode.SingleCell)
+                                    {
+                                        if (rowVal < 1 || rowVal > step.ConsRows)
+                                        {
+                                            variableRowCombo.SelectedItem = null;
+                                            step.WellRowVariateName = "";
+                                            step.WellRowVariateValue = "";
+                                            return;
+                                        }
+                                        string rowText = rowVal.ToString();
+
+                                        var existingCells = step.SelectedCells?
+                                            .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                                            .ToList() ?? new List<string>();
+                                        existingCells[0] = rowText;
+                                        step.SelectedCells = string.Join(",", existingCells); //行：4 列：6
+                                        string columnText = $"{ResourceHelper.Instance.StepDetailRowPrefix}{existingCells[0]} {ResourceHelper.Instance.StepDetailColumnPrefix}{existingCells[1]}";
+                                        step.WellPosition = columnText;
+                                    }
+                                    else if (wellSelectionCanvas.CurrentSelectionMode == CanvasSelectionMode.EntireColumn)
+                                    {
+                                        if (rowVal < ((step.ConsRows - 1) * -1) || rowVal > step.ConsRows)
+                                        {
+                                            variableRowCombo.SelectedItem = null;
+                                            step.WellRowVariateName = "";
+                                            step.WellRowVariateValue = "";
+                                            return;
+                                        }
+
+                                        var existingCells = step.SelectedCells?
+                                            .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                                            .ToList() ?? new List<string>();
+                                        if (rowVal > 0)
+                                        {
+                                            existingCells = existingCells.GetRange(rowVal - 1, existingCells.Count - (rowVal - 1));
+                                        }
+
+                                        step.SelectedCells = string.Join(";", existingCells);
+                                        var cellList = new List<(int Row, int Col)>();
+                                        foreach (var cellStr in existingCells)
+                                        {
+                                            var parts = cellStr.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                                            if (parts.Length == 2 && int.TryParse(parts[0], out int row) && int.TryParse(parts[1], out int col))
+                                            {
+                                                cellList.Add((row, col));
+                                            }
+                                        }
+                                        step.WellPosition = FormatSelectedColumns(cellList, step.ConsRows, step.ConsCols);
+                                    }
+                                    else if (wellSelectionCanvas.CurrentSelectionMode == CanvasSelectionMode.EntirePlate)
+                                    {
+
+                                    }
+                                    if (!string.IsNullOrEmpty(step.SelectedCells))
+                                    {
+                                        var cells = step.SelectedCells.Split(';')
+                                            .Select(s => s.Split(','))
+                                            .Where(parts => parts.Length == 2 &&
+                                                            int.TryParse(parts[0], out int row) &&
+                                                            int.TryParse(parts[1], out int col))
+                                            .Select(parts => (Row: int.Parse(parts[0]), Col: int.Parse(parts[1])))
+                                            .ToList();
+
+                                        wellSelectionCanvas.SetSelectedCells(cells);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                variableRowCombo.SelectedItem = null;
+                                step.WellRowVariateName = "";
+                                step.WellRowVariateValue = "";
+                                //inputTextBox.Text = calculatedVal.ToString();
+                            }
+                        }
+                    }
+                }
+                finally
+                {
+                    _isUpdatingRowVariableCombo = false;
+                }
+
+            };
+            var variableColText = new TextBlock
+            {
+                Text = res.StepDetailColumnPrefix,
+                VerticalAlignment = VerticalAlignment.Center,
+                FontSize = 14
+            };
+            var variableColCombo = new ComboBox
+            {
+                Style = (Style)FindResource("InputComboBoxStyle"),
+                Width = 80,
+                Margin = new Thickness(5, 0, 0, 0),
+                VerticalAlignment = VerticalAlignment.Center,
+                ItemsSource = variableValues.Keys.ToList()
+            };
+            variableColCombo.SetBinding(Selector.SelectedItemProperty, new Binding
+            {
+                Source = step,
+                Path = new PropertyPath("WellColVariateName"),
+                Mode = BindingMode.TwoWay,
+                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+            });
+            variableColCombo.SelectionChanged += (s, e) =>
+            {
+                if (_isUpdatingColVariableCombo) return;
+                _isUpdatingColVariableCombo = true;
+                try
+                {
+                    if (variableColCombo.SelectedItem is string selectedVar)
+                    {
+                        if (variableValues.TryGetValue(selectedVar, out float calculatedVal))
+                        {
+                            bool isValueInteger = Math.Abs(calculatedVal - Math.Round(calculatedVal)) <= 0.0001f;//true:int  false:float
+
+                            if (isValueInteger)
+                            {
+                                step.WellColVariateName = selectedVar;
+                                step.WellColVariateValue = calculatedVal.ToString();
+                                //进行设置画布 selectwells
+                                if (step.WellColVariateName != "")
+                                {
+                                    int colVal = int.Parse((step.WellColVariateValue));
+                                    if (colVal < 1 || colVal > step.ConsCols)
+                                    {
+                                        variableColCombo.SelectedItem = null;
+                                        step.WellColVariateName = "";
+                                        step.WellColVariateValue = "";
+                                        return;
+                                    }
+                                    Debug.WriteLine("尺寸" + colVal);
+                                    if (wellSelectionCanvas.CurrentSelectionMode == CanvasSelectionMode.SingleCell)
+                                    {
+                                        string colText = colVal.ToString();
+
+                                        var existingCells = step.SelectedCells?
+                                            .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                                            .ToList() ?? new List<string>();
+                                        existingCells[1] = colText;
+                                        step.SelectedCells = string.Join(",", existingCells); //行：4 列：6
+                                        string columnText = $"{ResourceHelper.Instance.StepDetailRowPrefix}{existingCells[0]} {ResourceHelper.Instance.StepDetailColumnPrefix}{existingCells[1]}";
+                                        step.WellPosition = columnText;
+                                    }
+                                    else if (wellSelectionCanvas.CurrentSelectionMode == CanvasSelectionMode.EntireColumn)
+                                    {
+                                        var existingCells = step.SelectedCells?
+                                            .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                                            .ToList() ?? new List<string>();
+                                        for (int i = 0; i < existingCells.Count; i++)
+                                        {
+                                            var rowColParts = existingCells[i].Split(',');
+                                            if (rowColParts.Length >= 1) // 确保行号存在
+                                            {
+                                                string rowNum = rowColParts[0];
+                                                existingCells[i] = $"{rowNum},{colVal}"; // 替换列号
+                                            }
+                                        }
+                                        step.SelectedCells = string.Join(";", existingCells);
+                                        var cellList = new List<(int Row, int Col)>();
+                                        foreach (var cellStr in existingCells)
+                                        {
+                                            var parts = cellStr.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                                            if (parts.Length == 2 && int.TryParse(parts[0], out int row) && int.TryParse(parts[1], out int col))
+                                            {
+                                                cellList.Add((row, col));
+                                            }
+                                        }
+                                        step.WellPosition = FormatSelectedColumns(cellList, step.ConsRows, step.ConsCols);
+                                    }
+                                    else if (wellSelectionCanvas.CurrentSelectionMode == CanvasSelectionMode.EntirePlate)
+                                    {
+
+                                    }
+                                    if (!string.IsNullOrEmpty(step.SelectedCells))
+                                    {
+                                        var cells = step.SelectedCells.Split(';')
+                                            .Select(s => s.Split(','))
+                                            .Where(parts => parts.Length == 2 &&
+                                                            int.TryParse(parts[0], out int row) &&
+                                                            int.TryParse(parts[1], out int col))
+                                            .Select(parts => (Row: int.Parse(parts[0]), Col: int.Parse(parts[1])))
+                                            .ToList();
+
+                                        wellSelectionCanvas.SetSelectedCells(cells);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                variableColCombo.SelectedItem = null;
+                                step.WellColVariateName = "";
+                                step.WellColVariateValue = "";
+                                //inputTextBox.Text = calculatedVal.ToString();
+                            }
+                        }
+                    }
+                }
+                finally
+                {
+                    _isUpdatingColVariableCombo = false;
+                }
+
+            };
+            var inputPanel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            inputPanel.Children.Add(variableRowCombo);
+            inputPanel.Children.Add(variableColText);
+            inputPanel.Children.Add(variableColCombo);
+            StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailRowPrefix, inputPanel));
+
+            /*
+            //罗贤全
+            //            var wellRowPanel = CreateVariableInputRow(
+            //    step,
+            //    nameof(step.WellRowVariateValue),
+            //    res.StepDetailRowPrefix.TrimEnd('：', ':'), // 取资源里的「行」，自动去掉冒号，对齐其他参数标签
+            //    false, // 非必填，和温度参数一致
+            //    nameof(step.WellRowVariateName),
+            //    nameof(step.WellRowVariateValue)
+            //);
+            //            StepDetailPanel.Children.Add(wellRowPanel);
+
+            //            // 2. 列参数行（支持变量绑定）
+            //            var wellColPanel = CreateVariableInputRow(
+            //                step,
+            //                nameof(step.WellColVariateValue),
+            //                res.StepDetailColumnPrefix.TrimEnd('：', ':'), // 取资源里的「列」
+            //                false,
+            //                nameof(step.WellColVariateName),
+            //                nameof(step.WellColVariateValue)
+            //            );
+            //            StepDetailPanel.Children.Add(wellColPanel);
+
+            //            // 【可选保留】原有组合后的孔位只读预览，方便用户查看最终效果，不影响核心逻辑
+            //            var wellPositionPreviewTextBox = new TextBox
+            //            {
+            //                Style = (Style)FindResource("InputTextBoxStyle"),
+            //                Width = 140,
+            //                VerticalAlignment = VerticalAlignment.Center,
+            //                IsReadOnly = true
+            //            };
+            //            wellPositionPreviewTextBox.SetBinding(TextBox.TextProperty, new Binding
+            //            {
+            //                Source = step,
+            //                Path = new PropertyPath("WellPosition"),
+            //                Mode = BindingMode.OneWay
+            //            });
+            //            StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailWellPosition, wellPositionPreviewTextBox));
+            //罗贤全
+            */
+
             StepDetailPanel.Children.Add(new TextBlock
             {
                 Text = res.StepDetailWellSelectionArea, // “孔位选择区：”/“Well Position Selection Area:”
@@ -863,6 +1433,22 @@ pipetteCombo));
                 HorizontalAlignment = HorizontalAlignment.Left,
                 Margin = new Thickness(0, 5, 0, 2)
             });
+            // 绑定画布的选中列变更事件
+            wellSelectionCanvas.SelectedColumnsChanged += (plateId, columnText) =>
+            {
+                if (_isUpdatingRowVariableCombo || _isUpdatingColVariableCombo) return;
+
+                step.WellPosition = columnText;
+                var selectedCells = _mainWidget._selectedCellsFromText(columnText);
+                step.SelectedCells = string.Join(";", selectedCells.Select(c => $"{c.Row},{c.Col}"));
+
+                variableRowCombo.SelectedItem = null;
+                step.WellRowVariateName = "";
+                step.WellRowVariateValue = "";
+                variableColCombo.SelectedItem = null;
+                step.WellColVariateName = "";
+                step.WellColVariateValue = "";
+            };
             StepDetailPanel.Children.Add(consumableNameText);
 
             StepDetailPanel.Children.Add(wellSelectionCanvas);
@@ -1001,6 +1587,25 @@ pipetteCombo));
                     volumePushTextBox.SetBinding(TextBox.TextProperty, volumePushBinding);
 
                     StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailPushVolume, volumePushTextBox));
+
+                    // 创建吸入体积输入框并绑定
+                    var volumeInhaTextBox = new TextBox
+                    {
+                        Style = (Style)FindResource("InputTextBoxStyle"),
+                        Width = 150
+                    };
+
+                    var volumeInhaBinding = new Binding
+                    {
+                        Source = step,
+                        Path = new PropertyPath("InhaVolume"),
+                        Mode = BindingMode.TwoWay,
+                        UpdateSourceTrigger = UpdateSourceTrigger.LostFocus
+                    };
+
+                    volumeInhaTextBox.SetBinding(TextBox.TextProperty, volumeInhaBinding);
+
+                    StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailInhaVolume, volumeInhaTextBox));
                 }
 
                 // #################### 新增：液体参数选择与显示 ####################
@@ -1191,7 +1796,53 @@ pipetteCombo));
                 wellSelectionCanvas.SetSelectedCells(cells);
             }
         }
+        private string FormatSelectedColumns(List<(int Row, int Col)> selectedCells, int consRows, int consCols)
+        {
+            if (selectedCells.Count == 0)
+                return "";
 
+            var cells = selectedCells.ToList();
+
+            if (!cells.Any())
+                return "";
+
+            var rows = cells.Select(c => c.Row).Distinct().OrderBy(r => r).ToList();
+            var cols = cells.Select(c => c.Col).Distinct().OrderBy(c => c).ToList();
+
+            string rowText = FormatRange(rows, consRows);
+            string colText = FormatRange(cols, consCols);
+
+            return $"{ResourceHelper.Instance.StepDetailRowPrefix}{rowText} {ResourceHelper.Instance.StepDetailColumnPrefix}{colText}";
+        }
+        private string FormatRange(List<int> numbers, int consNums)
+        {
+            if (numbers.Count == 0)
+                return "";
+            if (numbers.Count == 1)
+                return numbers[0].ToString();
+
+            int lastNumber = numbers[numbers.Count - 1];
+
+            var ranges = new List<string>();
+            int start = numbers[0];
+            int end = numbers[0];
+
+            for (int i = 1; i < numbers.Count; i++)
+            {
+                if (numbers[i] == end + 1)
+                {
+                    end = numbers[i];
+                }
+                else
+                {
+                    ranges.Add(start == end ? $"{start}" : $"{start}~{end}");
+                    start = end = numbers[i];
+                }
+            }
+            ranges.Add(start == end ? $"{start}" : $"{start}~{end}");
+
+            return string.Join("；", ranges);
+        }
         /// <summary>
         /// 隐藏弹窗
         /// </summary>
@@ -1428,13 +2079,13 @@ pipetteCombo));
 
 
                 string calibrationJson = JsonConvert.SerializeObject(
-    calibrationParams,
-    new JsonSerializerSettings
-    {
-        Formatting = Formatting.None,  // 紧凑格式，解决换行导致的字符串截断
-        NullValueHandling = NullValueHandling.Ignore,
-        FloatParseHandling = FloatParseHandling.Double
-    });
+        calibrationParams,
+        new JsonSerializerSettings
+        {
+            Formatting = Newtonsoft.Json.Formatting.None,  // 紧凑格式，解决换行导致的字符串截断
+            NullValueHandling = NullValueHandling.Ignore,
+            FloatParseHandling = FloatParseHandling.Double
+        });
 
 
                 StringBuilder pythonCode = new StringBuilder();
@@ -1567,10 +2218,23 @@ pipetteCombo));
         #region 磁吸模块
         private async void UpMagnetic_Click(object sender, RoutedEventArgs e)
         {
+            string heightInput = MagneticHeightSetValue.Text.Trim();
+
+            if (!float.TryParse(heightInput, out float heightValue))
+            {
+                _mainWidget.ShowNotification(_mainWidget._res.SettingMagneticHeightInvalid, NotificationControl.NotificationType.Warn);
+                return;
+            }
+            if (heightValue < 0 || heightValue > 25)
+            {
+                _mainWidget.ShowNotification(_mainWidget._res.SettingMagneticHeightInvalid, NotificationControl.NotificationType.Warn);
+                return;
+            }
+
             _mainWidget.ShowNotification(_mainWidget._res.SettingManualMagneticUp, NotificationControl.NotificationType.Info);
             StringBuilder pythonCode = new StringBuilder();
             pythonCode.AppendLine("from magnetic import Magnetic");
-            pythonCode.AppendLine($"Magnetic.on({nowModuleId})");
+            pythonCode.AppendLine($"Magnetic.on({nowModuleId}, {heightValue})");
             var rawMagneticUpFlag = await _mainWidget.ScriptDebugAsync(pythonCode.ToString());
             var magneticUpFlag = _mainWidget.ParseScriptDebugResponse(rawMagneticUpFlag);
             if (magneticUpFlag != null)
@@ -2030,7 +2694,5 @@ pipetteCombo));
             }
         }
         #endregion
-
-
     }
 }

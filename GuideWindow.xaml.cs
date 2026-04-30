@@ -17,6 +17,8 @@ namespace OctoFixFlow
         private Border _currentHoveredPlate = null;
 
         private const string PCR_IMAGE_PATH = "/OctoFixFlow;component/images/PCR.png";
+        private const string Fluo_IMAGE_PATH = "/OctoFixFlow;component/images/fluoDelection.png";
+
         public GuideWindow(bool isAutoLoad)
         {
             InitializeComponent();
@@ -158,6 +160,7 @@ namespace OctoFixFlow
                 pipetteContainer.Visibility = Visibility.Visible;
                 gripperContainer.Visibility = Visibility.Visible;
                 pcrContainer.Visibility = Visibility.Visible;
+                fluoContainer.Visibility = Visibility.Visible;
                 //trashContainer.Visibility = Visibility.Visible;
                 GuideDeckLayoutTitle.IsEnabled = true;
                 GuideExperimentProtocolTitle.IsEnabled = true;
@@ -203,13 +206,16 @@ namespace OctoFixFlow
                 pipetteContainer.Visibility = Visibility.Collapsed;
                 gripperContainer.Visibility = Visibility.Collapsed;
                 pcrContainer.Visibility = Visibility.Collapsed;
+                fluoContainer.Visibility = Visibility.Collapsed;
                 //trashContainer.Visibility = Visibility.Collapsed;
                 GuideConfirmButton.IsEnabled = false;
                 AppGlobalConfig.Instance.IsGripperEnabled = false;
                 AppGlobalConfig.Instance.IsPCREnabled = false;
+                AppGlobalConfig.Instance.IsFluoEnabled = false;
                 AppGlobalConfig.Instance.IsTrashEnabled = false;
                 btnToggleGripper.Content = "❌";
                 btnTogglePCR.Content = "❌";
+                btnToggleFluo.Content = "❌";
                 //btnToggleTrash.Content = "❌";
                 GuideDeckLayoutTitle.IsEnabled = false;
                 GuideExperimentProtocolTitle.IsEnabled = false;
@@ -268,9 +274,26 @@ namespace OctoFixFlow
         private void EnablePCR_Click(object sender, RoutedEventArgs e)
         {
             AppGlobalConfig.Instance.IsPCREnabled = !AppGlobalConfig.Instance.IsPCREnabled;
+            AppGlobalConfig.Instance.IsFluoEnabled = false;
             string plateId = "10";
             Border p10Border = FindName("PlateBorder10") as Border;
             Grid p10Grid = FindName($"PlateGrid{plateId}") as Grid;
+            ClearPlateContent(plateId);
+
+            var newModule = new ModuleDatas
+            {
+                Name = "",
+                Type = -1,
+                PlatePosition = plateId,
+                PipetteVolume = 0,
+                ModuleImage = ""
+            };
+            AppGlobalConfig.Instance.AddOrUpdateModule(plateId, newModule);
+            if (p10Border != null)
+            {
+                p10Border.AllowDrop = true;
+                p10Border.Focusable = true;
+            }
             if (AppGlobalConfig.Instance.IsPCREnabled)
             {
                 if (p10Grid != null)
@@ -309,31 +332,82 @@ namespace OctoFixFlow
                 {
                     Source = new BitmapImage(new Uri("/OctoFixFlow;component/images/gou.png", UriKind.Relative))
                 };
+                btnToggleFluo.Content = "❌";
             }
             else
             {
-                ClearPlateContent(plateId);
-
-                var newModule = new ModuleDatas
-                {
-                    Name = "",
-                    Type = -1,
-                    PlatePosition = plateId,
-                    PipetteVolume = 0,
-                    ModuleImage = ""
-                };
-                AppGlobalConfig.Instance.AddOrUpdateModule(plateId, newModule);
-                if (p10Border != null)
-                {
-                    p10Border.AllowDrop = true;
-                    p10Border.Focusable = true;
-
-                }
                 btnTogglePCR.Content = "❌";
             }
         }
 
+        private void EnableFluo_Click(object sender, RoutedEventArgs e)
+        {
+            AppGlobalConfig.Instance.IsFluoEnabled = !AppGlobalConfig.Instance.IsFluoEnabled;
+            AppGlobalConfig.Instance.IsPCREnabled = false;
+            string plateId = "10";
+            Border p10Border = FindName("PlateBorder10") as Border;
+            Grid p10Grid = FindName($"PlateGrid{plateId}") as Grid;
+            ClearPlateContent(plateId);
 
+            var newModule = new ModuleDatas
+            {
+                Name = "",
+                Type = -1,
+                PlatePosition = plateId,
+                PipetteVolume = 0,
+                ModuleImage = ""
+            };
+            AppGlobalConfig.Instance.AddOrUpdateModule(plateId, newModule);
+            if (p10Border != null)
+            {
+                p10Border.AllowDrop = true;
+                p10Border.Focusable = true;
+            }
+            if (AppGlobalConfig.Instance.IsFluoEnabled)
+            {
+                if (p10Grid != null)
+                {
+                    p10Grid.Children.Clear();
+                    var fluoImage = new Image
+                    {
+                        Source = new BitmapImage(new Uri(Fluo_IMAGE_PATH, UriKind.Relative)),
+                        HorizontalAlignment = HorizontalAlignment.Stretch,
+                        VerticalAlignment = VerticalAlignment.Stretch,
+                        Stretch = Stretch.UniformToFill,
+                        Margin = new Thickness(2)
+                    };
+                    p10Grid.Children.Add(fluoImage);
+                }
+
+                var fluoModule = new ModuleDatas
+                {
+                    Name = "FLUO",
+                    Type = 9,
+                    PlatePosition = plateId,
+                    PipetteVolume = 0,
+                    ModuleImage = "/OctoFixFlow;component/images/fluoDelection.png"
+                };
+                AppGlobalConfig.Instance.AddOrUpdateModule(plateId, fluoModule);
+
+                if (p10Border != null)
+                {
+                    p10Border.AllowDrop = false;
+                    p10Border.Focusable = false;
+
+                }
+
+                btnToggleFluo.Content = new Image
+                {
+                    Source = new BitmapImage(new Uri("/OctoFixFlow;component/images/gou.png", UriKind.Relative))
+                };
+                btnTogglePCR.Content = "❌";
+
+            }
+            else
+            {
+                btnToggleFluo.Content = "❌";
+            }
+        }
         private void GuideBasic_Click(object sender, RoutedEventArgs e)
         {
             mainGuideTable.SelectedIndex = 0;
@@ -600,6 +674,7 @@ namespace OctoFixFlow
             }
         }
         #endregion
+
 
     }
 }

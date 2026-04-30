@@ -669,6 +669,8 @@ namespace OctoFixFlow
         private float _volume;
         private string _position;
         private string _consName;
+        private int _consRows;
+        private int _consCols;
         private string _wellPosition;
         private bool _isSelected;
         private string _selectedColumns;
@@ -676,17 +678,18 @@ namespace OctoFixFlow
         private int _mixCount;
         private float _mixVolume;
         private float _pushOutvolume;
+        private float _inhaVolume;
         private LiquidSettings _selectedLiquid;
         private float _liquidAisAirB;
         private float _liquidAisAirA;
         private float _liquidAisSpeed;
         private float _liquidAisDelay;
-        private float _liquidAisDistance;
+        private string _liquidAisDistance;
         private float _liquidDisAirB;
         private float _liquidDisAirA;
         private float _liquidDisSpeed;
         private float _liquidDisDelay;
-        private float _liquidDisDistance;
+        private string _liquidDisDistance;
         public bool _isSystemstep;
         private int _waitTime;
         private string _waitContent;
@@ -706,6 +709,42 @@ namespace OctoFixFlow
         private string _pcrStep;
         private string _pcrScriptAdress;
         private string _stepDescription;
+        private int _loopStartNum = 1;
+        private int _loopEndNum = 10;
+        private int _loopAddNum = 1;
+        private string _annoValue;
+        private string _variateScriptName;
+        private string _variateStep;
+        private float _variateNum = 1;
+
+        #region 变量振荡
+        private string _shakerVariateTimeName;
+        private string _shakerVariateTimeValue;
+        private string _shakerVariateSpeedName;
+        private string _shakerVariateSpeedValue;
+        private string _shakerVariateTempName;
+        private string _shakerVariateTempValue;
+        #endregion
+        #region 变量温控
+        private string _tempControlVariateTempName;
+        private string _tempControlVariateTempValue;
+        #endregion
+        #region 变量磁吸
+        private string _magnetVariateName;
+        private string _magnetVariateValue;
+        #endregion
+        #region 变量等待
+        private string _waitVariateName;
+        private string _waitVariateValue;
+        #endregion
+        #region 变量孔位
+        // 行变量（对应界面的「行」）
+        private string _wellRowVariateName;
+        private string _wellRowVariateValue;
+        // 列变量（对应界面的「列」）
+        private string _wellColVariateName;
+        private string _wellColVariateValue;
+        #endregion
         public readonly ResourceHelper _res;
 
         public FlowStep()
@@ -751,6 +790,9 @@ namespace OctoFixFlow
                     "Mix" => ResourceHelper.Instance.WindowActionMix,
                     "Loop" => ResourceHelper.Instance.WindowActionLoop,
                     "endLoop" => ResourceHelper.Instance.WindowActionEndLoop,
+                    "Annotation" => ResourceHelper.Instance.WindowActionAnno,
+                    "Variate" => ResourceHelper.Instance.WindowActionVariate,
+
                     _ => _type // 未知类型时显示原始Type值（避免空值）
                 };
 
@@ -822,6 +864,24 @@ namespace OctoFixFlow
                 OnPropertyChanged();
             }
         }
+        public int ConsRows
+        {
+            get => _consRows;
+            set
+            {
+                _consRows = value;
+                OnPropertyChanged();
+            }
+        }
+        public int ConsCols
+        {
+            get => _consCols;
+            set
+            {
+                _consCols = value;
+                OnPropertyChanged();
+            }
+        }
         public string WellPosition
         {
             get => _wellPosition;
@@ -874,6 +934,11 @@ namespace OctoFixFlow
         {
             get => _pushOutvolume;
             set { _pushOutvolume = value; OnPropertyChanged(); }
+        }
+        public float InhaVolume
+        {
+            get => _inhaVolume;
+            set { _inhaVolume = value; OnPropertyChanged(); }
         }
         public bool IsSystemStep
         {
@@ -1005,7 +1070,7 @@ namespace OctoFixFlow
             get => _magnetNums;
             set
             {
-                float correctedValue = Math.Clamp(value, 0, 100);
+                float correctedValue = Math.Clamp(value, 0, 25);
                 if (_magnetNums != correctedValue)
                 {
                     _magnetNums = correctedValue;
@@ -1072,6 +1137,225 @@ namespace OctoFixFlow
                 OnPropertyChanged();
             }
         }
+        public int LoopStartNum
+        {
+            get => _loopStartNum;
+            set
+            {
+                int newStart = Math.Max(1, value);
+                _loopStartNum = newStart;
+                if (_loopEndNum <= newStart)
+                {
+                    _loopEndNum = newStart + 1;
+                    OnPropertyChanged(nameof(LoopEndNum));
+                }
+                if (_loopAddNum > _loopEndNum - _loopStartNum)
+                {
+                    _loopAddNum = Math.Max(1, _loopEndNum - _loopStartNum);
+                    OnPropertyChanged(nameof(LoopAddNum));
+                }
+                OnPropertyChanged();
+                UpdateStepDescription();
+            }
+        }
+        public int LoopEndNum
+        {
+            get => _loopEndNum;
+            set
+            {
+                int minEnd = _loopStartNum + 1;
+                _loopEndNum = Math.Max(value, minEnd);
+                if (_loopAddNum > _loopEndNum - _loopStartNum)
+                {
+                    _loopAddNum = Math.Max(1, _loopEndNum - _loopStartNum);
+                    OnPropertyChanged(nameof(LoopAddNum));
+                }
+
+                OnPropertyChanged();
+                UpdateStepDescription();
+            }
+        }
+        public int LoopAddNum
+        {
+            get => _loopAddNum;
+            set
+            {
+                int minStep = 1;
+                int maxStep = _loopEndNum - _loopStartNum;
+                _loopAddNum = Math.Clamp(value, minStep, maxStep);
+                OnPropertyChanged();
+                UpdateStepDescription();
+            }
+        }
+        public string AnnoValue
+        {
+            get => _annoValue;
+            set
+            {
+                _annoValue = value;
+                OnPropertyChanged();
+                UpdateStepDescription();
+            }
+        }
+        public string VariateScriptName
+        {
+            get => _variateScriptName;
+            set
+            {
+                _variateScriptName = value;
+                OnPropertyChanged();
+            }
+        }
+        public string VariateStep
+        {
+            get => _variateStep;
+            set
+            {
+                _variateStep = value;
+                OnPropertyChanged();
+            }
+        }
+        public float VariateNum
+        {
+            get => _variateNum;
+            set { _variateNum = value; OnPropertyChanged(); UpdateStepDescription(); }
+        }
+        #region 变量振荡
+        public string ShakerVariateTimeName
+        {
+            get => _shakerVariateTimeName;
+            set
+            {
+                _shakerVariateTimeName = value;
+                OnPropertyChanged();
+            }
+        }
+        public string ShakerVariateTimeValue
+        {
+            get => _shakerVariateTimeValue;
+            set { _shakerVariateTimeValue = value; OnPropertyChanged(); UpdateStepDescription(); }
+        }
+        public string ShakerVariateSpeedName
+        {
+            get => _shakerVariateSpeedName;
+            set
+            {
+                _shakerVariateSpeedName = value;
+                OnPropertyChanged();
+            }
+        }
+        public string ShakerVariateSpeedValue
+        {
+            get => _shakerVariateSpeedValue;
+            set { _shakerVariateSpeedValue = value; OnPropertyChanged(); UpdateStepDescription(); }
+        }
+        public string ShakerVariateTempName
+        {
+            get => _shakerVariateTempName;
+            set
+            {
+                _shakerVariateTempName = value;
+                OnPropertyChanged();
+            }
+        }
+        public string ShakerVariateTempValue
+        {
+            get => _shakerVariateTempValue;
+            set { _shakerVariateTempValue = value; OnPropertyChanged(); UpdateStepDescription(); }
+        }
+        #endregion
+        #region 变量温控
+        public string TempControlVariateTempName
+        {
+            get => _tempControlVariateTempName;
+            set
+            {
+                _tempControlVariateTempName = value;
+                OnPropertyChanged();
+            }
+        }
+        public string TempControlVariateTempValue
+        {
+            get => _tempControlVariateTempValue;
+            set { _tempControlVariateTempValue = value; OnPropertyChanged(); UpdateStepDescription(); }
+        }
+        #endregion
+        #region 变量磁吸
+        public string MagnetVariateName
+        {
+            get => _magnetVariateName;
+            set
+            {
+                _magnetVariateName = value;
+                OnPropertyChanged();
+            }
+        }
+        public string MagnetVariateValue
+        {
+            get => _magnetVariateValue;
+            set { _magnetVariateValue = value; OnPropertyChanged(); UpdateStepDescription(); }
+        }
+        #endregion
+        #region 变量等待
+        public string WaitVariateName
+        {
+            get => _waitVariateName;
+            set
+            {
+                _waitVariateName = value;
+                OnPropertyChanged();
+            }
+        }
+        public string WaitVariateValue
+        {
+            get => _waitVariateValue;
+            set { _waitVariateValue = value; OnPropertyChanged(); UpdateStepDescription(); }
+        }
+        #endregion
+        #region 变量孔位  罗贤全
+        public string WellRowVariateName
+        {
+            get => _wellRowVariateName;
+            set
+            {
+                _wellRowVariateName = value;
+                OnPropertyChanged();
+            }
+        }
+        public string WellRowVariateValue
+        {
+            get => _wellRowVariateValue;
+            set
+            {
+                _wellRowVariateValue = value;
+                OnPropertyChanged();
+                // 行变化时，自动同步组合后的WellPosition，兼容老逻辑
+                //UpdateCombinedWellPosition();
+                UpdateStepDescription();
+            }
+        }
+        public string WellColVariateName
+        {
+            get => _wellColVariateName;
+            set
+            {
+                _wellColVariateName = value;
+                OnPropertyChanged();
+            }
+        }
+        public string WellColVariateValue
+        {
+            get => _wellColVariateValue;
+            set
+            {
+                _wellColVariateValue = value;
+                OnPropertyChanged();
+                // 列变化时，自动同步组合后的WellPosition，兼容老逻辑
+                //UpdateCombinedWellPosition();
+                UpdateStepDescription();
+            }
+        }
+        #endregion
         // 液体相关属性
         public LiquidSettings SelectedLiquid
         {
@@ -1114,7 +1398,7 @@ namespace OctoFixFlow
                 OnPropertyChanged();
             }
         }
-        public float LiquidAisDistance
+        public string LiquidAisDistance
         {
             get => _liquidAisDistance;
             set
@@ -1159,7 +1443,7 @@ namespace OctoFixFlow
                 OnPropertyChanged();
             }
         }
-        public float LiquidDisDistance
+        public string LiquidDisDistance
         {
             get => _liquidDisDistance;
             set
@@ -1211,6 +1495,20 @@ namespace OctoFixFlow
             // 如需多语言适配，把中文替换为ResourceHelper的资源键即可，例如：
             // "Aspirate" => $"# {_res.StepAspirate}（{Position} {WellPosition}，{Volume:F2}μL）",
         }
+        //private void UpdateCombinedWellPosition()
+        //{
+        //    // 行和列都有值才组合，否则清空
+        //    if (!string.IsNullOrEmpty(WellRowVariateValue) && !string.IsNullOrEmpty(WellColVariateValue))
+        //    {
+        //        // 完全对齐你现有界面的格式："行: X 列: Y"，复用多语言资源，无硬编码
+        //        WellPosition = $"{ResourceHelper.Instance.StepDetailRowPrefix}{WellRowVariateValue} {ResourceHelper.Instance.StepDetailColumnPrefix}{WellColVariateValue}";
+        //    }
+        //    else
+        //    {
+        //        WellPosition = "";
+        //        SelectedCells = "";
+        //    }
+        //}
     }
     //液体参数
     public class LiquidSettings : INotifyPropertyChanged
@@ -1221,12 +1519,12 @@ namespace OctoFixFlow
         private float _aisAirA;
         private float _aisSpeed;
         private float _aisDelay;
-        private float _aisDistance;
+        private string _aisDistance;
         private float _disAirB;
         private float _disAirA;
         private float _disSpeed;
         private float _disDelay;
-        private float _disDistance;
+        private string _disDistance;
 
         public string name
         {
@@ -1306,7 +1604,7 @@ namespace OctoFixFlow
             }
         }
 
-        public float aisDistance
+        public string aisDistance
         {
             get => _aisDistance;
             set
@@ -1371,7 +1669,7 @@ namespace OctoFixFlow
             }
         }
 
-        public float disDistance
+        public string disDistance
         {
             get => _disDistance;
             set
@@ -1396,6 +1694,30 @@ namespace OctoFixFlow
     }
     public class PlateConfig
     {
+        //微孔板
+        public double QbLength { get; set; } = 127.23;
+        public double QbWidth { get; set; } = 85.15;
+        public double QbHeight { get; set; } = 2.46;
+
+        public double Length { get; set; } = 125.39;
+        public double Width { get; set; } = 83.20;
+        public double Height { get; set; } = 42.36;
+
+        public double TopLength { get; set; } = 120.21;
+        public double TopWidth { get; set; } = 77.39;
+
+        public int Rows { get; set; } = 8;
+        public int Cols { get; set; } = 12;
+
+        public double WallThickness { get; set; } = 1.0;
+
+        public double HoleDiameter { get; set; } = 5.0;
+        public double ConeHeight { get; set; } = 15.48;
+
+        public double RowSpacing { get; set; } = 9.0;
+        public double ColSpacing { get; set; } = 9.0;
+
+        //
         public double GTopHeight { get; set; } = 5.87;
         public double TopRadius { get; set; } = 3.4;
 
@@ -1427,6 +1749,7 @@ namespace OctoFixFlow
 
             _isGripperEnabled = false;
             _isPCREnabled = false;
+            _isFluoEnabled = false;
             _isTrashEnabled = true;
             _plateModuleMap = new Dictionary<string, ModuleDatas>();
         }
@@ -1513,6 +1836,20 @@ namespace OctoFixFlow
                 if (_isPCREnabled != value)
                 {
                     _isPCREnabled = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        // 荧光检测模块启用状态
+        private bool _isFluoEnabled;
+        public bool IsFluoEnabled
+        {
+            get => _isFluoEnabled;
+            set
+            {
+                if (_isFluoEnabled != value)
+                {
+                    _isFluoEnabled = value;
                     OnPropertyChanged();
                 }
             }
@@ -1632,7 +1969,7 @@ namespace OctoFixFlow
     public class ModuleDatas
     {
         public string Name { get; set; } // 名称（用于流程步骤）
-        public int Type { get; set; } // 类型：-1:空；0：单通道移液器；1：八通道移液器；2：96通道移液器；3：抓手；4：PCR；5：加热振荡；6：磁吸；7：温控;8:垃圾桶
+        public int Type { get; set; } // 类型：-1:空；0：单通道移液器；1：八通道移液器；2：96通道移液器；3：抓手；4：PCR；5：加热振荡；6：磁吸；7：温控;8:垃圾桶;9:荧光检测模块
         public string PlatePosition { get; set; } // 板位（P1-P12）
         public int PipetteVolume { get; set; } // 移液器的最大容量（200，1000）
         public string ModuleImage { get; set; } // 模块图片地址

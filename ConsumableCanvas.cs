@@ -85,13 +85,86 @@ namespace OctoFixFlow
             double offsetY = (ActualHeight - ConsData.labW * scale) / 2;
 
             //绘制带缺口的耗材外框
-            //DrawConsumableOutline(dc, borderPen, scale, offsetX, offsetY);
             var outlineGeometry = DrawConsumableOutline(scale, offsetX, offsetY);
             dc.DrawGeometry(Brushes.White, null, outlineGeometry);
             dc.DrawGeometry(null, borderPen, outlineGeometry);
 
             //绘制孔
             DrawAllHoles(dc, holePen, selectedCellPen, scale, offsetX, offsetY);
+
+            if (ConsData.numRows > 0 && ConsData.numColumns > 0)
+            {
+                double dpiScale = VisualTreeHelper.GetDpi(this).PixelsPerDip;
+                var typeface = new Typeface("Arial");
+                var textBrush = Brushes.Black;
+
+                double firstColCenterX = offsetX + ConsData.distanceRowY * scale;
+                double firstRowCenterY = offsetY + ConsData.distanceColumnX * scale;
+                double colSpacing = ConsData.distanceColumn * scale;
+                double rowSpacing = ConsData.distanceRow * scale;
+
+
+                double leftEdgeX = offsetX;
+                double topEdgeY = offsetY;
+
+                double firstHoleLeftX;
+                if (ConsData.type == 4 || ConsData.topShape == 0)
+                {
+                    firstHoleLeftX = firstColCenterX - ConsData.topRadius * scale;
+                }
+                else
+                {
+                    firstHoleLeftX = firstColCenterX - ConsData.topUpperX * scale / 2;
+                }
+                double firstHoleTopY;
+                if (ConsData.type == 4 || ConsData.topShape == 0)
+                {
+                    firstHoleTopY = firstRowCenterY - ConsData.topRadius * scale;
+                }
+                else
+                {
+                    firstHoleTopY = firstRowCenterY - ConsData.topUpperY * scale / 2;
+                }
+                double availableWidth = firstHoleLeftX - leftEdgeX - 4 * scale;
+                double availableHeight = firstHoleTopY - topEdgeY - 4 * scale;
+                double fontSize = Math.Clamp(Math.Min(availableWidth, availableHeight) * 0.8, 6, 14);
+
+                double labelBaseX = leftEdgeX + 3 * scale;
+
+                for (int row = 0; row < ConsData.numRows; row++)
+                {
+                    char rowLetter = (char)('A' + row);
+                    var formattedText = new FormattedText(
+                        rowLetter.ToString(),
+                        System.Globalization.CultureInfo.CurrentCulture,
+                        FlowDirection.LeftToRight,
+                        typeface,
+                        fontSize,
+                        textBrush,
+                        dpiScale);
+
+                    double holeCenterY = firstRowCenterY + row * rowSpacing;
+                    double labelY = holeCenterY - formattedText.Height / 2;
+                    dc.DrawText(formattedText, new Point(labelBaseX, labelY));
+                }
+                double labelBaseY = topEdgeY + 3 * scale;
+                for (int col = 0; col < ConsData.numColumns; col++)
+                {
+                    string colNumber = (col + 1).ToString();
+                    var formattedText = new FormattedText(
+                        colNumber,
+                        System.Globalization.CultureInfo.CurrentCulture,
+                        FlowDirection.LeftToRight,
+                        typeface,
+                        fontSize,
+                        textBrush,
+                        dpiScale);
+
+                    double holeCenterX = firstColCenterX + col * colSpacing;
+                    double labelX = holeCenterX - formattedText.Width / 2;
+                    dc.DrawText(formattedText, new Point(labelX, labelBaseY));
+                }
+            }
         }
 
         private PathGeometry DrawConsumableOutline(double scale, double offsetX, double offsetY)
@@ -334,7 +407,7 @@ namespace OctoFixFlow
             }
 
             InvalidateVisual();
-            SelectedColumnsChanged?.Invoke(PlateId, FormatSelectedColumns());
+            SelectedColumnsChanged?.Invoke(PlateId, FormatSelectedColumns(ConsData.numRows, ConsData.numColumns));
 
             //// 获取当前选中的列
             //int currentCol = _selectedCells.First().Col;
@@ -436,18 +509,20 @@ namespace OctoFixFlow
                         _selectedCells.Add((targetRow, col));
                     }
                 }
+
             }
             else
             {
                 // 单通道：选中单个单元格
                 _selectedCells.Add((row, col));
+
             }
             InvalidateVisual(); // 刷新绘制
-            SelectedColumnsChanged?.Invoke(PlateId, FormatSelectedColumns());
+            SelectedColumnsChanged?.Invoke(PlateId, FormatSelectedColumns(ConsData.numRows, ConsData.numColumns));
             //}
         }
 
-        private string FormatSelectedColumns()
+        private string FormatSelectedColumns(int consRows, int consCols)
         {
             if (_selectedCells.Count == 0)
                 return "";
@@ -460,21 +535,32 @@ namespace OctoFixFlow
             var rows = cells.Select(c => c.Row).Distinct().OrderBy(r => r).ToList();
             var cols = cells.Select(c => c.Col).Distinct().OrderBy(c => c).ToList();
 
-            string rowText = FormatRange(rows);
-            string colText = FormatRange(cols);
+            string rowText = FormatRange(rows, consRows);
+            string colText = FormatRange(cols, consCols);
 
             return $"{ResourceHelper.Instance.StepDetailRowPrefix}{rowText} {ResourceHelper.Instance.StepDetailColumnPrefix}{colText}";
         }
         // 将数字列表格式化为“X”或“X~Y”范围字符串
-        private string FormatRange(List<int> numbers)
+        private string FormatRange(List<int> numbers, int consNums)
         {
             if (numbers.Count == 0)
                 return "";
             if (numbers.Count == 1)
                 return numbers[0].ToString();
 
+            int lastNumber = numbers[numbers.Count - 1];
+
             var ranges = new List<string>();
             int start = numbers[0];
+            //if (lastNumber == consNums)
+            //{
+            //    ranges.Add($"{start}");
+
+            //}
+            //else
+            //{
+            //    ranges.Add($"{lastNumber - consNums}");
+            //}
             int end = numbers[0];
 
             for (int i = 1; i < numbers.Count; i++)
@@ -504,7 +590,6 @@ namespace OctoFixFlow
         public void SetSelectedCells(IEnumerable<(int Row, int Col)> cells)
         {
             _selectedCells.Clear();
-            //_columnRowOffset = 0;
 
             if (cells != null)
             {
@@ -534,7 +619,7 @@ namespace OctoFixFlow
                 _columnRowOffset = 0;
                 _selectedRowCount = Math.Min(8, ConsData?.numRows ?? 8);
             }
-            Debug.WriteLine(":::" + _columnRowOffset + ";;;" + _selectedRowCount);
+            //Debug.WriteLine(":::" + _columnRowOffset + ";;;" + _selectedRowCount);
             InvalidateVisual();
         }
     }

@@ -314,6 +314,24 @@
                                     Click="LoopButton_Click"
                                     Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionLoop}"
                                     Style="{StaticResource ActionButtonStyle}" />
+                                <Button
+                                    x:Name="AnnoButton"
+                                    Width="100"
+                                    Click="AnnoButton_Click"
+                                    Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionAnno}"
+                                    Style="{StaticResource ActionButtonStyle}" />
+                                <Button
+                                    x:Name="VariateButton"
+                                    Width="100"
+                                    Click="VariateButton_Click"
+                                    Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionVariate}"
+                                    Style="{StaticResource ActionButtonStyle}" />
+                                <Button
+                                    x:Name="ActionFluoButton"
+                                    Width="100"
+                                    Click="FluoButton_Click"
+                                    Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionFluo}"
+                                    Style="{StaticResource ActionButtonStyle}" />
                             </UniformGrid>
                         </StackPanel>
                     </ScrollViewer>
@@ -363,9 +381,6 @@
                                                 Height="60"
                                                 Margin="0"
                                                 ConsData="{Binding Settings}" />
-
-
-
                                             <TextBlock
                                                 Margin="0"
                                                 HorizontalAlignment="Center"
@@ -968,10 +983,13 @@
                 <TextBlock Foreground="White" Text="MoxiPlatform S1 | " />
             </StatusBarItem>
             <StatusBarItem>
-                <TextBlock x:Name="DateTimeText" Foreground="White" />
+                <TextBlock Foreground="White" Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowVersion}" />
             </StatusBarItem>
             <StatusBarItem HorizontalAlignment="Right">
-                <TextBlock Foreground="White" Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowVersion}" />
+                <TextBlock
+                    x:Name="DateTimeText"
+                    Foreground="White"
+                    Text="" />
             </StatusBarItem>
         </StatusBar>
         <Canvas
