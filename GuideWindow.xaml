@@ -215,8 +215,9 @@
                                                 x:Name="cmbPipetteVolume"
                                                 Width="150"
                                                 Margin="5,0,0,0"
-                                                SelectedIndex="0"
-                                                Style="{StaticResource InputComboBoxStyle}">
+                                                SelectedIndex="1"
+                                                Style="{StaticResource InputComboBoxStyle}"
+                                                Visibility="Collapsed">
                                                 <ComboBoxItem Content="200μL" />
                                                 <ComboBoxItem Content="1000μL" />
                                             </ComboBox>
@@ -248,8 +249,9 @@
                                                 x:Name="cmbPipetteVolume2"
                                                 Width="150"
                                                 Margin="5,0,0,0"
-                                                SelectedIndex="0"
-                                                Style="{StaticResource InputComboBoxStyle}">
+                                                SelectedIndex="1"
+                                                Style="{StaticResource InputComboBoxStyle}"
+                                                Visibility="Collapsed">
                                                 <ComboBoxItem Content="200μL" />
                                                 <ComboBoxItem Content="1000μL" />
                                             </ComboBox>

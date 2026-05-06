@@ -6,6 +6,7 @@ using Serilog;
 using System.Collections.ObjectModel;
 using System.Data;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Text.Json;
@@ -1498,6 +1499,24 @@ namespace OctoFixFlow
             pythonCode.AppendLine($"    \"created\": \"{AppGlobalConfig.Instance.GuideProtocolStartTime}\",");
             pythonCode.AppendLine($"    \"steps\": \"{stepsNum}\",");
             pythonCode.AppendLine("}");
+            //新增李明变量需求
+            Dictionary<string, float> inputParamDict = new Dictionary<string, float>();
+            foreach (var flowStep in FlowSteps)
+            {
+                string stepType = MapStepType(flowStep.Type);
+                if (stepType == "variate" && flowStep.VariateStep == _res.SettingManualVariateEqual)
+                {
+                    string variateName = flowStep.VariateScriptName;
+                    float variateNum = flowStep.VariateNum;
+                    inputParamDict.Add(variateName, variateNum);
+                    // 处理重复变量，以最后一次赋值为准
+                    //if (inputParamDict.ContainsKey(variateName))
+                    //    inputParamDict[variateName] = variateNum;
+                    //else
+                    //    inputParamDict.Add(variateName, variateNum);
+                }
+            }
+            //新增李明变量需求
             List<string> moduleList = new List<string>(new string[18]);
             for (int plateIndex = 0; plateIndex < 18; plateIndex++)
             {
@@ -1546,6 +1565,19 @@ namespace OctoFixFlow
             pythonCode.AppendLine($"plate_modules = [{moduleListStr}]");
             string consumableListStr = string.Join(", ", consumableList.Select(c => $"\"{c}\""));
             pythonCode.AppendLine($"plate_consumables = [{consumableListStr}]");
+            //新增李明这边的使用变量
+            if (inputParamDict.Count > 0)
+            {
+                // 拼接字典键值对，key加双引号，和你示例格式完全一致
+                var keyValuePairs = inputParamDict.Select(kvp => $"\"{kvp.Key}\":{kvp.Value}");
+                string inputParamStr = string.Join(", ", keyValuePairs);
+                pythonCode.AppendLine($"input_param = {{{inputParamStr}}}");
+            }
+            else
+            {
+                // 无变量时生成空字典，避免Python语法错误
+                pythonCode.AppendLine("input_param = {}");
+            }
             pythonCode.AppendLine();
 
             // 3. 写入耗材
@@ -1710,9 +1742,20 @@ namespace OctoFixFlow
                 {
                     case "aspirate":
                         var (aspirateCons, aisAllRowNum) = GetConsumableVarNameByPlate(flowStep.Position);
+
                         if (moduleIdDict.TryGetValue(pipperName, out string aisPipetteId))
                         {
                             var (aisRowNum, aisColNum) = ParsePipettePosition(flowStep.SelectedCells, aisAllRowNum, pipetteType);
+                            string aisRowParam = "";
+                            if (!string.IsNullOrEmpty(flowStep.WellRowVariateName))
+                            {
+                                aisRowParam = flowStep.WellRowVariateName;
+                            }
+                            string aisColParam = "";
+                            if (!string.IsNullOrEmpty(flowStep.WellColVariateName))
+                            {
+                                aisColParam = flowStep.WellColVariateName;
+                            }
                             #region 新增需求从距孔底距离从固定值改成list。比如从8.0改成8.0,4.0,0.4
                             string depthParam;
                             var distanceParts = flowStep.LiquidAisDistance.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
@@ -1748,7 +1791,9 @@ namespace OctoFixFlow
                             }
                             #endregion
                             pythonCode.AppendLine($"{indentStr}# 吸液（{flowStep.Position} {flowStep.WellPosition}，{flowStep.Volume}μL）");
-                            pythonCode.AppendLine($"{indentStr}aspirate(pipe_id={aisPipetteId}, plate=\"{MapPlatePosition(flowStep.Position)}\", cons={aspirateCons}, row={aisRowNum}, col={aisColNum}, depth={depthParam}, vol={flowStep.Volume:F2}, speed={flowStep.LiquidAisSpeed:F2}, post_air={flowStep.LiquidAisAirB:F2})");
+                            string rowArg = string.IsNullOrEmpty(aisRowParam) ? aisRowNum.ToString() : aisRowParam;
+                            string colArg = string.IsNullOrEmpty(aisColParam) ? aisColNum.ToString() : aisColParam;
+                            pythonCode.AppendLine($"{indentStr}aspirate(pipe_id={aisPipetteId}, plate=\"{MapPlatePosition(flowStep.Position)}\", cons={aspirateCons}, row={rowArg}, col={colArg}, depth={depthParam}, vol={flowStep.Volume:F2}, speed={flowStep.LiquidAisSpeed:F2}, post_air={flowStep.LiquidAisAirB:F2})");
 
                             //pythonCode.AppendLine($"{indentStr}aspirate(pipe_id={aisPipetteId}, plate=\"{MapPlatePosition(flowStep.Position)}\",  cons={aspirateCons},row={aisRowNum}, col={aisColNum}, depth={aspirateCons}.bottom({flowStep.LiquidAisDistance:F2}), vol={flowStep.Volume:F2}, speed={flowStep.LiquidAisSpeed:F2}, post_air={flowStep.LiquidAisAirB:F2})");
                         }
@@ -1757,6 +1802,16 @@ namespace OctoFixFlow
                     case "dispense":
                         var (dispenseCons, disAllRowNum) = GetConsumableVarNameByPlate(flowStep.Position);
                         var (disRowNum, disColNum) = ParsePipettePosition(flowStep.SelectedCells, disAllRowNum, pipetteType);
+                        string disRowParam = "";
+                        if (!string.IsNullOrEmpty(flowStep.WellRowVariateName))
+                        {
+                            disRowParam = flowStep.WellRowVariateName;
+                        }
+                        string disColParam = "";
+                        if (!string.IsNullOrEmpty(flowStep.WellColVariateName))
+                        {
+                            disColParam = flowStep.WellColVariateName;
+                        }
                         if (moduleIdDict.TryGetValue(pipperName, out string disPipetteId))
                         {
                             #region 新增需求从距孔底距离从固定值改成list。比如从8.0改成8.0,4.0,0.4
@@ -1794,12 +1849,24 @@ namespace OctoFixFlow
                             }
                             #endregion
                             pythonCode.AppendLine($"{indentStr}# 注液（{flowStep.Position} {flowStep.WellPosition}，{flowStep.Volume}μL）");
-                            pythonCode.AppendLine($"{indentStr}dispense(pipe_id={disPipetteId}, plate=\"{MapPlatePosition(flowStep.Position)}\",  cons={dispenseCons},row={disRowNum},  col={disColNum}, depth={depthParam}, vol={flowStep.Volume:F2}, speed={flowStep.LiquidDisSpeed:F2}, push_out={flowStep.PushOutvolume:F2})");
+                            string rowArg = string.IsNullOrEmpty(disRowParam) ? disRowNum.ToString() : disRowParam;
+                            string colArg = string.IsNullOrEmpty(disColParam) ? disColNum.ToString() : disColParam;
+                            pythonCode.AppendLine($"{indentStr}dispense(pipe_id={disPipetteId}, plate=\"{MapPlatePosition(flowStep.Position)}\",  cons={dispenseCons},row={rowArg},  col={colArg}, depth={depthParam}, vol={flowStep.Volume:F2}, speed={flowStep.LiquidDisSpeed:F2}, push_out={flowStep.PushOutvolume:F2})");
                         }
                         break;
                     case "mix":
                         var (mixingCons, misAllRowNum) = GetConsumableVarNameByPlate(flowStep.Position);
                         var (misRowNum, misColNum) = ParsePipettePosition(flowStep.SelectedCells, misAllRowNum, pipetteType);
+                        string mixRowParam = "";
+                        if (!string.IsNullOrEmpty(flowStep.WellRowVariateName))
+                        {
+                            mixRowParam = flowStep.WellRowVariateName;
+                        }
+                        string mixColParam = "";
+                        if (!string.IsNullOrEmpty(flowStep.WellColVariateName))
+                        {
+                            mixColParam = flowStep.WellColVariateName;
+                        }
                         if (moduleIdDict.TryGetValue(pipperName, out string mixPipetteId))
                         {
                             #region 新增需求从距孔底距离从固定值改成list。比如从8.0改成8.0,4.0,0.4
@@ -1837,25 +1904,51 @@ namespace OctoFixFlow
                             }
                             #endregion
                             pythonCode.AppendLine($"{indentStr}# 混合（{flowStep.MixVolume}μL，{flowStep.MixCount}轮）");
-                            pythonCode.AppendLine($"{indentStr}mixing(pipe_id={mixPipetteId}, plate=\"{MapPlatePosition(flowStep.Position)}\", cons={mixingCons},row={misRowNum}, col={misColNum}, vol={flowStep.MixVolume:F2}, rounds={flowStep.MixCount}, speed={flowStep.LiquidAisSpeed:F2}, depth={depthParam}, push_out={flowStep.PushOutvolume:F2}, final_asp={flowStep.InhaVolume:F2})");
+                            string rowArg = string.IsNullOrEmpty(mixRowParam) ? misRowNum.ToString() : mixRowParam;
+                            string colArg = string.IsNullOrEmpty(mixColParam) ? misColNum.ToString() : mixColParam;
+                            pythonCode.AppendLine($"{indentStr}mixing(pipe_id={mixPipetteId}, plate=\"{MapPlatePosition(flowStep.Position)}\", cons={mixingCons},row={rowArg}, col={colArg}, vol={flowStep.MixVolume:F2}, rounds={flowStep.MixCount}, speed={flowStep.LiquidAisSpeed:F2}, depth={depthParam}, push_out={flowStep.PushOutvolume:F2}, final_asp={flowStep.InhaVolume:F2})");
                         }
                         break;
                     case "tipon": // 取头
                         var (tiponCons, tipOnAllRowNum) = GetConsumableVarNameByPlate(flowStep.Position); // 根据板位获取耗材变量名
                         var (tipOnRowNum, tipOnColNum) = ParsePipettePosition(flowStep.SelectedCells, tipOnAllRowNum, pipetteType);
+                        string tiponRowParam = "";
+                        if (!string.IsNullOrEmpty(flowStep.WellRowVariateName))
+                        {
+                            tiponRowParam = flowStep.WellRowVariateName;
+                        }
+                        string tiponColParam = "";
+                        if (!string.IsNullOrEmpty(flowStep.WellColVariateName))
+                        {
+                            tiponColParam = flowStep.WellColVariateName;
+                        }
                         if (moduleIdDict.TryGetValue(pipperName, out string tipOnPipetteId))
                         {
                             pythonCode.AppendLine($"{indentStr}# 取头（{flowStep.Position} {flowStep.WellPosition}）");
-                            pythonCode.AppendLine($"{indentStr}tipon(pipe_id={tipOnPipetteId}, plate=\"{MapPlatePosition(flowStep.Position)}\",  cons={tiponCons},row={tipOnRowNum},  col={tipOnColNum})");
+                            string rowArg = string.IsNullOrEmpty(tiponRowParam) ? tipOnRowNum.ToString() : tiponRowParam;
+                            string colArg = string.IsNullOrEmpty(tiponColParam) ? tipOnColNum.ToString() : tiponColParam;
+                            pythonCode.AppendLine($"{indentStr}tipon(pipe_id={tipOnPipetteId}, plate=\"{MapPlatePosition(flowStep.Position)}\",  cons={tiponCons},row={rowArg},  col={colArg})");
                         }
                         break;
                     case "tipoff": // 退头
                         var (tipoffCons, tipOffAllRowNum) = GetConsumableVarNameByPlate(flowStep.Position);
                         var (tipOffRowNum, tipOffColNum) = ParsePipettePosition(flowStep.SelectedCells, tipOffAllRowNum, pipetteType);
+                        string tipoffRowParam = "";
+                        if (!string.IsNullOrEmpty(flowStep.WellRowVariateName))
+                        {
+                            tipoffRowParam = flowStep.WellRowVariateName;
+                        }
+                        string tipoffColParam = "";
+                        if (!string.IsNullOrEmpty(flowStep.WellColVariateName))
+                        {
+                            tipoffColParam = flowStep.WellColVariateName;
+                        }
                         if (moduleIdDict.TryGetValue(pipperName, out string tipOffPipetteId))
                         {
                             pythonCode.AppendLine($"{indentStr}# 退头（{flowStep.Position} {flowStep.WellPosition}）");
-                            pythonCode.AppendLine($"{indentStr}tipoff(pipe_id={tipOffPipetteId}, plate=\"{MapPlatePosition(flowStep.Position)}\",   cons={tipoffCons},row={tipOffRowNum},  col={tipOffColNum})");
+                            string rowArg = string.IsNullOrEmpty(tipoffRowParam) ? tipOffRowNum.ToString() : tipoffRowParam;
+                            string colArg = string.IsNullOrEmpty(tipoffColParam) ? tipOffColNum.ToString() : tipoffColParam;
+                            pythonCode.AppendLine($"{indentStr}tipoff(pipe_id={tipOffPipetteId}, plate=\"{MapPlatePosition(flowStep.Position)}\",   cons={tipoffCons},row={rowArg},  col={colArg})");
                         }
 
                         break;
@@ -3117,6 +3210,8 @@ namespace OctoFixFlow
                         runFunctionLinesWithIndent.Add((trimLine, lineIndentLevel));
                     }
                 }
+                Dictionary<string, float> variableState = new Dictionary<string, float>();// 变量的内容合集
+
                 int currentParseLevel = 1;
                 Stack<int> loopEndExpectStack = new Stack<int>();
                 string shakerTemp = "";
@@ -3181,37 +3276,75 @@ namespace OctoFixFlow
                             IsSystemStep = false,
                             Level = currentParseLevel // 继承当前缩进级别，完美支持循环内的变量操作
                         };
-
+                        string varName = "";
+                        float varNum = 0;
                         // 匹配对应操作类型，和你的导出逻辑完全一一对应
                         if (assignMatch.Success)
                         {
+                            varName = assignMatch.Groups[1].Value;
+                            varNum = float.Parse(assignMatch.Groups[2].Value);
+
                             variateStep.VariateScriptName = assignMatch.Groups[1].Value;
                             variateStep.VariateNum = float.Parse(assignMatch.Groups[2].Value);
                             variateStep.VariateStep = _res.SettingManualVariateEqual;
+
+                            variableState[varName] = varNum;
                         }
                         else if (addMatch.Success)
                         {
+                            varName = addMatch.Groups[1].Value;
+                            varNum = float.Parse(addMatch.Groups[2].Value);
+
                             variateStep.VariateScriptName = addMatch.Groups[1].Value;
                             variateStep.VariateNum = float.Parse(addMatch.Groups[2].Value);
                             variateStep.VariateStep = _res.SettingManualVariateAdd;
+
+                            if (variableState.ContainsKey(varName))
+                                variableState[varName] += varNum;
+                            else
+                                variableState[varName] = varNum;
                         }
                         else if (minusMatch.Success)
                         {
+                            varName = minusMatch.Groups[1].Value;
+                            varNum = float.Parse(minusMatch.Groups[2].Value);
+
                             variateStep.VariateScriptName = minusMatch.Groups[1].Value;
                             variateStep.VariateNum = float.Parse(minusMatch.Groups[2].Value);
                             variateStep.VariateStep = _res.SettingManualVariateMinus;
+
+                            if (variableState.ContainsKey(varName))
+                                variableState[varName] -= varNum;
+                            else
+                                variableState[varName] = varNum;
                         }
                         else if (multiplyMatch.Success)
                         {
+                            varName = multiplyMatch.Groups[1].Value;
+                            varNum = float.Parse(multiplyMatch.Groups[2].Value);
+
                             variateStep.VariateScriptName = multiplyMatch.Groups[1].Value;
                             variateStep.VariateNum = float.Parse(multiplyMatch.Groups[2].Value);
                             variateStep.VariateStep = _res.SettingManualVariateMultiply;
+
+                            if (variableState.ContainsKey(varName))
+                                variableState[varName] *= varNum;
+                            else
+                                variableState[varName] = varNum;
                         }
                         else if (divideMatch.Success)
                         {
+                            varName = divideMatch.Groups[1].Value;
+                            varNum = float.Parse(divideMatch.Groups[2].Value);
+
                             variateStep.VariateScriptName = divideMatch.Groups[1].Value;
                             variateStep.VariateNum = float.Parse(divideMatch.Groups[2].Value);
                             variateStep.VariateStep = _res.SettingManualVariateDivide;
+
+                            if (variableState.ContainsKey(varName))
+                                variableState[varName] /= varNum;
+                            else
+                                variableState[varName] = varNum;
                         }
 
                         FlowSteps.Add(variateStep);
@@ -3257,6 +3390,8 @@ namespace OctoFixFlow
                                 Index = _stepIndex++,
                                 IsSelected = false,
                                 IsSystemStep = false,
+                                WaitVariateName = "",
+                                WaitVariateValue = "",
                                 Level = currentParseLevel // 使用当前解析级别
                             };
                             string funcName = funcMatch.Groups[1].Value;
@@ -3271,6 +3406,24 @@ namespace OctoFixFlow
                                     string tiponPlate = ExtractSingleParamValue(paramContent, "plate");
                                     string tiponRow = ExtractSingleParamValue(paramContent, "row");
                                     string tiponCol = ExtractSingleParamValue(paramContent, "col");
+                                    if (!IsNumeric(tiponRow))
+                                    {
+                                        flowStep.WellRowVariateName = tiponRow;
+                                        if (variableState.TryGetValue(tiponRow, out float currentVal))
+                                        {
+                                            flowStep.WellRowVariateValue = currentVal.ToString(CultureInfo.InvariantCulture);
+                                            tiponRow = currentVal.ToString();
+                                        }
+                                    }
+                                    if (!IsNumeric(tiponCol))
+                                    {
+                                        flowStep.WellColVariateName = tiponCol;
+                                        if (variableState.TryGetValue(tiponCol, out float currentVal))
+                                        {
+                                            flowStep.WellColVariateValue = currentVal.ToString(CultureInfo.InvariantCulture);
+                                            tiponCol = currentVal.ToString();
+                                        }
+                                    }
                                     flowStep.Position = MapPlatePositionBack(tiponPlate);
                                     flowStep.Type = "TipOn";
                                     if (flowStep.Position.StartsWith("P"))
@@ -3296,6 +3449,24 @@ namespace OctoFixFlow
                                     string aspPlate = ExtractSingleParamValue(paramContent, "plate");
                                     string aspRow = ExtractSingleParamValue(paramContent, "row");
                                     string aspCol = ExtractSingleParamValue(paramContent, "col");
+                                    if (!IsNumeric(aspRow))
+                                    {
+                                        flowStep.WellRowVariateName = aspRow;
+                                        if (variableState.TryGetValue(aspRow, out float currentVal))
+                                        {
+                                            flowStep.WellRowVariateValue = currentVal.ToString(CultureInfo.InvariantCulture);
+                                            aspRow = currentVal.ToString();
+                                        }
+                                    }
+                                    if (!IsNumeric(aspCol))
+                                    {
+                                        flowStep.WellColVariateName = aspCol;
+                                        if (variableState.TryGetValue(aspCol, out float currentVal))
+                                        {
+                                            flowStep.WellColVariateValue = currentVal.ToString(CultureInfo.InvariantCulture);
+                                            aspCol = currentVal.ToString();
+                                        }
+                                    }
                                     string aspVol = ExtractSingleParamValue(paramContent, "vol");
                                     string aspSpeed = ExtractSingleParamValue(paramContent, "speed");
                                     string aspPostAir = "";
@@ -3336,6 +3507,24 @@ namespace OctoFixFlow
                                     string disPlate = ExtractSingleParamValue(paramContent, "plate");
                                     string disRow = ExtractSingleParamValue(paramContent, "row");
                                     string disCol = ExtractSingleParamValue(paramContent, "col");
+                                    if (!IsNumeric(disRow))
+                                    {
+                                        flowStep.WellRowVariateName = disRow;
+                                        if (variableState.TryGetValue(disRow, out float currentVal))
+                                        {
+                                            flowStep.WellRowVariateValue = currentVal.ToString(CultureInfo.InvariantCulture);
+                                            disRow = currentVal.ToString();
+                                        }
+                                    }
+                                    if (!IsNumeric(disCol))
+                                    {
+                                        flowStep.WellColVariateName = disCol;
+                                        if (variableState.TryGetValue(disCol, out float currentVal))
+                                        {
+                                            flowStep.WellColVariateValue = currentVal.ToString(CultureInfo.InvariantCulture);
+                                            disCol = currentVal.ToString();
+                                        }
+                                    }
                                     string disVol = ExtractSingleParamValue(paramContent, "vol");
                                     string disPushOutVol = ExtractSingleParamValue(paramContent, "push_out");
                                     string disSpeed = ExtractSingleParamValue(paramContent, "speed");
@@ -3376,6 +3565,24 @@ namespace OctoFixFlow
                                     string tipoffPlate = ExtractSingleParamValue(paramContent, "plate");
                                     string tipoffRow = ExtractSingleParamValue(paramContent, "row");
                                     string tipoffCol = ExtractSingleParamValue(paramContent, "col");
+                                    if (!IsNumeric(tipoffRow))
+                                    {
+                                        flowStep.WellRowVariateName = tipoffRow;
+                                        if (variableState.TryGetValue(tipoffRow, out float currentVal))
+                                        {
+                                            flowStep.WellRowVariateValue = currentVal.ToString(CultureInfo.InvariantCulture);
+                                            tipoffRow = currentVal.ToString();
+                                        }
+                                    }
+                                    if (!IsNumeric(tipoffCol))
+                                    {
+                                        flowStep.WellColVariateName = tipoffCol;
+                                        if (variableState.TryGetValue(tipoffCol, out float currentVal))
+                                        {
+                                            flowStep.WellColVariateValue = currentVal.ToString(CultureInfo.InvariantCulture);
+                                            tipoffCol = currentVal.ToString();
+                                        }
+                                    }
                                     flowStep.Position = MapPlatePositionBack(tipoffPlate);
                                     flowStep.Type = "TipOff";
                                     if (flowStep.Position.StartsWith("P"))
@@ -3399,7 +3606,24 @@ namespace OctoFixFlow
                                 case "wait":
                                     string waitTime = ExtractSingleParamValue(paramContent, "s");
                                     flowStep.Type = "Wait";
-                                    flowStep.WaitTime = int.Parse(waitTime);
+                                    if (IsNumeric(waitTime))
+                                    {
+                                        flowStep.WaitTime = int.Parse(waitTime);
+                                    }
+                                    else
+                                    {
+                                        flowStep.WaitVariateName = waitTime;
+                                        if (variableState.TryGetValue(waitTime, out float currentVal))
+                                        {
+                                            flowStep.WaitVariateValue = currentVal.ToString(CultureInfo.InvariantCulture);
+                                            flowStep.WaitTime = (int)Math.Round(currentVal);
+                                        }
+                                        else
+                                        {
+                                            flowStep.WaitVariateValue = "0";
+                                            flowStep.WaitTime = 0;
+                                        }
+                                    }
                                     //flowStep.UpdateStepDescription();
                                     FlowSteps.Add(flowStep);
                                     break;
@@ -3408,6 +3632,24 @@ namespace OctoFixFlow
                                     string mixPlate = ExtractSingleParamValue(paramContent, "plate");
                                     string mixRow = ExtractSingleParamValue(paramContent, "row");
                                     string mixCol = ExtractSingleParamValue(paramContent, "col");
+                                    if (!IsNumeric(mixRow))
+                                    {
+                                        flowStep.WellRowVariateName = mixRow;
+                                        if (variableState.TryGetValue(mixRow, out float currentVal))
+                                        {
+                                            flowStep.WellRowVariateValue = currentVal.ToString(CultureInfo.InvariantCulture);
+                                            mixRow = currentVal.ToString();
+                                        }
+                                    }
+                                    if (!IsNumeric(mixCol))
+                                    {
+                                        flowStep.WellColVariateName = mixCol;
+                                        if (variableState.TryGetValue(mixCol, out float currentVal))
+                                        {
+                                            flowStep.WellColVariateValue = currentVal.ToString(CultureInfo.InvariantCulture);
+                                            mixCol = currentVal.ToString();
+                                        }
+                                    }
                                     string mixVol = ExtractSingleParamValue(paramContent, "vol");
                                     string misPushOutVol = ExtractSingleParamValue(paramContent, "push_out");
                                     string misInhaVol = ExtractSingleParamValue(paramContent, "final_asp");
@@ -3481,9 +3723,63 @@ namespace OctoFixFlow
                                     string finalResult = $"P{targetShakerIndex + 1}";
                                     flowStep.Type = "Shake";
                                     flowStep.Position = finalResult;
-                                    flowStep.ShakeTemp = float.Parse(shakerTemp);
-                                    flowStep.ShakeRPM = int.Parse(shakerRPM);
-                                    flowStep.WaitTime = int.Parse(shakerTime);
+                                    //变量 温度
+                                    if (IsNumeric(shakerTemp))
+                                    {
+                                        flowStep.ShakeTemp = float.Parse(shakerTemp);
+                                    }
+                                    else
+                                    {
+                                        flowStep.ShakerVariateTempName = shakerTemp;
+                                        if (variableState.TryGetValue(shakerTemp, out float currentVal))
+                                        {
+                                            flowStep.ShakerVariateTempValue = currentVal.ToString(CultureInfo.InvariantCulture);
+                                            flowStep.ShakeTemp = (float)Math.Round(currentVal);
+                                        }
+                                        else
+                                        {
+                                            flowStep.ShakerVariateTempValue = "0";
+                                            flowStep.ShakeTemp = 0;
+                                        }
+                                    }
+                                    //变量 时间
+                                    if (IsNumeric(shakerTime))
+                                    {
+                                        flowStep.WaitTime = int.Parse(shakerTime);
+                                    }
+                                    else
+                                    {
+                                        flowStep.ShakerVariateTimeName = shakerTime;
+                                        if (variableState.TryGetValue(shakerTime, out float currentVal))
+                                        {
+                                            flowStep.ShakerVariateTimeValue = currentVal.ToString(CultureInfo.InvariantCulture);
+                                            flowStep.WaitTime = (int)Math.Round(currentVal);
+                                        }
+                                        else
+                                        {
+                                            flowStep.ShakerVariateTimeValue = "0";
+                                            flowStep.WaitTime = 0;
+                                        }
+                                    }
+                                    //变量 转速
+                                    if (IsNumeric(shakerRPM))
+                                    {
+                                        flowStep.ShakeRPM = int.Parse(shakerRPM);
+                                    }
+                                    else
+                                    {
+                                        flowStep.ShakerVariateSpeedName = shakerRPM;
+                                        if (variableState.TryGetValue(shakerRPM, out float currentVal))
+                                        {
+                                            flowStep.ShakerVariateSpeedValue = currentVal.ToString(CultureInfo.InvariantCulture);
+                                            flowStep.ShakeRPM = (int)Math.Round(currentVal);
+                                        }
+                                        else
+                                        {
+                                            flowStep.ShakerVariateSpeedValue = "0";
+                                            flowStep.ShakeRPM = 0;
+                                        }
+                                    }
                                     //flowStep.UpdateStepDescription();
                                     FlowSteps.Add(flowStep);
                                     break;
@@ -3499,7 +3795,25 @@ namespace OctoFixFlow
                                     flowStep.Position = finalmagneticENResult;
                                     flowStep.IsMagnetUp = true;
                                     flowStep.IsMagnetDown = false;
-                                    flowStep.MagnetNums = float.Parse(magneticHeight);
+                                    //变量 磁吸高度
+                                    if (IsNumeric(magneticHeight))
+                                    {
+                                        flowStep.MagnetNums = float.Parse(magneticHeight);
+                                    }
+                                    else
+                                    {
+                                        flowStep.MagnetVariateName = magneticHeight;
+                                        if (variableState.TryGetValue(magneticHeight, out float currentVal))
+                                        {
+                                            flowStep.MagnetVariateValue = currentVal.ToString(CultureInfo.InvariantCulture);
+                                            flowStep.MagnetNums = (float)Math.Round(currentVal);
+                                        }
+                                        else
+                                        {
+                                            flowStep.MagnetVariateValue = "0";
+                                            flowStep.MagnetNums = 0;
+                                        }
+                                    }
 
                                     //flowStep.UpdateStepDescription();
                                     FlowSteps.Add(flowStep);
@@ -3526,7 +3840,25 @@ namespace OctoFixFlow
                                     string coolTemp = ExtractSingleParamValue(paramContent, "temp");
 
                                     flowStep.Type = "Temp Ctrl";
-                                    flowStep.TempCtrlTemp = float.Parse(coolTemp);
+                                    //变量 温控高度
+                                    if (IsNumeric(coolTemp))
+                                    {
+                                        flowStep.TempCtrlTemp = float.Parse(coolTemp);
+                                    }
+                                    else
+                                    {
+                                        flowStep.TempControlVariateTempName = coolTemp;
+                                        if (variableState.TryGetValue(coolTemp, out float currentVal))
+                                        {
+                                            flowStep.TempControlVariateTempValue = currentVal.ToString(CultureInfo.InvariantCulture);
+                                            flowStep.TempCtrlTemp = (float)Math.Round(currentVal);
+                                        }
+                                        else
+                                        {
+                                            flowStep.TempControlVariateTempValue = "0";
+                                            flowStep.TempCtrlTemp = 0;
+                                        }
+                                    }
                                     flowStep.Position = finalcoolResult;
                                     flowStep.IsTempCtrlOpen = true;
                                     flowStep.IsTempCtrlClose = false;
@@ -3773,7 +4105,11 @@ namespace OctoFixFlow
                 throw new ArgumentException($"非法的通道类型：{channelType}，仅支持0（单通道）、1（8通道）、2（96通道）", nameof(channelType));
             }
         }
-
+        // 辅助方法：检查字符串是否为纯数字（int/float）
+        private static bool IsNumeric(string str)
+        {
+            return float.TryParse(str, NumberStyles.Any, CultureInfo.InvariantCulture, out _);
+        }
         private string ExtractSingleParamValue(string paramContent, string targetParamName)
         {
             if (string.IsNullOrWhiteSpace(paramContent) || string.IsNullOrWhiteSpace(targetParamName))
@@ -3949,18 +4285,38 @@ namespace OctoFixFlow
 
                 //}
                 // 只校验吸液和注液步骤
-                if ((step.Type == "Aspirate" || step.Type == "Dispense") &&
-                    !step.IsSystemStep) // 排除系统步骤（开始/结束）
-                {
-                    // 检查液体参数是否未选择
-                    if (step.SelectedLiquid == null || string.IsNullOrEmpty(step.SelectedLiquid.name))
-                    {
-                        //string stepNumbers = string.Join("、", invalidSteps);
-                        //string message = $"{_res.ScriptStartLiquidEmpty}{step.Index}）";
+                //if ((step.Type == "Aspirate" || step.Type == "Dispense") &&
+                //    !step.IsSystemStep) // 排除系统步骤（开始/结束）
+                //{
+                //    // 检查液体参数是否未选择
+                //    if (step.SelectedLiquid == null || string.IsNullOrEmpty(step.SelectedLiquid.name))
+                //    {
+                //        //string stepNumbers = string.Join("、", invalidSteps);
+                //        //string message = $"{_res.ScriptStartLiquidEmpty}{step.Index}）";
 
-                        //ShowNotification(message, NotificationControl.NotificationType.Error);
-                        //return; 
+                //        //ShowNotification(message, NotificationControl.NotificationType.Error);
+                //        //return; 
+                //    }
+                //}
+                if (step.Type == "Aspirate" || step.Type == "Dispense" || step.Type == "TipOn" || step.Type == "TipOff" || step.Type == "Mix") // 排除系统步骤（开始/结束）
+                {
+                    if (step.WellPosition == "" || step.SelectedCells == "")
+                    {
+                        string message = $"{_res.ScriptStartLiquidEmpty}{step.Index}）";
+
+                        ShowNotification(message, NotificationControl.NotificationType.Error);
+                        return;
                     }
+
+                    // 检查液体参数是否未选择
+                    //if (step.SelectedLiquid == null || string.IsNullOrEmpty(step.SelectedLiquid.name))
+                    //{
+                    //    //string stepNumbers = string.Join("、", invalidSteps);
+                    //    //string message = $"{_res.ScriptStartLiquidEmpty}{step.Index}）";
+
+                    //    //ShowNotification(message, NotificationControl.NotificationType.Error);
+                    //    //return; 
+                    //}
                 }
                 else if (step.Type == "Shake")
                 {

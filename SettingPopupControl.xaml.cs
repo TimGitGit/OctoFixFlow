@@ -1146,13 +1146,19 @@ pipetteCombo));
 
             variableRowCombo.SelectionChanged += (s, e) =>
             {
+                var combo = s as ComboBox;
+                if (!combo.IsKeyboardFocusWithin)
+                    return;
+
                 if (_isUpdatingRowVariableCombo) return;
+                if (e.AddedItems.Count == 0) return;
+                //if (e.AddedItems[0] is not string selectedVar) return;
                 _isUpdatingRowVariableCombo = true;
                 try
                 {
                     if (variableRowCombo.SelectedItem is string selectedVar)
                     {
-                        var variableValues = CalculateVariableValues(step.Index);
+                        //var variableValues = CalculateVariableValues(step.Index);
                         if (variableValues.TryGetValue(selectedVar, out float calculatedVal))
                         {
                             bool isValueInteger = Math.Abs(calculatedVal - Math.Round(calculatedVal)) <= 0.0001f;//true:int  false:float
@@ -1192,7 +1198,7 @@ pipetteCombo));
                                     }
                                     else if (wellSelectionCanvas.CurrentSelectionMode == CanvasSelectionMode.EntireColumn)
                                     {
-                                        if (rowVal < ((step.ConsRows - 1) * -1) || rowVal > step.ConsRows)
+                                        if (rowVal < ((step.ConsRows - 1) * -1) || rowVal > step.ConsRows || rowVal == 0)
                                         {
                                             variableRowCombo.SelectedItem = null;
                                             step.WellRowVariateName = "";
@@ -1206,6 +1212,11 @@ pipetteCombo));
                                         if (rowVal > 0)
                                         {
                                             existingCells = existingCells.GetRange(rowVal - 1, existingCells.Count - (rowVal - 1));
+                                        }
+                                        else
+                                        {
+                                            int countToKeep = step.ConsRows - Math.Abs(rowVal);
+                                            existingCells = existingCells.GetRange(0, countToKeep);
                                         }
 
                                         step.SelectedCells = string.Join(";", existingCells);
@@ -1277,7 +1288,11 @@ pipetteCombo));
             });
             variableColCombo.SelectionChanged += (s, e) =>
             {
+                var combo = s as ComboBox;
+                if (!combo.IsKeyboardFocusWithin)
+                    return;
                 if (_isUpdatingColVariableCombo) return;
+                if (e.AddedItems.Count == 0) return;
                 _isUpdatingColVariableCombo = true;
                 try
                 {
