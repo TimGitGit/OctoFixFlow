@@ -375,14 +375,62 @@
   <data name="ScriptStartFail" xml:space="preserve">
     <value>Start process failed</value>
   </data>
-  <data name="ScriptStartLiquidEmpty" xml:space="preserve">
-    <value>Parameter missing (Step:</value>
+  <data name="ScriptStartSimulate" xml:space="preserve">
+    <value>Starting simulation run...</value>
+  </data>
+  <data name="ScriptStartStep" xml:space="preserve">
+    <value>Step:</value>
   </data>
   <data name="ScriptStartSucc" xml:space="preserve">
     <value>Process starting execution</value>
   </data>
+  <data name="ScriptStepAnnotationMissing" xml:space="preserve">
+    <value>Annotation content not set</value>
+  </data>
+  <data name="ScriptStepDisFromWellMissing" xml:space="preserve">
+    <value>Distance from well bottom missing</value>
+  </data>
+  <data name="ScriptStepMagneticMissing" xml:space="preserve">
+    <value>Magnetic parameters not set</value>
+  </data>
+  <data name="ScriptStepMixCountMissing" xml:space="preserve">
+    <value>Mix volume or cycle not configured</value>
+  </data>
+  <data name="ScriptStepPCRMissing" xml:space="preserve">
+    <value>PCR parameters not set</value>
+  </data>
+  <data name="ScriptStepShakerMissing" xml:space="preserve">
+    <value>Shake parameters not set</value>
+  </data>
+  <data name="ScriptStepSpeedMissing" xml:space="preserve">
+    <value>Pipetting speed not set</value>
+  </data>
+  <data name="ScriptStepTempCtrolMissing" xml:space="preserve">
+    <value>Temp Control parameters not set</value>
+  </data>
+  <data name="ScriptStepVariateMissing" xml:space="preserve">
+    <value>Variate name not set</value>
+  </data>
+  <data name="ScriptStepWaitMissing" xml:space="preserve">
+    <value>Wait time not set</value>
+  </data>
+  <data name="ScriptStepWellMissing" xml:space="preserve">
+    <value>Well position missing</value>
+  </data>
   <data name="ScriptSuccCrea" xml:space="preserve">
     <value>Process successfully generated</value>
+  </data>
+  <data name="ScriptTipMustBeEmptyBeforeOn" xml:space="preserve">
+    <value>Pipette must be empty before tip on</value>
+  </data>
+  <data name="ScriptTipMustBeEmptyDuringTransfer" xml:space="preserve">
+    <value>Pipette must be empty during plate transfer</value>
+  </data>
+  <data name="ScriptTipRequired" xml:space="preserve">
+    <value>Tip required before operation</value>
+  </data>
+  <data name="ScriptTipRequiredBeforeOff" xml:space="preserve">
+    <value>Tip required before tip off</value>
   </data>
   <data name="ScriptUILogError" xml:space="preserve">
     <value>Error</value>
@@ -410,6 +458,39 @@
   </data>
   <data name="SettingCons3D" xml:space="preserve">
     <value>Consumable 3D Drawing</value>
+  </data>
+  <data name="SettingCons3DBottomCircle" xml:space="preserve">
+    <value>Circle</value>
+  </data>
+  <data name="SettingCons3DBottomFlat" xml:space="preserve">
+    <value>Flat</value>
+  </data>
+  <data name="SettingCons3DBottomShape" xml:space="preserve">
+    <value>Bottom Shape</value>
+  </data>
+  <data name="SettingCons3DBottomTaper" xml:space="preserve">
+    <value>Taper</value>
+  </data>
+  <data name="SettingCons3DBottomTaperDepth" xml:space="preserve">
+    <value>TaperDepth</value>
+  </data>
+  <data name="SettingCons3DBottomType" xml:space="preserve">
+    <value>Bottom Type</value>
+  </data>
+  <data name="SettingCons3DParams" xml:space="preserve">
+    <value>3D parameters</value>
+  </data>
+  <data name="SettingCons3DSkirtHeight" xml:space="preserve">
+    <value>Skirt height</value>
+  </data>
+  <data name="SettingCons3DTopLength" xml:space="preserve">
+    <value>Top Length</value>
+  </data>
+  <data name="SettingCons3DTopWidth" xml:space="preserve">
+    <value>Top Width</value>
+  </data>
+  <data name="SettingCons3DWellThick" xml:space="preserve">
+    <value>Wall thickness</value>
   </data>
   <data name="SettingConsA1XDistance" xml:space="preserve">
     <value>A1 Well X Dist.</value>
@@ -547,7 +628,7 @@
     <value>Consumables Management</value>
   </data>
   <data name="SettingConsTopLength" xml:space="preserve">
-    <value>Top Length</value>
+    <value>Top Hole Len</value>
   </data>
   <data name="SettingConsTopRadius" xml:space="preserve">
     <value>Top Radius</value>
@@ -556,7 +637,7 @@
     <value>Top Shape</value>
   </data>
   <data name="SettingConsTopWidth" xml:space="preserve">
-    <value>Top Width</value>
+    <value>Top hole Width</value>
   </data>
   <data name="SettingConsType" xml:space="preserve">
     <value>Type</value>
@@ -716,6 +797,9 @@
   </data>
   <data name="SettingManualGetPlateSucc" xml:space="preserve">
     <value>Successfully retrieved plate position data</value>
+  </data>
+  <data name="SettingManualGetTemperature" xml:space="preserve">
+    <value>Get Temp</value>
   </data>
   <data name="SettingManualGripper" xml:space="preserve">
     <value>Gripper</value>

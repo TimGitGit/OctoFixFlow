@@ -375,14 +375,62 @@
   <data name="ScriptStartFail" xml:space="preserve">
     <value>开始流程失败</value>
   </data>
-  <data name="ScriptStartLiquidEmpty" xml:space="preserve">
-    <value>参数缺少（步骤：</value>
+  <data name="ScriptStartSimulate" xml:space="preserve">
+    <value>开始模拟运行...</value>
+  </data>
+  <data name="ScriptStartStep" xml:space="preserve">
+    <value>步骤:</value>
   </data>
   <data name="ScriptStartSucc" xml:space="preserve">
     <value>流程开始执行</value>
   </data>
+  <data name="ScriptStepAnnotationMissing" xml:space="preserve">
+    <value>注释内容未设置</value>
+  </data>
+  <data name="ScriptStepDisFromWellMissing" xml:space="preserve">
+    <value>距孔底距离未设置</value>
+  </data>
+  <data name="ScriptStepMagneticMissing" xml:space="preserve">
+    <value>磁吸参数未配置</value>
+  </data>
+  <data name="ScriptStepMixCountMissing" xml:space="preserve">
+    <value>混合体积/次数未配置</value>
+  </data>
+  <data name="ScriptStepPCRMissing" xml:space="preserve">
+    <value>热循环参数未配置</value>
+  </data>
+  <data name="ScriptStepShakerMissing" xml:space="preserve">
+    <value>震荡参数未配置</value>
+  </data>
+  <data name="ScriptStepSpeedMissing" xml:space="preserve">
+    <value>移液速度未设置</value>
+  </data>
+  <data name="ScriptStepTempCtrolMissing" xml:space="preserve">
+    <value>温控参数未配置</value>
+  </data>
+  <data name="ScriptStepVariateMissing" xml:space="preserve">
+    <value>变量名称未设置</value>
+  </data>
+  <data name="ScriptStepWaitMissing" xml:space="preserve">
+    <value>等待时间未配置</value>
+  </data>
+  <data name="ScriptStepWellMissing" xml:space="preserve">
+    <value>孔位未设置</value>
+  </data>
   <data name="ScriptSuccCrea" xml:space="preserve">
     <value>流程已成功生成</value>
+  </data>
+  <data name="ScriptTipMustBeEmptyBeforeOn" xml:space="preserve">
+    <value>取枪头前移液器必须为空</value>
+  </data>
+  <data name="ScriptTipMustBeEmptyDuringTransfer" xml:space="preserve">
+    <value>移板操作时移液器不能有枪头</value>
+  </data>
+  <data name="ScriptTipRequired" xml:space="preserve">
+    <value>移液前必须安装枪头</value>
+  </data>
+  <data name="ScriptTipRequiredBeforeOff" xml:space="preserve">
+    <value>退枪头前必须有枪头</value>
   </data>
   <data name="ScriptUILogError" xml:space="preserve">
     <value>错误</value>
@@ -410,6 +458,39 @@
   </data>
   <data name="SettingCons3D" xml:space="preserve">
     <value>耗材三维图</value>
+  </data>
+  <data name="SettingCons3DBottomCircle" xml:space="preserve">
+    <value>圆形</value>
+  </data>
+  <data name="SettingCons3DBottomFlat" xml:space="preserve">
+    <value>平底</value>
+  </data>
+  <data name="SettingCons3DBottomShape" xml:space="preserve">
+    <value>底部形状</value>
+  </data>
+  <data name="SettingCons3DBottomTaper" xml:space="preserve">
+    <value>锥形</value>
+  </data>
+  <data name="SettingCons3DBottomTaperDepth" xml:space="preserve">
+    <value>锥形深度</value>
+  </data>
+  <data name="SettingCons3DBottomType" xml:space="preserve">
+    <value>底部类型</value>
+  </data>
+  <data name="SettingCons3DParams" xml:space="preserve">
+    <value>3D参数</value>
+  </data>
+  <data name="SettingCons3DSkirtHeight" xml:space="preserve">
+    <value>裙边高</value>
+  </data>
+  <data name="SettingCons3DTopLength" xml:space="preserve">
+    <value>顶部长</value>
+  </data>
+  <data name="SettingCons3DTopWidth" xml:space="preserve">
+    <value>顶部宽</value>
+  </data>
+  <data name="SettingCons3DWellThick" xml:space="preserve">
+    <value>壁厚</value>
   </data>
   <data name="SettingConsA1XDistance" xml:space="preserve">
     <value>A1孔距X的距离</value>
@@ -547,7 +628,7 @@
     <value>耗材管理</value>
   </data>
   <data name="SettingConsTopLength" xml:space="preserve">
-    <value>顶部长</value>
+    <value>顶部孔长</value>
   </data>
   <data name="SettingConsTopRadius" xml:space="preserve">
     <value>顶部半径</value>
@@ -556,7 +637,7 @@
     <value>顶部形状</value>
   </data>
   <data name="SettingConsTopWidth" xml:space="preserve">
-    <value>顶部宽</value>
+    <value>顶部孔宽</value>
   </data>
   <data name="SettingConsType" xml:space="preserve">
     <value>类型</value>
@@ -713,6 +794,9 @@
   </data>
   <data name="SettingManualGetPlateSucc" xml:space="preserve">
     <value>板位信息获取成功</value>
+  </data>
+  <data name="SettingManualGetTemperature" xml:space="preserve">
+    <value>获取温度</value>
   </data>
   <data name="SettingManualGripper" xml:space="preserve">
     <value>抓手</value>

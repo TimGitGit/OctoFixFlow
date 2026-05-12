@@ -19,10 +19,6 @@ namespace OctoFixFlow
         private readonly MainWidget _mainWidget;
         private string nowModuleName;
         private int nowModuleId;
-        // 加热振荡实时监控：取消令牌源（用于停止线程）
-        private CancellationTokenSource _shakerRealTimeCts;
-        // 标记是否正在实时获取加热振荡数据（避免重复开启线程）
-        private bool _isShakerRealTimeMonitoring;
         public SettingPopupControl(MainWidget mainWidget)
         {
             InitializeComponent();
@@ -281,18 +277,18 @@ namespace OctoFixFlow
                     mainSettingTable.SelectedIndex = 7;
                     break;
                 case 5://加热振荡
-                    StopShakerRealTimeMonitor();
+                    //StopShakerRealTimeMonitor();
                     // 开启加热振荡温度&转速实时监控（传入模块ID nowModuleId）
-                    _ = StartShakerRealTimeMonitor(5, nowModuleId);
+                    //_ = StartShakerRealTimeMonitor(5, nowModuleId);
                     mainSettingTable.SelectedIndex = 5;
                     break;
                 case 6:
                     mainSettingTable.SelectedIndex = 4;
                     break;
                 case 7:
-                    StopShakerRealTimeMonitor();
+                    //StopShakerRealTimeMonitor();
                     // 开启加热振荡温度&转速实时监控（传入模块ID nowModuleId）
-                    _ = StartShakerRealTimeMonitor(7, nowModuleId);
+                    //_ = StartShakerRealTimeMonitor(7, nowModuleId);
                     mainSettingTable.SelectedIndex = 6;
                     break;
             }
@@ -325,6 +321,7 @@ namespace OctoFixFlow
                 "Loop" => res.WindowActionLoop,
                 "Annotation" => res.WindowActionAnno,
                 "Variate" => res.WindowActionVariate,
+                "Fluo" => res.WindowActionFluo,
 
                 _ => step.Type // 未知类型默认显示原始值
             };
@@ -337,21 +334,6 @@ namespace OctoFixFlow
             });
             if (step.Type == "Wait")
             {
-                //// 等待时间输入（秒）
-                //var waitTimeTextBox = new TextBox
-                //{
-                //    Style = (Style)FindResource("InputTextBoxStyle"),
-                //    Width = 140,
-                //    VerticalAlignment = VerticalAlignment.Center
-                //};
-                //waitTimeTextBox.SetBinding(TextBox.TextProperty, new Binding
-                //{
-                //    Source = step,
-                //    Path = new PropertyPath("WaitTime"),
-                //    Mode = BindingMode.TwoWay,
-                //    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-                //});
-                //StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailWaitTime, waitTimeTextBox));
                 var waitTimePanel = CreateVariableInputRow(step, nameof(step.WaitTime), res.StepDetailWaitTime, true, nameof(step.WaitVariateName), nameof(step.WaitVariateValue));
                 StepDetailPanel.Children.Add(waitTimePanel);
                 return;
@@ -401,57 +383,13 @@ namespace OctoFixFlow
                     }
                 };
                 StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailOperationPosition, posiShakeCombo));
-                //// 振荡时间输入（秒）
-                //var shakeTimeTextBox = new TextBox
-                //{
-                //    Style = (Style)FindResource("InputTextBoxStyle"),
-                //    Width = 140,
-                //    VerticalAlignment = VerticalAlignment.Center
-                //};
-                //shakeTimeTextBox.SetBinding(TextBox.TextProperty, new Binding
-                //{
-                //    Source = step,
-                //    Path = new PropertyPath("WaitTime"),
-                //    Mode = BindingMode.TwoWay,
-                //    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-                //});
-                //StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailWaitTime, shakeTimeTextBox));
+                // 振荡时间输入（秒）
                 var shakeTimePanel = CreateVariableInputRow(step, nameof(step.WaitTime), res.StepDetailWaitTime, true, nameof(step.ShakerVariateTimeName), nameof(step.ShakerVariateTimeValue));
                 StepDetailPanel.Children.Add(shakeTimePanel);
-                //var shakeTimePanel = CreateVariableInputRow(step, nameof(step.WaitTime), res.StepDetailWaitTime, true);
-                //StepDetailPanel.Children.Add(shakeTimePanel);
-                //// 振荡转速输入
-                //var shakeRPMTextBox = new TextBox
-                //{
-                //    Style = (Style)FindResource("InputTextBoxStyle"),
-                //    Width = 140,
-                //    VerticalAlignment = VerticalAlignment.Center
-                //};
-                //shakeRPMTextBox.SetBinding(TextBox.TextProperty, new Binding
-                //{
-                //    Source = step,
-                //    Path = new PropertyPath("ShakeRPM"),
-                //    Mode = BindingMode.TwoWay,
-                //    UpdateSourceTrigger = UpdateSourceTrigger.LostFocus
-                //});
-                //StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailShakeSpeed, shakeRPMTextBox));
+                // 振荡转速输入
                 var shakeSpeedPanel = CreateVariableInputRow(step, nameof(step.ShakeRPM), res.StepDetailShakeSpeed, true, nameof(step.ShakerVariateSpeedName), nameof(step.ShakerVariateSpeedValue));
                 StepDetailPanel.Children.Add(shakeSpeedPanel);
-                //// 振荡温度输入
-                //var shakeTempTextBox = new TextBox
-                //{
-                //    Style = (Style)FindResource("InputTextBoxStyle"),
-                //    Width = 140,
-                //    VerticalAlignment = VerticalAlignment.Center
-                //};
-                //shakeTempTextBox.SetBinding(TextBox.TextProperty, new Binding
-                //{
-                //    Source = step,
-                //    Path = new PropertyPath("ShakeTemp"),
-                //    Mode = BindingMode.TwoWay,
-                //    UpdateSourceTrigger = UpdateSourceTrigger.LostFocus
-                //});
-                //StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailShakeTemp, shakeTempTextBox));
+                // 振荡温度输入
                 var shakeTempPanel = CreateVariableInputRow(step, nameof(step.ShakeTemp), res.StepDetailShakeTemp, false, nameof(step.ShakerVariateTempName), nameof(step.ShakerVariateTempValue));
                 StepDetailPanel.Children.Add(shakeTempPanel);
                 return;
@@ -553,21 +491,7 @@ namespace OctoFixFlow
                 magnetDirectionPanel.Children.Add(magneticUpCheckBox);
                 magnetDirectionPanel.Children.Add(magneticDownCheckBox);
                 StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailMagnetLiftDrop, magnetDirectionPanel));
-                //// 磁吸高度输入
-                //var magnetHeightTextBox = new TextBox
-                //{
-                //    Style = (Style)FindResource("InputTextBoxStyle"),
-                //    Width = 140,
-                //    VerticalAlignment = VerticalAlignment.Center
-                //};
-                //magnetHeightTextBox.SetBinding(TextBox.TextProperty, new Binding
-                //{
-                //    Source = step,
-                //    Path = new PropertyPath("MagnetNums"),
-                //    Mode = BindingMode.TwoWay,
-                //    UpdateSourceTrigger = UpdateSourceTrigger.LostFocus
-                //});
-                //StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailMagnetDistance, magnetHeightTextBox));
+                // 磁吸高度输入
                 var magnetHeightPanel = CreateVariableInputRow(step, nameof(step.MagnetNums), res.StepDetailMagnetDistance, false, nameof(step.MagnetVariateName), nameof(step.MagnetVariateValue));
                 StepDetailPanel.Children.Add(magnetHeightPanel);
                 return;
@@ -616,21 +540,7 @@ namespace OctoFixFlow
                     }
                 };
                 StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailOperationPosition, posiTempCtrlCombo));
-                //// 温控温度输入
-                //var tempCtrlTempTextBox = new TextBox
-                //{
-                //    Style = (Style)FindResource("InputTextBoxStyle"),
-                //    Width = 140,
-                //    VerticalAlignment = VerticalAlignment.Center
-                //};
-                //tempCtrlTempTextBox.SetBinding(TextBox.TextProperty, new Binding
-                //{
-                //    Source = step,
-                //    Path = new PropertyPath("TempCtrlTemp"),
-                //    Mode = BindingMode.TwoWay,
-                //    UpdateSourceTrigger = UpdateSourceTrigger.LostFocus
-                //});
-                //StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailShakeTemp, tempCtrlTempTextBox));
+                // 温控温度输入
                 var tempControlTempPanel = CreateVariableInputRow(step, nameof(step.TempCtrlTemp), res.StepDetailShakeTemp, false, nameof(step.TempControlVariateTempName), nameof(step.TempControlVariateTempValue));
                 StepDetailPanel.Children.Add(tempControlTempPanel);
                 // 打开
@@ -1863,7 +1773,6 @@ pipetteCombo));
         /// </summary>
         private void Hide()
         {
-            StopShakerRealTimeMonitor();
             var hideAnim = (Storyboard)this.Resources["HidePopupAnim"];
             // 动画结束后隐藏控件
             hideAnim.Completed += (s, e) => this.Visibility = Visibility.Collapsed;
@@ -2296,100 +2205,31 @@ pipetteCombo));
 
         #endregion
         #region 加热振荡模块
-
-        /// <summary>
-        /// 开启加热振荡温度&转速实时监控
-        /// </summary>
-        /// <param name="moduleId">加热振荡模块ID</param>
-        private async Task StartShakerRealTimeMonitor(int moduleType, int moduleId)
+        private async void btnGetShakerCool_Click(object sender, RoutedEventArgs e)
         {
-            // 标记为正在监控
-            _isShakerRealTimeMonitoring = true;
-            // 初始化取消令牌源
-            _shakerRealTimeCts = new CancellationTokenSource();
-            var token = _shakerRealTimeCts.Token;
+            _mainWidget.ShowNotification(_mainWidget._res.SettingManualGetTemperature, NotificationControl.NotificationType.Info);
 
-            try
+            StringBuilder pythonCode2 = new StringBuilder();
+            pythonCode2.AppendLine("from shaker import Shaker");
+            pythonCode2.AppendLine($"debug(Shaker.get_temp({nowModuleId}))");
+
+            // 2. 执行脚本并获取返回结果
+            var rawResponse2 = await _mainWidget.ScriptDebugAsync(pythonCode2.ToString());
+            var response2 = _mainWidget.ParseScriptDebugResponse(rawResponse2);
+
+            if (response2 != null && response2.Result == "succeed" && !string.IsNullOrEmpty(response2.Data))
             {
-                // 循环获取数据，直到收到取消信号
-                while (!token.IsCancellationRequested)
-                {
-                    switch (moduleType)
-                    {
-                        case 5:
-                            {
-                                StringBuilder pythonCode2 = new StringBuilder();
-                                pythonCode2.AppendLine("from shaker import Shaker");
-                                pythonCode2.AppendLine($"debug(Shaker.get_temp({moduleId}))");
+                string dataStr = response2.Data?.ToString() ?? "";
+                realGetShakeTemp.Text = dataStr.Trim('\'', '"');
 
-                                // 2. 执行脚本并获取返回结果
-                                var rawResponse2 = await _mainWidget.ScriptDebugAsync(pythonCode2.ToString());
-                                var response2 = _mainWidget.ParseScriptDebugResponse(rawResponse2);
+                _mainWidget.ShowNotification(_mainWidget._res.DeviceOperationSucc, NotificationControl.NotificationType.Info);
 
-                                if (response2 != null && response2.Result == "succeed" && !string.IsNullOrEmpty(response2.Data))
-                                {
-                                    string dataStr = response2.Data?.ToString() ?? "";
-                                    realGetShakeTemp.Text = dataStr.Trim('\'', '"');
-
-                                }
-                                break;
-                            }
-                        case 7:
-                            {
-                                StringBuilder pythonCode = new StringBuilder();
-                                pythonCode.AppendLine("from cool import Cool");
-                                pythonCode.AppendLine($"debug(Cool.get_temp({moduleId}))");
-
-                                // 2. 执行脚本并获取返回结果
-                                var rawResponse = await _mainWidget.ScriptDebugAsync(pythonCode.ToString());
-                                var response = _mainWidget.ParseScriptDebugResponse(rawResponse);
-
-                                if (response != null && response.Result == "succeed" && !string.IsNullOrEmpty(response.Data))
-                                {
-
-                                    string dataStr = response.Data?.ToString() ?? "";
-                                    realGetTemp.Text = dataStr.Trim('\'', '"');
-                                }
-
-                                break;
-                            }
-                    }
-
-
-                    // 4. 间隔1秒获取一次（可根据需求调整，如500ms）
-                    await Task.Delay(1000, token);
-                }
             }
-            catch (TaskCanceledException)
+            else
             {
-            }
-            catch (Exception ex)
-            {
-            }
-            finally
-            {
-                // 重置监控状态
-                _isShakerRealTimeMonitoring = false;
-                _shakerRealTimeCts?.Dispose(); // 释放资源
-                _shakerRealTimeCts = null;
+                _mainWidget.ShowNotification(_mainWidget._res.DeviceOperationFailure, NotificationControl.NotificationType.Error);
             }
         }
-
-        /// <summary>
-        /// 停止加热振荡温度&转速实时监控
-        /// </summary>
-        private void StopShakerRealTimeMonitor()
-        {
-            // 如果正在监控且取消令牌源不为null
-            if (_isShakerRealTimeMonitoring && _shakerRealTimeCts != null && !_shakerRealTimeCts.Token.IsCancellationRequested)
-            {
-                _shakerRealTimeCts.Cancel(); // 发送取消信号
-                _shakerRealTimeCts.Dispose(); // 释放资源
-                _shakerRealTimeCts = null;
-            }
-            _isShakerRealTimeMonitoring = false; // 重置状态
-        }
-
         private async void btnStartTemperature_Click(object sender, RoutedEventArgs e)
         {
             string tempInputText = ShakerTempSetValue.Text.Trim();
@@ -2508,10 +2348,33 @@ pipetteCombo));
                 _mainWidget.ShowNotification(_mainWidget._res.WindowGrpcComFail, NotificationControl.NotificationType.Error);
             }
         }
-
         #endregion
         #region 温控模块
+        private async void btnGetCool_Click(object sender, RoutedEventArgs e)
+        {
+            _mainWidget.ShowNotification(_mainWidget._res.SettingManualGetTemperature, NotificationControl.NotificationType.Info);
 
+            StringBuilder pythonCode = new StringBuilder();
+            pythonCode.AppendLine("from cool import Cool");
+            pythonCode.AppendLine($"debug(Cool.get_temp({nowModuleId}))");
+
+            // 2. 执行脚本并获取返回结果
+            var rawResponse = await _mainWidget.ScriptDebugAsync(pythonCode.ToString());
+            var response = _mainWidget.ParseScriptDebugResponse(rawResponse);
+
+            if (response != null && response.Result == "succeed" && !string.IsNullOrEmpty(response.Data))
+            {
+
+                string dataStr = response.Data?.ToString() ?? "";
+                realGetTemp.Text = dataStr.Trim('\'', '"');
+
+                _mainWidget.ShowNotification(_mainWidget._res.DeviceOperationSucc, NotificationControl.NotificationType.Info);
+            }
+            else
+            {
+                _mainWidget.ShowNotification(_mainWidget._res.DeviceOperationFailure, NotificationControl.NotificationType.Error);
+            }
+        }
         private async void btnStartCool_Click(object sender, RoutedEventArgs e)
         {
             string tempInputText = CoolTempSetValue.Text.Trim();
@@ -2572,6 +2435,7 @@ pipetteCombo));
             }
 
         }
+
         #endregion
         #region PCR模块
 
@@ -2708,6 +2572,11 @@ pipetteCombo));
                 PCRFileAddress.Text = "";
             }
         }
+
+
+
         #endregion
+
+
     }
 }

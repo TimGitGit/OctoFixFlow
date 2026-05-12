@@ -270,7 +270,7 @@ namespace OctoFixFlow
             Brush selectedFillBrush = primaryBrush;       // 选中列的孔填充色
             Brush normalFillBrush = Brushes.Transparent;    // 未选中列的孔填充色（透明）
             //TIP类型耗材
-            if (ConsData.type == 4)
+            if (ConsData.type == 2)
             {
                 double tipRadius = ConsData.TIPMAXRadius * scale;
                 for (int row = 0; row < m_rows; row++)

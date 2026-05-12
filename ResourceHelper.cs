@@ -179,6 +179,28 @@ namespace OctoFixFlow
         public string SettingConsTopLength => IsEnglish ? Resource.Resource_en.SettingConsTopLength : Resource.Resource_zh.SettingConsTopLength;
         public string SettingConsTopWidth => IsEnglish ? Resource.Resource_en.SettingConsTopWidth : Resource.Resource_zh.SettingConsTopWidth;
         public string SettingConsPipetteTipParams => IsEnglish ? Resource.Resource_en.SettingConsPipetteTipParams : Resource.Resource_zh.SettingConsPipetteTipParams;
+        //3D参数 (3D parameters)
+        public string SettingCons3DParams => IsEnglish ? Resource.Resource_en.SettingCons3DParams : Resource.Resource_zh.SettingCons3DParams;
+        //壁厚 (Wall thickness)
+        public string SettingCons3DWellThick => IsEnglish ? Resource.Resource_en.SettingCons3DWellThick : Resource.Resource_zh.SettingCons3DWellThick;
+        //裙边高 (Skirt Height)
+        public string SettingCons3DSkirtHeight => IsEnglish ? Resource.Resource_en.SettingCons3DSkirtHeight : Resource.Resource_zh.SettingCons3DSkirtHeight;
+        //顶部长 (Top Length)
+        public string SettingCons3DTopLength => IsEnglish ? Resource.Resource_en.SettingCons3DTopLength : Resource.Resource_zh.SettingCons3DTopLength;
+        //顶部宽 (Top Width)
+        public string SettingCons3DTopWidth => IsEnglish ? Resource.Resource_en.SettingCons3DTopWidth : Resource.Resource_zh.SettingCons3DTopWidth;
+        //底部类型 (Bottom Type)
+        public string SettingCons3DBottomType => IsEnglish ? Resource.Resource_en.SettingCons3DBottomType : Resource.Resource_zh.SettingCons3DBottomType;
+        //圆形 (Circle)
+        public string SettingCons3DBottomCircle => IsEnglish ? Resource.Resource_en.SettingCons3DBottomCircle : Resource.Resource_zh.SettingCons3DBottomCircle;
+        //锥形 (Taper)
+        public string SettingCons3DBottomTaper => IsEnglish ? Resource.Resource_en.SettingCons3DBottomTaper : Resource.Resource_zh.SettingCons3DBottomTaper;
+        //平底 (Flat)
+        public string SettingCons3DBottomFlat => IsEnglish ? Resource.Resource_en.SettingCons3DBottomFlat : Resource.Resource_zh.SettingCons3DBottomFlat;
+        //锥形深度 (Taper Depth)
+        public string SettingCons3DBottomTaperDepth => IsEnglish ? Resource.Resource_en.SettingCons3DBottomTaperDepth : Resource.Resource_zh.SettingCons3DBottomTaperDepth;
+        //底部形状 (Bottom Shape)
+        public string SettingCons3DBottomShape => IsEnglish ? Resource.Resource_en.SettingCons3DBottomShape : Resource.Resource_zh.SettingCons3DBottomShape;
         public string SettingConsMaxCap => IsEnglish ? Resource.Resource_en.SettingConsMaxCap : Resource.Resource_zh.SettingConsMaxCap;
         public string SettingConsMaxUsableCap => IsEnglish ? Resource.Resource_en.SettingConsMaxUsableCap : Resource.Resource_zh.SettingConsMaxUsableCap;
         public string SettingConsTipTotalLgth => IsEnglish ? Resource.Resource_en.SettingConsTipTotalLgth : Resource.Resource_zh.SettingConsTipTotalLgth;
@@ -300,6 +322,8 @@ namespace OctoFixFlow
         public string SettingManualShakerTempCurrent => IsEnglish ? Resource.Resource_en.SettingManualShakerTempCurrent : Resource.Resource_zh.SettingManualShakerTempCurrent;
         //设定温度（℃）：/Set Temperature (℃):
         public string SettingManualShakerTempSet => IsEnglish ? Resource.Resource_en.SettingManualShakerTempSet : Resource.Resource_zh.SettingManualShakerTempSet;
+        //读取温度/Get Temperature
+        public string SettingManualGetTemperature => IsEnglish ? Resource.Resource_en.SettingManualGetTemperature : Resource.Resource_zh.SettingManualGetTemperature;
         //开始温度/Start Temperature
         public string SettingManualStartTemperature => IsEnglish ? Resource.Resource_en.SettingManualStartTemperature : Resource.Resource_zh.SettingManualStartTemperature;
         //停止温度/Stop Temperature
@@ -568,8 +592,43 @@ namespace OctoFixFlow
         public string ScriptLoadFail => IsEnglish ? Resource.Resource_en.ScriptLoadFail : Resource.Resource_zh.ScriptLoadFail;
         // 请添加流程步骤后再开始 (Please add process steps before starting）
         public string ScriptStartEmpty => IsEnglish ? Resource.Resource_en.ScriptStartEmpty : Resource.Resource_zh.ScriptStartEmpty;
-        // 部分步骤缺少液体参数 (Some steps lack liquid parameters）
-        public string ScriptStartLiquidEmpty => IsEnglish ? Resource.Resource_en.ScriptStartLiquidEmpty : Resource.Resource_zh.ScriptStartLiquidEmpty;
+        // 开始模拟运行... (Starting simulation run...）
+        public string ScriptStartSimulate => IsEnglish ? Resource.Resource_en.ScriptStartSimulate : Resource.Resource_zh.ScriptStartSimulate;
+        // 步骤： (Step:）
+        public string ScriptStartStep => IsEnglish ? Resource.Resource_en.ScriptStartStep : Resource.Resource_zh.ScriptStartStep;
+        // 孔位未设置 (Well position missing）
+        public string ScriptStepWellMissing => IsEnglish ? Resource.Resource_en.ScriptStepWellMissing : Resource.Resource_zh.ScriptStepWellMissing;
+        // 距孔底距离未设置 (Distance from well bottom missing）
+        public string ScriptStepDisFromWellMissing => IsEnglish ? Resource.Resource_en.ScriptStepDisFromWellMissing : Resource.Resource_zh.ScriptStepDisFromWellMissing;
+        // 移液速度未设置(Pipetting speed not set）
+        public string ScriptStepSpeedMissing => IsEnglish ? Resource.Resource_en.ScriptStepSpeedMissing : Resource.Resource_zh.ScriptStepSpeedMissing;
+        // 混合体积/次数未配置(Mix volume or cycle not configured）
+        public string ScriptStepMixCountMissing => IsEnglish ? Resource.Resource_en.ScriptStepMixCountMissing : Resource.Resource_zh.ScriptStepMixCountMissing;
+        // 震荡参数未配置(Shake parameters not set）
+        public string ScriptStepShakerMissing => IsEnglish ? Resource.Resource_en.ScriptStepShakerMissing : Resource.Resource_zh.ScriptStepShakerMissing;
+        // 等待时间未配置(Wait time not set）
+        public string ScriptStepWaitMissing => IsEnglish ? Resource.Resource_en.ScriptStepWaitMissing : Resource.Resource_zh.ScriptStepWaitMissing;
+        // 温控参数未配置(Temp Control parameters not set）
+        public string ScriptStepTempCtrolMissing => IsEnglish ? Resource.Resource_en.ScriptStepTempCtrolMissing : Resource.Resource_zh.ScriptStepTempCtrolMissing;
+        // 磁吸参数未配置(Magnetic parameters not set）
+        public string ScriptStepMagneticMissing => IsEnglish ? Resource.Resource_en.ScriptStepMagneticMissing : Resource.Resource_zh.ScriptStepMagneticMissing;
+        // 热循环参数未配置(PCR parameters not set）
+        public string ScriptStepPCRMissing => IsEnglish ? Resource.Resource_en.ScriptStepPCRMissing : Resource.Resource_zh.ScriptStepPCRMissing;
+        // 注释内容未设置(Annotation content not set）
+        public string ScriptStepAnnotationMissing => IsEnglish ? Resource.Resource_en.ScriptStepAnnotationMissing : Resource.Resource_zh.ScriptStepAnnotationMissing;
+        // 变量名称未设置(Variate name not set）
+        public string ScriptStepVariateMissing => IsEnglish ? Resource.Resource_en.ScriptStepVariateMissing : Resource.Resource_zh.ScriptStepVariateMissing;
+        // 移液前必须安装枪头 (Tip required before operation)
+        public string ScriptTipRequired => IsEnglish ? Resource.Resource_en.ScriptTipRequired : Resource.Resource_zh.ScriptTipRequired;
+
+        // 取枪头前移液器必须为空 (Pipette must be empty before tip on)
+        public string ScriptTipMustBeEmptyBeforeOn => IsEnglish ? Resource.Resource_en.ScriptTipMustBeEmptyBeforeOn : Resource.Resource_zh.ScriptTipMustBeEmptyBeforeOn;
+
+        // 退枪头前必须有枪头 (Tip required before tip off)
+        public string ScriptTipRequiredBeforeOff => IsEnglish ? Resource.Resource_en.ScriptTipRequiredBeforeOff : Resource.Resource_zh.ScriptTipRequiredBeforeOff;
+
+        // 移板操作时移液器不能有枪头 (Pipette must be empty during plate transfer)
+        public string ScriptTipMustBeEmptyDuringTransfer => IsEnglish ? Resource.Resource_en.ScriptTipMustBeEmptyDuringTransfer : Resource.Resource_zh.ScriptTipMustBeEmptyDuringTransfer;
         // 正在创建流程脚本... (Creating process scripts...）
         public string ScriptStartCreating => IsEnglish ? Resource.Resource_en.ScriptStartCreating : Resource.Resource_zh.ScriptStartCreating;
         // 流程开始执行 (Process starting execution）

@@ -93,7 +93,17 @@ namespace OctoFixFlow
                     TIPConeLength REAL,              -- 枪头圆锥长度
                     TIPMAXRadius REAL,               -- 最大半径
                     TIPMINRadius REAL,               -- 最小半径
-                    TIPDepthOFComp REAL             -- 下压深度
+                    TIPDepthOFComp REAL,             -- 下压深度
+                    ThreeWellThickness REAL,         -- 壁厚
+                    ThreeSkirtHeight REAL,           -- 裙边高
+                    ThreeTopLength REAL,             -- 顶部长
+                    ThreeTopWidth REAL,              -- 顶部宽
+                    botType INTEGER,                 -- 底部类型 0圆形 1锥形 2平底
+                    ThreeBotTaperDepth REAL,         -- 锥形深度
+                    botShape INTEGER,                -- 底部形状 0圆柱体 1立方体
+                    botRadius REAL,                  -- 底部半径(mm)
+                    botHoleX REAL,                  -- 底部长
+                    botHoleY REAL                   -- 底部宽
                 );";
             // 创建液体参数表
             string createLiquidSettingsQuery = @"
@@ -379,13 +389,17 @@ namespace OctoFixFlow
                 labL, labW, labH, distanceRowY, distanceColumnX, distanceRow, distanceColumn,
                 offsetX, offsetY, RobotX, RobotY, RobotZ, labVolume, consMaxAvaiVol, consDep,
                 topShape, topRadius, topUpperX, topUpperY, TIPMAXCapacity, TIPMAXAvailable,
-                TIPTotalLength, TIPHeadHeight, TIPConeLength, TIPMAXRadius, TIPMINRadius, TIPDepthOFComp
+                TIPTotalLength, TIPHeadHeight, TIPConeLength, TIPMAXRadius, TIPMINRadius, TIPDepthOFComp,
+                ThreeWellThickness,ThreeSkirtHeight,ThreeTopLength,ThreeTopWidth,botType,ThreeBotTaperDepth,
+                botShape,botRadius,botHoleX,botHoleY
             ) VALUES (
                 @name, 0, 0, '', 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0
+                0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0
             )";
 
                 using (var insertCmd = new SQLiteCommand(insertQuery, connection))
@@ -441,7 +455,18 @@ namespace OctoFixFlow
                 TIPConeLength = @TIPConeLength,
                 TIPMAXRadius = @TIPMAXRadius,
                 TIPMINRadius = @TIPMINRadius,
-                TIPDepthOFComp = @TIPDepthOFComp
+                TIPDepthOFComp = @TIPDepthOFComp,
+                ThreeWellThickness = @ThreeWellThickness,
+                ThreeSkirtHeight = @ThreeSkirtHeight,
+                ThreeTopLength = @ThreeTopLength,
+                ThreeTopWidth = @ThreeTopWidth,
+                botType = @botType,
+                ThreeBotTaperDepth = @ThreeBotTaperDepth,
+                botShape = @botShape,
+                botRadius = @botRadius,
+                botHoleX = @botHoleX,
+                botHoleY = @botHoleY
+
             WHERE name = @name";
 
                 using (var cmd = new SQLiteCommand(updateQuery, connection))
@@ -484,6 +509,16 @@ namespace OctoFixFlow
                     cmd.Parameters.AddWithValue("@TIPMAXRadius", settings.TIPMAXRadius);
                     cmd.Parameters.AddWithValue("@TIPMINRadius", settings.TIPMINRadius);
                     cmd.Parameters.AddWithValue("@TIPDepthOFComp", settings.TIPDepthOFComp);
+                    cmd.Parameters.AddWithValue("@ThreeWellThickness", settings.ThreeWellThickness);
+                    cmd.Parameters.AddWithValue("@ThreeSkirtHeight", settings.ThreeSkirtHeight);
+                    cmd.Parameters.AddWithValue("@ThreeTopLength", settings.ThreeTopLength);
+                    cmd.Parameters.AddWithValue("@ThreeTopWidth", settings.ThreeTopWidth);
+                    cmd.Parameters.AddWithValue("@botType", settings.botType);
+                    cmd.Parameters.AddWithValue("@ThreeBotTaperDepth", settings.ThreeBotTaperDepth);
+                    cmd.Parameters.AddWithValue("@botShape", settings.botShape);
+                    cmd.Parameters.AddWithValue("@botRadius", settings.botRadius);
+                    cmd.Parameters.AddWithValue("@botHoleX", settings.botHoleX);
+                    cmd.Parameters.AddWithValue("@botHoleY", settings.botHoleY);
 
                     int rowsAffected = cmd.ExecuteNonQuery();
                     return rowsAffected > 0;
@@ -609,7 +644,18 @@ namespace OctoFixFlow
                             TIPConeLength = reader.GetFloat(reader.GetOrdinal("TIPConeLength")),
                             TIPMAXRadius = reader.GetFloat(reader.GetOrdinal("TIPMAXRadius")),
                             TIPMINRadius = reader.GetFloat(reader.GetOrdinal("TIPMINRadius")),
-                            TIPDepthOFComp = reader.GetFloat(reader.GetOrdinal("TIPDepthOFComp"))
+                            TIPDepthOFComp = reader.GetFloat(reader.GetOrdinal("TIPDepthOFComp")),
+                            ThreeWellThickness = reader.GetFloat(reader.GetOrdinal("ThreeWellThickness")),
+                            ThreeSkirtHeight = reader.GetFloat(reader.GetOrdinal("ThreeSkirtHeight")),
+                            ThreeTopLength = reader.GetFloat(reader.GetOrdinal("ThreeTopLength")),
+                            ThreeTopWidth = reader.GetFloat(reader.GetOrdinal("ThreeTopWidth")),
+                            botType = reader.GetInt32(reader.GetOrdinal("botType")),
+                            ThreeBotTaperDepth = reader.GetFloat(reader.GetOrdinal("ThreeBotTaperDepth")),
+                            botShape = reader.GetInt32(reader.GetOrdinal("botShape")),
+                            botRadius = reader.GetFloat(reader.GetOrdinal("botRadius")),
+                            botHoleX = reader.GetFloat(reader.GetOrdinal("botHoleX")),
+                            botHoleY = reader.GetFloat(reader.GetOrdinal("botHoleY"))
+
                         };
                     }
                 }
@@ -705,7 +751,18 @@ namespace OctoFixFlow
                             TIPConeLength = reader.GetFloat(reader.GetOrdinal("TIPConeLength")),
                             TIPMAXRadius = reader.GetFloat(reader.GetOrdinal("TIPMAXRadius")),
                             TIPMINRadius = reader.GetFloat(reader.GetOrdinal("TIPMINRadius")),
-                            TIPDepthOFComp = reader.GetFloat(reader.GetOrdinal("TIPDepthOFComp"))
+                            TIPDepthOFComp = reader.GetFloat(reader.GetOrdinal("TIPDepthOFComp")),
+                            ThreeWellThickness = reader.GetFloat(reader.GetOrdinal("ThreeWellThickness")),
+                            ThreeSkirtHeight = reader.GetFloat(reader.GetOrdinal("ThreeSkirtHeight")),
+                            ThreeTopLength = reader.GetFloat(reader.GetOrdinal("ThreeTopLength")),
+                            ThreeTopWidth = reader.GetFloat(reader.GetOrdinal("ThreeTopWidth")),
+                            botType = reader.GetInt32(reader.GetOrdinal("botType")),
+                            ThreeBotTaperDepth = reader.GetFloat(reader.GetOrdinal("ThreeBotTaperDepth")),
+                            botShape = reader.GetInt32(reader.GetOrdinal("botShape")),
+                            botRadius = reader.GetFloat(reader.GetOrdinal("botRadius")),
+                            botHoleX = reader.GetFloat(reader.GetOrdinal("botHoleX")),
+                            botHoleY = reader.GetFloat(reader.GetOrdinal("botHoleY"))
+
                         };
 
                         allConsumables.Add(consumable); // 添加到集合

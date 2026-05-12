@@ -447,6 +447,7 @@
                             Style="{StaticResource ActionButtonStyle}" />
 
                         <Button
+                            x:Name="StartButton"
                             Width="80"
                             Click="StartButton_Click"
                             Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionStart}"
@@ -893,6 +894,7 @@
 
                 <!--  流程列表（整列布局）  -->
                 <ScrollViewer
+                    x:Name="FlowScrollViewer"
                     Grid.Row="1"
                     BorderBrush="#BDC3C7"
                     BorderThickness="1"
@@ -918,6 +920,12 @@
                                             <Setter Property="BorderBrush" Value="#BDC3C7" />
                                             <Setter Property="BorderThickness" Value="1" />
                                             <Style.Triggers>
+                                                <!--  错误状态样式  -->
+                                                <DataTrigger Binding="{Binding IsError}" Value="True">
+                                                    <Setter Property="Background" Value="#FFEBEE" />
+                                                    <Setter Property="BorderBrush" Value="#F44336" />
+                                                    <Setter Property="BorderThickness" Value="2" />
+                                                </DataTrigger>
                                                 <!--  开始步骤样式  -->
                                                 <DataTrigger Binding="{Binding Type}" Value="start">
                                                     <Setter Property="Background" Value="#E8F5E9" />

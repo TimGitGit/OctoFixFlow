@@ -1186,6 +1186,187 @@
                                     </Grid>
                                 </StackPanel>
                             </Border>
+                            <!--  3D 模型  -->
+                            <Border
+                                Margin="0,0,0,15"
+                                Background="White"
+                                BorderBrush="#E0E0E0"
+                                BorderThickness="1">
+                                <Border.CornerRadius>
+                                    <CornerRadius>5</CornerRadius>
+                                </Border.CornerRadius>
+                                <StackPanel Margin="15">
+                                    <TextBlock
+                                        FontSize="14"
+                                        FontWeight="Medium"
+                                        Foreground="{StaticResource PrimaryColor}"
+                                        Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingCons3DParams}" />
+
+                                    <Grid Margin="12,12,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="100" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="20" />
+                                            <ColumnDefinition Width="100" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <!--  壁厚  -->
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            FontSize="13"
+                                            Foreground="#666666"
+                                            Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingCons3DWellThick}" />
+                                        <TextBox
+                                            Grid.Column="1"
+                                            Style="{StaticResource InputTextBoxStyle}"
+                                            Text="{Binding consNew.ThreeWellThickness, Mode=TwoWay}" />
+                                        <!--  裙边高  -->
+                                        <TextBlock
+                                            Grid.Column="3"
+                                            VerticalAlignment="Center"
+                                            FontSize="13"
+                                            Foreground="#666666"
+                                            Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingCons3DSkirtHeight}" />
+                                        <TextBox
+                                            Grid.Column="4"
+                                            Style="{StaticResource InputTextBoxStyle}"
+                                            Text="{Binding consNew.ThreeSkirtHeight, Mode=TwoWay}" />
+                                    </Grid>
+                                    <Grid Margin="12,12,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="100" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="20" />
+                                            <ColumnDefinition Width="100" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <!--  顶部长  -->
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            FontSize="13"
+                                            Foreground="#666666"
+                                            Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingCons3DTopLength}" />
+                                        <TextBox
+                                            Grid.Column="1"
+                                            Style="{StaticResource InputTextBoxStyle}"
+                                            Text="{Binding consNew.ThreeTopLength, Mode=TwoWay}" />
+                                        <!--  顶部宽  -->
+                                        <TextBlock
+                                            Grid.Column="3"
+                                            VerticalAlignment="Center"
+                                            FontSize="13"
+                                            Foreground="#666666"
+                                            Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingCons3DTopWidth}" />
+                                        <TextBox
+                                            Grid.Column="4"
+                                            Style="{StaticResource InputTextBoxStyle}"
+                                            Text="{Binding consNew.ThreeTopWidth, Mode=TwoWay}" />
+                                    </Grid>
+                                    <Grid Margin="12,12,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="100" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="20" />
+                                            <ColumnDefinition Width="100" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock
+                                            Grid.Column="0"
+                                            VerticalAlignment="Center"
+                                            FontSize="13"
+                                            Foreground="#666666"
+                                            Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingCons3DBottomType}" />
+                                        <ComboBox
+                                            Grid.Column="1"
+                                            SelectedIndex="{Binding consNew.botType, Mode=TwoWay}"
+                                            Style="{StaticResource InputComboBoxStyle}">
+                                            <ComboBoxItem Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingCons3DBottomCircle}" />
+                                            <ComboBoxItem Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingCons3DBottomTaper}" />
+                                            <ComboBoxItem Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingCons3DBottomFlat}" />
+                                        </ComboBox>
+                                        <TextBlock
+                                            x:Name="BottomTaperDepthBlock"
+                                            Grid.Column="3"
+                                            VerticalAlignment="Center"
+                                            FontSize="13"
+                                            Foreground="#666666"
+                                            Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingCons3DBottomTaperDepth}" />
+                                        <TextBox
+                                            x:Name="BottomTaperDepthBox"
+                                            Grid.Column="4"
+                                            Style="{StaticResource InputTextBoxStyle}"
+                                            Text="{Binding consNew.ThreeBotTaperDepth, Mode=TwoWay}" />
+                                    </Grid>
+                                    <Grid Margin="12,12,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="100" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="20" />
+                                            <ColumnDefinition Width="100" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock
+                                            Grid.Column="0"
+                                            VerticalAlignment="Center"
+                                            FontSize="13"
+                                            Foreground="#666666"
+                                            Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingCons3DBottomShape}" />
+                                        <ComboBox
+                                            Grid.Column="1"
+                                            SelectedIndex="{Binding consNew.botShape, Mode=TwoWay}"
+                                            Style="{StaticResource InputComboBoxStyle}">
+                                            <ComboBoxItem Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingConsCylinder}" />
+                                            <ComboBoxItem Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingConsCube}" />
+                                        </ComboBox>
+
+                                    </Grid>
+                                    <Grid Margin="12,12,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="100" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="20" />
+                                            <ColumnDefinition Width="100" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock
+                                            x:Name="consBotRdiusBlock"
+                                            VerticalAlignment="Center"
+                                            FontSize="13"
+                                            Foreground="#666666"
+                                            Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingConsTopRadius}" />
+                                        <TextBox
+                                            x:Name="consBotRdiusBox"
+                                            Grid.Column="1"
+                                            Style="{StaticResource InputTextBoxStyle}"
+                                            Text="{Binding consNew.botRadius, Mode=TwoWay}" />
+                                        <TextBlock
+                                            x:Name="consBotLongBlock"
+                                            VerticalAlignment="Center"
+                                            FontSize="13"
+                                            Foreground="#666666"
+                                            Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingConsTopLength}" />
+                                        <TextBox
+                                            x:Name="consBotLongBox"
+                                            Grid.Column="1"
+                                            Style="{StaticResource InputTextBoxStyle}"
+                                            Text="{Binding consNew.botHoleX, Mode=TwoWay}" />
+                                        <TextBlock
+                                            x:Name="consBotWidthBlock"
+                                            Grid.Column="3"
+                                            VerticalAlignment="Center"
+                                            FontSize="13"
+                                            Foreground="#666666"
+                                            Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingConsTopWidth}" />
+                                        <TextBox
+                                            x:Name="consBotWidthBox"
+                                            Grid.Column="4"
+                                            Style="{StaticResource InputTextBoxStyle}"
+                                            Text="{Binding consNew.botHoleY, Mode=TwoWay}" />
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
                         </StackPanel>
                     </ScrollViewer>
                 </Grid>

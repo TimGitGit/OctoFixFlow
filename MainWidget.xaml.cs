@@ -46,6 +46,7 @@ namespace OctoFixFlow
 
         private int _currentLevel = 0;
         private Stack<int> _levelStack = new Stack<int>();
+        private bool hasTip = false;
 
         //液体类
         public ObservableCollection<LiquidSettings> Liquids { get; set; }
@@ -641,28 +642,28 @@ namespace OctoFixFlow
             if (AppGlobalConfig.Instance.IsPCREnabled)
             {
                 ActionPCRButton.Visibility = Visibility.Visible;
-                Grid.SetRow(PlateBorder10, 0);
-                Grid.SetColumn(PlateBorder10, 0);
-                Grid.SetRowSpan(PlateBorder10, 2);
             }
             else
             {
                 ActionPCRButton.Visibility = Visibility.Collapsed;
-                Grid.SetRow(PlateBorder10, 1);
-                Grid.SetColumn(PlateBorder10, 0);
-                Grid.SetRowSpan(PlateBorder10, 1);
             }
             //判断Fluo
             if (AppGlobalConfig.Instance.IsFluoEnabled)
             {
                 ActionFluoButton.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                ActionFluoButton.Visibility = Visibility.Collapsed;
+            }
+            if (AppGlobalConfig.Instance.IsFluoEnabled || AppGlobalConfig.Instance.IsPCREnabled)
+            {
                 Grid.SetRow(PlateBorder10, 0);
                 Grid.SetColumn(PlateBorder10, 0);
                 Grid.SetRowSpan(PlateBorder10, 2);
             }
             else
             {
-                ActionFluoButton.Visibility = Visibility.Collapsed;
                 Grid.SetRow(PlateBorder10, 1);
                 Grid.SetColumn(PlateBorder10, 0);
                 Grid.SetRowSpan(PlateBorder10, 1);
@@ -1365,86 +1366,6 @@ namespace OctoFixFlow
             _stepIndex = FlowSteps.Count + 1;
         }
 
-        private JArray BuildCreaList()
-        {
-            var creaList = new JArray();
-
-            // 遍历板位-耗材映射关系(对应C++的nowCreaList)
-            foreach (var plateConsumable in _plateConsumableMap)
-            {
-                string plateId = plateConsumable.Key; // 板位编号
-                var consumable = plateConsumable.Value; // 耗材信息
-                var settings = consumable.Settings; // 耗材详细设置
-
-                // 创建单个耗材JSON对象
-                var creaItem = new JObject();
-                creaItem["plate"] = plateId; // 板位ID
-
-                // 构建耗材参数(对应C++的crea_param)
-                var creaParam = new JObject
-        {
-            // 基本信息
-            {"name", settings.name ?? ""},
-            {"id", settings.id},
-            {"type", settings.type},
-            {"description", settings.description ?? ""},
-
-            // 坐标信息
-            {"NW", settings.NW},
-            {"SW", settings.SW},
-            {"NE", settings.NE},
-            {"SE", settings.SE},
-
-            // 孔阵信息
-            {"numRows", settings.numRows},
-            {"numColumns", settings.numColumns},
-
-            // 尺寸信息
-            {"labL", settings.labL},
-            {"labW", settings.labW},
-            {"labH", settings.labH},
-
-            // 孔距与偏移
-            {"distanceRowY", settings.distanceRowY},
-            {"distanceColumnX", settings.distanceColumnX},
-            {"distanceRow", settings.distanceRow},
-            {"distanceColumn", settings.distanceColumn},
-            {"offsetX", settings.offsetX},
-            {"offsetY", settings.offsetY},
-
-            // 抓手位置
-            {"RobotX", settings.RobotX},
-            {"RobotY", settings.RobotY},
-            {"RobotZ", settings.RobotZ},
-
-            // 容量信息
-            {"labVolume", settings.labVolume},
-            {"consMaxAvaiVol", settings.consMaxAvaiVol},
-            {"consDep", settings.consDep},
-
-            // 孔形状信息
-            {"topShape", settings.topShape},
-            {"topRadius", settings.topRadius},
-            {"topUpperX", settings.topUpperX},
-            {"topUpperY", settings.topUpperY},
-
-            // 枪头信息
-            {"TIPMAXCapacity", settings.TIPMAXCapacity},
-            {"TIPMAXAvailable", settings.TIPMAXAvailable},
-            {"TIPTotalLength", settings.TIPTotalLength},
-            {"TIPHeadHeight", settings.TIPHeadHeight},
-            {"TIPConeLength", settings.TIPConeLength},
-            {"TIPMAXRadius", settings.TIPMAXRadius},
-            {"TIPMINRadius", settings.TIPMINRadius},
-            {"TIPDepthOFComp", settings.TIPDepthOFComp}
-        };
-
-                creaItem["crea_param"] = creaParam;
-                creaList.Add(creaItem);
-            }
-
-            return creaList;
-        }
 
         /// <summary>
         /// 创建脚本python
@@ -1500,7 +1421,9 @@ namespace OctoFixFlow
             pythonCode.AppendLine($"    \"steps\": \"{stepsNum}\",");
             pythonCode.AppendLine("}");
             //新增李明变量需求
-            Dictionary<string, float> inputParamDict = new Dictionary<string, float>();
+            //Dictionary<string, float> inputParamDict = new Dictionary<string, float>();
+            List<KeyValuePair<string, float>> inputParamDict = new List<KeyValuePair<string, float>>();
+
             foreach (var flowStep in FlowSteps)
             {
                 string stepType = MapStepType(flowStep.Type);
@@ -1508,12 +1431,7 @@ namespace OctoFixFlow
                 {
                     string variateName = flowStep.VariateScriptName;
                     float variateNum = flowStep.VariateNum;
-                    inputParamDict.Add(variateName, variateNum);
-                    // 处理重复变量，以最后一次赋值为准
-                    //if (inputParamDict.ContainsKey(variateName))
-                    //    inputParamDict[variateName] = variateNum;
-                    //else
-                    //    inputParamDict.Add(variateName, variateNum);
+                    inputParamDict.Add(new KeyValuePair<string, float>(variateName, variateNum));
                 }
             }
             //新增李明变量需求
@@ -1568,7 +1486,6 @@ namespace OctoFixFlow
             //新增李明这边的使用变量
             if (inputParamDict.Count > 0)
             {
-                // 拼接字典键值对，key加双引号，和你示例格式完全一致
                 var keyValuePairs = inputParamDict.Select(kvp => $"\"{kvp.Key}\":{kvp.Value}");
                 string inputParamStr = string.Join(", ", keyValuePairs);
                 pythonCode.AppendLine($"input_param = {{{inputParamStr}}}");
@@ -1655,6 +1572,18 @@ namespace OctoFixFlow
                 pythonCode.AppendLine($"{validVarName}.TIPMAXRadius = {settings.TIPMAXRadius:F2}"); // 枪头最大半径
                 pythonCode.AppendLine($"{validVarName}.TIPMINRadius = {settings.TIPMINRadius:F2}"); // 枪头最小半径
                 //pythonCode.AppendLine($"{validVarName}.TIPDepthOFComp = {settings.TIPDepthOFComp:F2}"); // 枪头压缩深度
+                pythonCode.AppendLine($"{validVarName}.ThreeWellThickness = {settings.ThreeWellThickness:F2}"); // 3D壁厚
+                pythonCode.AppendLine($"{validVarName}.ThreeSkirtHeight = {settings.ThreeSkirtHeight:F2}"); // 3D裙边高
+                pythonCode.AppendLine($"{validVarName}.ThreeTopLength = {settings.ThreeTopLength:F2}"); // 3D顶边长
+                pythonCode.AppendLine($"{validVarName}.ThreeTopWidth = {settings.ThreeTopWidth:F2}"); // 3D顶边宽
+                pythonCode.AppendLine($"{validVarName}.botType = {settings.botType}"); // 3D底部耗材类型//底部类型 0圆形 1锥形 2平底
+                pythonCode.AppendLine($"{validVarName}.botShape = {settings.botShape}"); // 3D底部耗材形状//顶部形状  0圆 1长方形
+                pythonCode.AppendLine($"{validVarName}.ThreeBotTaperDepth = {settings.ThreeBotTaperDepth:F2}"); // 3D锥深度
+                pythonCode.AppendLine($"{validVarName}.botRadius = {settings.botRadius:F2}"); // 3D底部圆半径
+                pythonCode.AppendLine($"{validVarName}.botHoleX = {settings.botHoleX:F2}"); // 3D底部方长
+                pythonCode.AppendLine($"{validVarName}.botHoleY = {settings.botHoleY:F2}"); // 3D底部方宽
+
+
                 pythonCode.AppendLine();
             }
             Dictionary<string, string> moduleIdDict = new Dictionary<string, string>();
@@ -2002,10 +1931,6 @@ namespace OctoFixFlow
 
                             pythonCode.AppendLine($"{indentStr}Shaker.start_temp(id={shakeModuleId}, temp={tempParam})");
                             pythonCode.AppendLine($"{indentStr}Shaker.start_shaker(id={shakeModuleId}, rpm={rpmParam}, time={timeParam})");
-
-
-                            //pythonCode.AppendLine($"{indentStr}Shaker.start_temp(id={shakeModuleId}, temp={flowStep.ShakeTemp:F1})");
-                            //pythonCode.AppendLine($"{indentStr}Shaker.start_shaker(id={shakeModuleId}, rpm={flowStep.ShakeRPM}, time={flowStep.WaitTime})");
                         }
 
                         break;
@@ -3069,6 +2994,18 @@ namespace OctoFixFlow
                     consumableSettings.TIPMAXRadius = targetParamDict.ContainsKey("TIPMAXRadius") ? (targetParamDict["TIPMAXRadius"] is float tipMaxRadVal ? tipMaxRadVal : 0.0f) : 0.0f;
                     consumableSettings.TIPMINRadius = targetParamDict.ContainsKey("TIPMINRadius") ? (targetParamDict["TIPMINRadius"] is float tipMinRadVal ? tipMinRadVal : 0.0f) : 0.0f;
                     consumableSettings.TIPDepthOFComp = targetParamDict.ContainsKey("tip_take_depth") ? (targetParamDict["tip_take_depth"] is float tipDepthCompVal ? tipDepthCompVal : 0.0f) : 0.0f;
+
+                    //3D的参数
+                    consumableSettings.ThreeWellThickness = targetParamDict.ContainsKey("ThreeWellThickness") ? (targetParamDict["ThreeWellThickness"] is float threeWellThickness ? threeWellThickness : 0.0f) : 0.0f;// 3D壁厚
+                    consumableSettings.ThreeSkirtHeight = targetParamDict.ContainsKey("ThreeSkirtHeight") ? (targetParamDict["ThreeSkirtHeight"] is float threeSkirtHeight ? threeSkirtHeight : 0.0f) : 0.0f;// 3D裙边高
+                    consumableSettings.ThreeTopLength = targetParamDict.ContainsKey("ThreeTopLength") ? (targetParamDict["ThreeTopLength"] is float threeTopLength ? threeTopLength : 0.0f) : 0.0f;// 3D顶边长
+                    consumableSettings.ThreeTopWidth = targetParamDict.ContainsKey("ThreeTopWidth") ? (targetParamDict["ThreeTopWidth"] is float threeTopWidth ? threeTopWidth : 0.0f) : 0.0f;// 3D顶边宽
+                    consumableSettings.botType = targetParamDict.ContainsKey("botType") ? (targetParamDict["botType"] is int botTypeVal ? botTypeVal : 0) : 0;// 3D底部耗材类型//底部类型 0圆形 1锥形 2平底
+                    consumableSettings.botShape = targetParamDict.ContainsKey("botShape") ? (targetParamDict["botShape"] is int botShapeVal ? botShapeVal : 0) : 0;// 3D底部耗材形状//顶部形状  0圆 1长方形
+                    consumableSettings.ThreeBotTaperDepth = targetParamDict.ContainsKey("ThreeBotTaperDepth") ? (targetParamDict["ThreeBotTaperDepth"] is float threeBotTaperDepth ? threeBotTaperDepth : 0.0f) : 0.0f;// 3D锥深度
+                    consumableSettings.botRadius = targetParamDict.ContainsKey("botRadius") ? (targetParamDict["botRadius"] is float botRadiusVal ? botRadiusVal : 0.0f) : 0.0f;// 3D底部圆半径
+                    consumableSettings.botHoleX = targetParamDict.ContainsKey("botHoleX") ? (targetParamDict["botHoleX"] is float botHoleXVal ? botHoleXVal : 0.0f) : 0.0f;// 3D底部方长
+                    consumableSettings.botHoleY = targetParamDict.ContainsKey("botHoleY") ? (targetParamDict["botHoleY"] is float botHoleYVal ? botHoleYVal : 0.0f) : 0.0f;// 3D底部方宽
 
                     // 3.2 构造ConsumableItem（与写入逻辑一致）
                     ConsumableItem consumableItem = new ConsumableItem();
@@ -4264,143 +4201,41 @@ namespace OctoFixFlow
 
             return "P1"; // 默认值
         }
+        #region 开始流程+模拟运行+导出
         //流程开始
         private async void StartButton_Click(object sender, RoutedEventArgs e)
         {
-            // 验证是否有步骤
-            if (FlowSteps.Count == 0)
+            StartButton.IsEnabled = false;
+            try
             {
-                ShowNotification(_res.ScriptStartEmpty, NotificationControl.NotificationType.Warn);
-                return;
+                ResetAllStepStates();
+                hasTip = false;
+                if (FlowSteps.Count == 0)
+                {
+                    ShowNotification(_res.ScriptStartEmpty, NotificationControl.NotificationType.Warn);
+                    return;
+                }
+                ShowNotification(_res.ScriptStartSimulate, NotificationControl.NotificationType.Info);//开始模拟运行...
+                bool allPassed = await SimulateAndValidateAsync();
+                if (!allPassed)
+                {
+                    return;
+                }
+                ResetAllStepStates();
+                ShowNotification(_res.ScriptStartCreating, NotificationControl.NotificationType.Info);//正在创建流程脚本...
+                await ExecuteActualRunAsync();
             }
+            catch (Exception ex)
+            {
+                ShowNotification($"{_res.ScriptStartCreateFail}: {ex.Message}", NotificationControl.NotificationType.Error);
+            }
+            finally
+            {
+                StartButton.IsEnabled = true;
+            }
+
             //var invalidSteps = new List<int>();
-            foreach (var step in FlowSteps)
-            {
-                //if (step.Type == "Aspirate")
-                //{
 
-                //}
-                //else if (step.Type == "Dispense")
-                //{
-
-                //}
-                // 只校验吸液和注液步骤
-                //if ((step.Type == "Aspirate" || step.Type == "Dispense") &&
-                //    !step.IsSystemStep) // 排除系统步骤（开始/结束）
-                //{
-                //    // 检查液体参数是否未选择
-                //    if (step.SelectedLiquid == null || string.IsNullOrEmpty(step.SelectedLiquid.name))
-                //    {
-                //        //string stepNumbers = string.Join("、", invalidSteps);
-                //        //string message = $"{_res.ScriptStartLiquidEmpty}{step.Index}）";
-
-                //        //ShowNotification(message, NotificationControl.NotificationType.Error);
-                //        //return; 
-                //    }
-                //}
-                if (step.Type == "Aspirate" || step.Type == "Dispense" || step.Type == "TipOn" || step.Type == "TipOff" || step.Type == "Mix") // 排除系统步骤（开始/结束）
-                {
-                    if (step.WellPosition == "" || step.SelectedCells == "")
-                    {
-                        string message = $"{_res.ScriptStartLiquidEmpty}{step.Index}）";
-
-                        ShowNotification(message, NotificationControl.NotificationType.Error);
-                        return;
-                    }
-
-                    // 检查液体参数是否未选择
-                    //if (step.SelectedLiquid == null || string.IsNullOrEmpty(step.SelectedLiquid.name))
-                    //{
-                    //    //string stepNumbers = string.Join("、", invalidSteps);
-                    //    //string message = $"{_res.ScriptStartLiquidEmpty}{step.Index}）";
-
-                    //    //ShowNotification(message, NotificationControl.NotificationType.Error);
-                    //    //return; 
-                    //}
-                }
-                else if (step.Type == "Shake")
-                {
-                    if (step.ShakeTemp == 0 || step.ShakeRPM == 0 || step.WaitTime == 0)
-                    {
-                        string message = $"{_res.ScriptStartLiquidEmpty}{step.Index}）";
-
-                        ShowNotification(message, NotificationControl.NotificationType.Error);
-                        return;
-                    }
-                    if (float.TryParse(step.ShakerVariateTempValue, out float temp))
-                    {
-                        if (temp > 105 || temp < 4)
-                        {
-                            step.ShakerVariateTempValue = "";
-                            step.ShakerVariateTempName = "";
-                        }
-                    }
-                    if (int.TryParse(step.ShakerVariateSpeedValue, out int speed))
-                    {
-                        if (speed > 2500 || speed < 100)
-                        {
-                            step.ShakerVariateSpeedValue = "";
-                            step.ShakerVariateSpeedName = "";
-                        }
-                    }
-                }
-                else if (step.Type == "Temp Ctrl")
-                {
-                    if (step.TempCtrlTemp == 0)
-                    {
-                        string message = $"{_res.ScriptStartLiquidEmpty}{step.Index}）";
-
-                        ShowNotification(message, NotificationControl.NotificationType.Error);
-                        return;
-                    }
-                    if (float.TryParse(step.TempControlVariateTempValue, out float temp))
-                    {
-                        if (temp > 105 || temp < 4)
-                        {
-                            step.TempControlVariateTempValue = "";
-                            step.TempControlVariateTempName = "";
-                        }
-                    }
-                }
-                else if (step.Type == "Magnetic")
-                {
-                    if (step.MagnetNums == 0)
-                    {
-                        string message = $"{_res.ScriptStartLiquidEmpty}{step.Index}）";
-
-                        ShowNotification(message, NotificationControl.NotificationType.Error);
-                        return;
-                    }
-                    if (float.TryParse(step.MagnetVariateValue, out float height))
-                    {
-                        if (height > 25 || height < 0)
-                        {
-                            step.MagnetVariateValue = "";
-                            step.MagnetVariateName = "";
-                        }
-                    }
-                }
-                else if (step.Type == "Wait")
-                {
-                    if (step.WaitTime == 0)
-                    {
-                        string message = $"{_res.ScriptStartLiquidEmpty}{step.Index}）";
-
-                        ShowNotification(message, NotificationControl.NotificationType.Error);
-                        return;
-                    }
-                }
-                else if (step.Type == "Annotation")
-                {
-                    if (string.IsNullOrEmpty(step.AnnoValue))
-                    {
-                        string message = $"{_res.ScriptStartLiquidEmpty}{step.Index}）";
-
-                        ShowNotification(message, NotificationControl.NotificationType.Error);
-                        return;
-                    }
-                }
-            }
 
             // 如果存在未选择液体参数的步骤，提示并终止流程
             //if (invalidSteps.Count > 0)
@@ -4411,10 +4246,216 @@ namespace OctoFixFlow
             //    ShowNotification(message, NotificationControl.NotificationType.Error);
             //    return; // 不继续执行后续流程
             //}
+
+        }
+        private async Task<bool> SimulateAndValidateAsync()
+        {
+            List<int> consumableList = new List<int>(new int[15]);
+            for (int plateIndex = 0; plateIndex < 15; plateIndex++)
+            {
+                string plateId = (plateIndex + 1).ToString();
+                string plateName = $"P{plateId}";
+
+                _plateConsumableMap.TryGetValue(plateId, out var plateConsumable);
+                consumableList[plateIndex] = plateConsumable?.Settings.type ?? -1;
+            }
+
+            for (int i = 0; i < FlowSteps.Count; i++)
+            {
+                var currentStep = FlowSteps[i];
+
+                if (i > 0)
+                {
+                    FlowSteps[i - 1].IsSelected = false;
+                    FlowSteps[i - 1].IsError = false;
+                }
+                currentStep.IsSelected = true;
+                currentStep.IsError = false;
+
+                if (FlowList.ItemContainerGenerator.ContainerFromIndex(i) is FrameworkElement container)
+                {
+                    container.BringIntoView();
+                }
+
+                await Task.Delay(200);
+
+                string errorMsg = ValidateSingleStep(currentStep);
+                if (!string.IsNullOrEmpty(errorMsg))
+                {
+                    currentStep.IsSelected = false;
+                    currentStep.IsError = true;
+                    ShowNotification($"{_res.ScriptStartStep}{currentStep.Index} {_res.ScriptUILogError}:{errorMsg}", NotificationControl.NotificationType.Error);
+                    return false;
+                }
+            }
+
+            // 全部通过
+            return true;
+        }
+        private string ValidateSingleStep(FlowStep step)
+        {
+            if (step.Type == "TipOn")
+            {
+                if (hasTip)//取枪头前移液器必须为空
+                    return _res.ScriptTipMustBeEmptyBeforeOn;
+                else
+                    hasTip = true;
+
+                if (step.WellPosition == "" || step.WellPosition == null)//孔位
+                    return _res.ScriptStepWellMissing;
+            }
+            else if (step.Type == "TipOff")
+            {
+                if (hasTip)
+                    hasTip = false;
+                else//退枪头前必须有枪头
+                    return _res.ScriptTipRequiredBeforeOff;
+                if (step.WellPosition == "" || step.WellPosition == null)//孔位
+                    return _res.ScriptStepWellMissing;
+            }
+            else if (step.Type == "Aspirate")
+            {
+                if (!hasTip)//移液前必须安装枪头
+                    return _res.ScriptTipRequired;
+                if (step.WellPosition == "" || step.WellPosition == null)//孔位
+                    return _res.ScriptStepWellMissing;
+                if (step.LiquidAisDistance == "" || step.LiquidAisDistance == null)//距孔底距离
+                    return _res.ScriptStepDisFromWellMissing;
+                if (step.LiquidAisSpeed == 0)//速度
+                    return _res.ScriptStepSpeedMissing;
+            }
+            else if (step.Type == "Dispense")
+            {
+                if (!hasTip)//移液前必须安装枪头
+                    return _res.ScriptTipRequired;
+                if (step.WellPosition == "" || step.WellPosition == null)//孔位
+                    return _res.ScriptStepWellMissing;
+                if (step.LiquidDisDistance == "" || step.LiquidDisDistance == null)//距孔底距离
+                    return _res.ScriptStepDisFromWellMissing;
+                if (step.LiquidDisSpeed == 0)//速度
+                    return _res.ScriptStepSpeedMissing;
+            }
+            else if (step.Type == "Mix")
+            {
+                if (!hasTip)//移液前必须安装枪头
+                    return _res.ScriptTipRequired;
+                if (step.WellPosition == "" || step.WellPosition == null)//孔位
+                    return _res.ScriptStepWellMissing;
+                if (step.LiquidAisDistance == "" || step.LiquidAisDistance == null)//距孔底距离
+                    return _res.ScriptStepDisFromWellMissing;
+                if (step.LiquidAisSpeed == 0)//速度
+                    return _res.ScriptStepSpeedMissing;
+                if (step.MixVolume == 0 || step.MixCount == 0)//混合体积/次数未配置
+                    return _res.ScriptStepMixCountMissing;
+            }
+            else if (step.Type == "Shake")
+            {
+                if (step.ShakeTemp == 0 || step.ShakeRPM == 0 || step.WaitTime == 0)//震荡参数未配置
+                    return _res.ScriptStepShakerMissing;
+                if (float.TryParse(step.ShakerVariateTempValue, out float temp))
+                {
+                    if (temp > 105 || temp < 4)
+                    {
+                        step.ShakerVariateTempValue = "";
+                        step.ShakerVariateTempName = "";
+                    }
+                }
+                if (int.TryParse(step.ShakerVariateSpeedValue, out int speed))
+                {
+                    if (speed > 2500 || speed < 100)
+                    {
+                        step.ShakerVariateSpeedValue = "";
+                        step.ShakerVariateSpeedName = "";
+                    }
+                }
+            }
+            else if (step.Type == "Wait")
+            {
+                if (step.WaitTime == 0)//等待时间未配置
+                    return _res.ScriptStepWaitMissing;
+            }
+            else if (step.Type == "Temp Ctrl")
+            {
+                if (step.IsTempCtrlOpen && step.TempCtrlTemp == 0)//温控参数未配置
+                    return _res.ScriptStepTempCtrolMissing;
+                if (float.TryParse(step.TempControlVariateTempValue, out float temp))
+                {
+                    if (temp > 105 || temp < 4)
+                    {
+                        step.TempControlVariateTempValue = "";
+                        step.TempControlVariateTempName = "";
+                    }
+                }
+            }
+            else if (step.Type == "Magnetic")
+            {
+                if (step.IsMagnetUp && step.MagnetNums == 0)//磁吸参数未配置
+                    return _res.ScriptStepMagneticMissing;
+                if (float.TryParse(step.MagnetVariateValue, out float height))
+                {
+                    if (height > 25 || height < 0)
+                    {
+                        step.MagnetVariateValue = "";
+                        step.MagnetVariateName = "";
+                    }
+                }
+            }
+            else if (step.Type == "Transfer")
+            {
+                if (hasTip)//移板操作时移液器不能有枪头
+                    return _res.ScriptTipMustBeEmptyDuringTransfer;
+            }
+            else if (step.Type == "PCR")
+            {
+                if (step.PcrStep == _res.SettingManualPCRStart)
+                {
+                    if (step.PcrScriptAdress == "" || step.PcrScriptAdress == null)
+                        return _res.ScriptStepPCRMissing;//热循环参数未配置
+                }
+            }
+            else if (step.Type == "Annotation")
+            {
+                if (step.AnnoValue == "" || step.AnnoValue == null)
+                    return _res.ScriptStepAnnotationMissing;//注释内容未设置
+            }
+            else if (step.Type == "Variate")
+            {
+                if (step.VariateScriptName == "" || step.VariateScriptName == null)
+                    return _res.ScriptStepVariateMissing;//变量名称未设置
+            }
+            return null;
+        }
+        private void ResetAllStepStates()
+        {
+            foreach (var step in FlowSteps)
+            {
+                step.IsSelected = false;
+                step.IsError = false;
+            }
+        }
+
+
+
+
+
+        //        else if (step.Type == "Annotation")
+        //        {
+        //            if (string.IsNullOrEmpty(step.AnnoValue))
+        //            {
+        //                string message = $"{_res.ScriptStartLiquidEmpty}{step.Index}）";
+
+        //                ShowNotification(message, NotificationControl.NotificationType.Error);
+        //                return false;
+        //            }
+        //        }
+        //    }
+        //    return true;
+        //}
+        private async Task ExecuteActualRunAsync()
+        {
             try
             {
                 // 1. 创建脚本Python
-                ShowNotification(_res.ScriptStartCreating, NotificationControl.NotificationType.Info);
                 //string scriptJson = CreateScriptJson();
                 string scriptPy = await CreateScriptPython();
                 // 2. 保存脚本到文件
@@ -4474,6 +4515,7 @@ namespace OctoFixFlow
                 ShowNotification($"{_res.ScriptStartCreateFail}: {ex.Message}", NotificationControl.NotificationType.Error);
             }
         }
+        #endregion
 
 
         //补光灯
@@ -4998,8 +5040,8 @@ namespace OctoFixFlow
                 if (parsedResult.Result == "err")
                 {
                     ShowNotification(
-    $"Error：{parsedResult.Details}",
-    NotificationControl.NotificationType.Error);
+        $"Error：{parsedResult.Details}",
+        NotificationControl.NotificationType.Error);
                 }
                 // 步骤6：返回解析后的对象
                 return parsedResult;

@@ -835,11 +835,20 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
-        ///   查找类似 参数缺少（步骤： 的本地化字符串。
+        ///   查找类似 开始模拟运行... 的本地化字符串。
         /// </summary>
-        public static string ScriptStartLiquidEmpty {
+        public static string ScriptStartSimulate {
             get {
-                return ResourceManager.GetString("ScriptStartLiquidEmpty", resourceCulture);
+                return ResourceManager.GetString("ScriptStartSimulate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 步骤: 的本地化字符串。
+        /// </summary>
+        public static string ScriptStartStep {
+            get {
+                return ResourceManager.GetString("ScriptStartStep", resourceCulture);
             }
         }
         
@@ -853,11 +862,146 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 注释内容未设置 的本地化字符串。
+        /// </summary>
+        public static string ScriptStepAnnotationMissing {
+            get {
+                return ResourceManager.GetString("ScriptStepAnnotationMissing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 距孔底距离未设置 的本地化字符串。
+        /// </summary>
+        public static string ScriptStepDisFromWellMissing {
+            get {
+                return ResourceManager.GetString("ScriptStepDisFromWellMissing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 磁吸参数未配置 的本地化字符串。
+        /// </summary>
+        public static string ScriptStepMagneticMissing {
+            get {
+                return ResourceManager.GetString("ScriptStepMagneticMissing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 混合体积/次数未配置 的本地化字符串。
+        /// </summary>
+        public static string ScriptStepMixCountMissing {
+            get {
+                return ResourceManager.GetString("ScriptStepMixCountMissing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 热循环参数未配置 的本地化字符串。
+        /// </summary>
+        public static string ScriptStepPCRMissing {
+            get {
+                return ResourceManager.GetString("ScriptStepPCRMissing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 震荡参数未配置 的本地化字符串。
+        /// </summary>
+        public static string ScriptStepShakerMissing {
+            get {
+                return ResourceManager.GetString("ScriptStepShakerMissing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 移液速度未设置 的本地化字符串。
+        /// </summary>
+        public static string ScriptStepSpeedMissing {
+            get {
+                return ResourceManager.GetString("ScriptStepSpeedMissing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 温控参数未配置 的本地化字符串。
+        /// </summary>
+        public static string ScriptStepTempCtrolMissing {
+            get {
+                return ResourceManager.GetString("ScriptStepTempCtrolMissing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 变量名称未设置 的本地化字符串。
+        /// </summary>
+        public static string ScriptStepVariateMissing {
+            get {
+                return ResourceManager.GetString("ScriptStepVariateMissing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 等待时间未配置 的本地化字符串。
+        /// </summary>
+        public static string ScriptStepWaitMissing {
+            get {
+                return ResourceManager.GetString("ScriptStepWaitMissing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 孔位未设置 的本地化字符串。
+        /// </summary>
+        public static string ScriptStepWellMissing {
+            get {
+                return ResourceManager.GetString("ScriptStepWellMissing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 流程已成功生成 的本地化字符串。
         /// </summary>
         public static string ScriptSuccCrea {
             get {
                 return ResourceManager.GetString("ScriptSuccCrea", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 取枪头前移液器必须为空 的本地化字符串。
+        /// </summary>
+        public static string ScriptTipMustBeEmptyBeforeOn {
+            get {
+                return ResourceManager.GetString("ScriptTipMustBeEmptyBeforeOn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 移板操作时移液器不能有枪头 的本地化字符串。
+        /// </summary>
+        public static string ScriptTipMustBeEmptyDuringTransfer {
+            get {
+                return ResourceManager.GetString("ScriptTipMustBeEmptyDuringTransfer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 移液前必须安装枪头 的本地化字符串。
+        /// </summary>
+        public static string ScriptTipRequired {
+            get {
+                return ResourceManager.GetString("ScriptTipRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 退枪头前必须有枪头 的本地化字符串。
+        /// </summary>
+        public static string ScriptTipRequiredBeforeOff {
+            get {
+                return ResourceManager.GetString("ScriptTipRequiredBeforeOff", resourceCulture);
             }
         }
         
@@ -939,6 +1083,105 @@ namespace OctoFixFlow.Resource {
         public static string SettingCons3D {
             get {
                 return ResourceManager.GetString("SettingCons3D", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 圆形 的本地化字符串。
+        /// </summary>
+        public static string SettingCons3DBottomCircle {
+            get {
+                return ResourceManager.GetString("SettingCons3DBottomCircle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 平底 的本地化字符串。
+        /// </summary>
+        public static string SettingCons3DBottomFlat {
+            get {
+                return ResourceManager.GetString("SettingCons3DBottomFlat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 底部形状 的本地化字符串。
+        /// </summary>
+        public static string SettingCons3DBottomShape {
+            get {
+                return ResourceManager.GetString("SettingCons3DBottomShape", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 锥形 的本地化字符串。
+        /// </summary>
+        public static string SettingCons3DBottomTaper {
+            get {
+                return ResourceManager.GetString("SettingCons3DBottomTaper", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 锥形深度 的本地化字符串。
+        /// </summary>
+        public static string SettingCons3DBottomTaperDepth {
+            get {
+                return ResourceManager.GetString("SettingCons3DBottomTaperDepth", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 底部类型 的本地化字符串。
+        /// </summary>
+        public static string SettingCons3DBottomType {
+            get {
+                return ResourceManager.GetString("SettingCons3DBottomType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 3D参数 的本地化字符串。
+        /// </summary>
+        public static string SettingCons3DParams {
+            get {
+                return ResourceManager.GetString("SettingCons3DParams", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 裙边高 的本地化字符串。
+        /// </summary>
+        public static string SettingCons3DSkirtHeight {
+            get {
+                return ResourceManager.GetString("SettingCons3DSkirtHeight", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 顶部长 的本地化字符串。
+        /// </summary>
+        public static string SettingCons3DTopLength {
+            get {
+                return ResourceManager.GetString("SettingCons3DTopLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 顶部宽 的本地化字符串。
+        /// </summary>
+        public static string SettingCons3DTopWidth {
+            get {
+                return ResourceManager.GetString("SettingCons3DTopWidth", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 壁厚 的本地化字符串。
+        /// </summary>
+        public static string SettingCons3DWellThick {
+            get {
+                return ResourceManager.GetString("SettingCons3DWellThick", resourceCulture);
             }
         }
         
@@ -1348,7 +1591,7 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
-        ///   查找类似 顶部长 的本地化字符串。
+        ///   查找类似 顶部孔长 的本地化字符串。
         /// </summary>
         public static string SettingConsTopLength {
             get {
@@ -1375,7 +1618,7 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
-        ///   查找类似 顶部宽 的本地化字符串。
+        ///   查找类似 顶部孔宽 的本地化字符串。
         /// </summary>
         public static string SettingConsTopWidth {
             get {
@@ -1848,6 +2091,15 @@ namespace OctoFixFlow.Resource {
         public static string SettingManualGetPlateSucc {
             get {
                 return ResourceManager.GetString("SettingManualGetPlateSucc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 获取温度 的本地化字符串。
+        /// </summary>
+        public static string SettingManualGetTemperature {
+            get {
+                return ResourceManager.GetString("SettingManualGetTemperature", resourceCulture);
             }
         }
         

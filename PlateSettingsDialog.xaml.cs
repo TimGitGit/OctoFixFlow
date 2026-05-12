@@ -1,8 +1,10 @@
-﻿using HelixToolkit.Wpf;
+﻿using HelixToolkit.Geometry;
+using HelixToolkit.Wpf;
 using MySqlConnector;
 using System.ComponentModel;
 using System.Data;
 using System.IO;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -13,7 +15,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
 using System.Xml;
-
 namespace OctoFixFlow
 {
     /// <summary>
@@ -127,6 +128,7 @@ namespace OctoFixFlow
         {
             if (string.IsNullOrEmpty(consNew.name))
                 return;
+            RefreshConsModel(consNew);
 
             // 调用数据库更新方法（使用之前实现的 UpdateConsumableAsync）
             if (consNew.name != oldConsName)
@@ -150,24 +152,7 @@ namespace OctoFixFlow
                 {
                     _mainWidget.ShowNotification($"更新失败：{consNew.name} 的 {e.PropertyName} 属性", NotificationControl.NotificationType.Warn);
                 }
-                if (consNew.topShape == 0)
-                {
-                    consTopRdiusBlock.Visibility = Visibility.Visible;
-                    consTopRdiusBox.Visibility = Visibility.Visible;
-                    consTopWidthBlock.Visibility = Visibility.Collapsed;
-                    consTopWidthBox.Visibility = Visibility.Collapsed;
-                    consTopLongBlock.Visibility = Visibility.Collapsed;
-                    consTopLongBox.Visibility = Visibility.Collapsed;
-                }
-                else if (consNew.topShape == 1)
-                {
-                    consTopRdiusBlock.Visibility = Visibility.Collapsed;
-                    consTopRdiusBox.Visibility = Visibility.Collapsed;
-                    consTopWidthBlock.Visibility = Visibility.Visible;
-                    consTopWidthBox.Visibility = Visibility.Visible;
-                    consTopLongBlock.Visibility = Visibility.Visible;
-                    consTopLongBox.Visibility = Visibility.Visible;
-                }
+                UpdateTopShapeVisibility(consNew.topShape, consNew.botType, consNew.botShape);
             }
 
         }
@@ -284,7 +269,18 @@ namespace OctoFixFlow
                 TIPConeLength = consSQL.TIPConeLength,
                 TIPMAXRadius = consSQL.TIPMAXRadius,
                 TIPMINRadius = consSQL.TIPMINRadius,
-                TIPDepthOFComp = consSQL.TIPDepthOFComp
+                TIPDepthOFComp = consSQL.TIPDepthOFComp,
+                ThreeWellThickness = consSQL.ThreeWellThickness,
+                ThreeSkirtHeight = consSQL.ThreeSkirtHeight,
+                ThreeTopLength = consSQL.ThreeTopLength,
+                ThreeTopWidth = consSQL.ThreeTopWidth,
+                botType = consSQL.botType,
+                ThreeBotTaperDepth = consSQL.ThreeBotTaperDepth,
+                botShape = consSQL.botShape,
+                botRadius = consSQL.botRadius,
+                botHoleX = consSQL.botHoleX,
+                botHoleY = consSQL.botHoleY
+
             };
 
             // 3. 订阅新实例事件
@@ -296,10 +292,10 @@ namespace OctoFixFlow
             // 5. 强制刷新所有绑定
             this.DataContext = null;
             this.DataContext = this;
-            RefreshConsModel(newCons);
+            RefreshConsModel(consNew);
 
             // 6. 更新顶部形状显示
-            UpdateTopShapeVisibility(consNew.topShape);
+            UpdateTopShapeVisibility(consNew.topShape, 1, consNew.botShape);
         }
         //更新液体
         private void updateLiquid(LiquidSettings liquidSQL)
@@ -334,7 +330,7 @@ namespace OctoFixFlow
             this.DataContext = this;
         }
         // 提取单独的方法更新顶部形状可见性，避免重复代码
-        private void UpdateTopShapeVisibility(int topShape)
+        private void UpdateTopShapeVisibility(int topShape, int botType, int botShape)
         {
             if (topShape == 0) // 圆柱体
             {
@@ -354,6 +350,35 @@ namespace OctoFixFlow
                 consTopLongBlock.Visibility = Visibility.Visible;
                 consTopLongBox.Visibility = Visibility.Visible;
             }
+            if (botType == 1)
+            {
+                BottomTaperDepthBlock.Visibility = Visibility.Visible;
+                BottomTaperDepthBox.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                BottomTaperDepthBlock.Visibility = Visibility.Collapsed;
+                BottomTaperDepthBox.Visibility = Visibility.Collapsed;
+            }
+            if (botShape == 0) // 圆柱体
+            {
+                consBotRdiusBlock.Visibility = Visibility.Visible;
+                consBotRdiusBox.Visibility = Visibility.Visible;
+                consBotWidthBlock.Visibility = Visibility.Collapsed;
+                consBotWidthBox.Visibility = Visibility.Collapsed;
+                consBotLongBlock.Visibility = Visibility.Collapsed;
+                consBotLongBox.Visibility = Visibility.Collapsed;
+            }
+            else if (botShape == 1) // 立方体
+            {
+                consBotRdiusBlock.Visibility = Visibility.Collapsed;
+                consBotRdiusBox.Visibility = Visibility.Collapsed;
+                consBotWidthBlock.Visibility = Visibility.Visible;
+                consBotWidthBox.Visibility = Visibility.Visible;
+                consBotLongBlock.Visibility = Visibility.Visible;
+                consBotLongBox.Visibility = Visibility.Visible;
+            }
+
         }
 
         //新增耗材
@@ -432,6 +457,17 @@ namespace OctoFixFlow
                 consNew.TIPMAXRadius = 0;
                 consNew.TIPMINRadius = 0;
                 consNew.TIPDepthOFComp = 0;
+                consNew.ThreeWellThickness = 0;
+                consNew.ThreeSkirtHeight = 0;
+                consNew.ThreeTopLength = 0;
+                consNew.ThreeTopWidth = 0;
+                consNew.botType = 0;
+                consNew.ThreeBotTaperDepth = 0;
+                consNew.botShape = 0;
+                consNew.botRadius = 0;
+                consNew.botHoleX = 0;
+                consNew.botHoleY = 0;
+
                 _mainWidget.ShowNotification("添加耗材成功", NotificationControl.NotificationType.Info);
             }
             else
@@ -1640,105 +1676,418 @@ namespace OctoFixFlow
 
 
         #endregion
-        #region 微孔板
+        #region 3D模型
+        #region 新增3D辅助方法
+        /// <summary>
+        /// 创建梯形立方体（四棱台，用于板身外壳）
+        /// </summary>
+        private ModelVisual3D CreateTrapezoidBox(double bottomL, double bottomW, double topL, double topW, double height, double offsetX, double offsetY, double zOffset, Material mat)
+        {
+            MeshBuilder meshBuilder = new MeshBuilder();
+            // 底部四个顶点
+            Point3D b1 = new Point3D(offsetX - bottomL / 2, offsetY - bottomW / 2, zOffset);
+            Point3D b2 = new Point3D(offsetX + bottomL / 2, offsetY - bottomW / 2, zOffset);
+            Point3D b3 = new Point3D(offsetX + bottomL / 2, offsetY + bottomW / 2, zOffset);
+            Point3D b4 = new Point3D(offsetX - bottomL / 2, offsetY + bottomW / 2, zOffset);
+
+            // 顶部四个顶点
+            Point3D t1 = new Point3D(offsetX - topL / 2, offsetY - topW / 2, zOffset + height);
+            Point3D t2 = new Point3D(offsetX + topL / 2, offsetY - topW / 2, zOffset + height);
+            Point3D t3 = new Point3D(offsetX + topL / 2, offsetY + topW / 2, zOffset + height);
+            Point3D t4 = new Point3D(offsetX - topL / 2, offsetY + topW / 2, zOffset + height);
+
+            // 拼接四个侧面
+            meshBuilder.AddQuad(b1.ToVector3(), b2.ToVector3(), t2.ToVector3(), t1.ToVector3());
+            meshBuilder.AddQuad(b2.ToVector3(), b3.ToVector3(), t3.ToVector3(), t2.ToVector3());
+            meshBuilder.AddQuad(b3.ToVector3(), b4.ToVector3(), t4.ToVector3(), t3.ToVector3());
+            meshBuilder.AddQuad(b4.ToVector3(), b1.ToVector3(), t1.ToVector3(), t4.ToVector3());
+
+            // 生成模型
+            GeometryModel3D model = new GeometryModel3D(meshBuilder.ToMesh().ToWndMeshGeometry3D(), mat) { BackMaterial = mat };
+            return new ModelVisual3D { Content = model };
+        }
+
+        /// <summary>
+        /// 创建方锥（用于方孔锥底）
+        /// </summary>
+        private ModelVisual3D CreateSquareCone(Point3D basePoint, Point3D topPoint, double baseWidthX, double baseWidthY, double topWidthX, double topWidthY, Material material)
+        {
+            MeshBuilder mesh = new MeshBuilder();
+            Vector3D dir = topPoint - basePoint;
+            double height = dir.Length;
+            dir.Normalize();
+
+            double bx = basePoint.X;
+            double by = basePoint.Y;
+            double bz = basePoint.Z;
+            double tx = topPoint.X;
+            double ty = topPoint.Y;
+            double tz = topPoint.Z;
+
+            double hwBX = baseWidthX / 2;
+            double hwBY = baseWidthY / 2;
+            double hwTX = topWidthX / 2;
+            double hwTY = topWidthY / 2;
+
+            Point3D bfl = new Point3D(bx - hwBX, by - hwBY, bz);
+            Point3D bfr = new Point3D(bx + hwBX, by - hwBY, bz);
+            Point3D bbr = new Point3D(bx + hwBX, by + hwBY, bz);
+            Point3D bbl = new Point3D(bx - hwBX, by + hwBY, bz);
+
+            Point3D tfl = new Point3D(tx - hwTX, ty - hwTY, tz);
+            Point3D tfr = new Point3D(tx + hwTX, ty - hwTY, tz);
+            Point3D tbr = new Point3D(tx + hwTX, ty + hwTY, tz);
+            Point3D tbl = new Point3D(tx - hwTX, ty + hwTY, tz);
+
+            mesh.AddQuad(bfl.ToVector3(), bfr.ToVector3(), tfr.ToVector3(), tfl.ToVector3());
+            mesh.AddQuad(bfr.ToVector3(), bbr.ToVector3(), tbr.ToVector3(), tfr.ToVector3());
+            mesh.AddQuad(bbr.ToVector3(), bbl.ToVector3(), tbl.ToVector3(), tbr.ToVector3());
+            mesh.AddQuad(bbl.ToVector3(), bfl.ToVector3(), tfl.ToVector3(), tbl.ToVector3());
+
+            GeometryModel3D model = new GeometryModel3D(mesh.ToMesh().ToWndMeshGeometry3D(), material)
+            {
+                BackMaterial = material
+            };
+            return new ModelVisual3D { Content = model };
+        }
         private void InitCons3D()
         {
             _consContainer = new ContainerUIElement3D();
             Consumable3DViewport.Children.Add(_consContainer);
-
         }
         private void RefreshConsModel(ConsSettings consConfig)
         {
-            if (_consContainer == null) return;
+            if (_consContainer == null || consConfig == null) return;
             _consContainer.Children.Clear();
 
-            var config = new PlateConfig
+            // 通用材质
+            Color plasticBaseColor = Color.FromRgb(210, 210, 210);
+            Material transparentPlastic = CreateTransparentPlastic(plasticBaseColor, 150);
+
+            // 根据耗材类型调用不同的绘制方法
+            switch (consConfig.type)
             {
-                QbWidth = 85.15,
-                QbLength = 127.23,
-                QbHeight = 2.46,
-                Width = 83.20,
-                Length = 125.39,
-                Height = 42.36,
-                TopWidth = 77.39,
-                TopLength = 120.21,
-                Rows = 8,
-                Cols = 12,
-                WallThickness = 1.0,
-                HoleDiameter = 5.0,
-                ColSpacing = 9.0,
-                RowSpacing = 9.0,
-                ConeHeight = 15.48
-            };
+                case 0: // 深孔板/微孔板
+                    CreateOrificePlate(consConfig, 0, 0, 0, _consContainer, transparentPlastic);
+                    break;
+                case 1: // 储液槽
+                    CreateOrificePlate(consConfig, 0, 0, 0, _consContainer, transparentPlastic);
+                    break;
+                case 2: // TIP盒
+                    CreateDynamicTipBox(consConfig, 0, 0, 0, _consContainer, transparentPlastic);
+                    break;
+            }
 
+            Transform3DGroup transformGroup = new Transform3DGroup();
+            transformGroup.Children.Add(new RotateTransform3D(new AxisAngleRotation3D(new Vector3D(0, 1, 0), 90)));
+            transformGroup.Children.Add(new RotateTransform3D(new AxisAngleRotation3D(new Vector3D(1, 0, 0), -90)));
 
-
-            //CreateOrificePlate(consConfig, 0, 0, 0, _consContainer);
-
-
-            // 3. 稍微放大一点，方便观察
-            _consContainer.Transform = new ScaleTransform3D(1.5, 1.5, 1.5, 0, 0, 0);
+            transformGroup.Children.Add(new ScaleTransform3D(1.3, 1.3, 1.3, 0, 0, 0));
+            _consContainer.Transform = transformGroup;
         }
-        //private void CreateOrificePlate(ConsSettings config, double offsetX, double offsetY, double offsetZ, ContainerUIElement3D container)
-        //{
-        //    double BottomWidth = config.labW;
-        //    double BottomLength = config.labL;
-        //    double BottomHeight = config.labH;
-        //    double CenterWidth = config.labW;
-        //    double CenterLength = config.labL;
-        //    double CenterHeight = config.labH;
-        //    int rows = config.numRows;
-        //    int cols = config.numColumns;
-        //    double wallThickness = config.WallThickness;
-        //    double holeRadius = config.HoleDiameter / 2.0;
-        //    double spacingX = config.distanceColumn;
-        //    double spacingY = config.distanceRow;
-        //    double startX = -((cols - 1) * spacingX) / 2;
-        //    double startY = -((rows - 1) * spacingY) / 2;
-        //    double coneHeight = config.ConeHeight;
-        //    double z = CenterHeight + wallThickness;
+        /// <summary>
+        /// 绘制深孔板/微孔板
+        /// </summary>
+        private void CreateOrificePlate(ConsSettings config, double offsetX, double offsetY, double offsetZ, ContainerUIElement3D container, Material material)
+        {
+            // 1. 读取ConsSettings参数
+            double totalHeight = config.labH;
+            double skirtHeight = config.ThreeSkirtHeight;//裙边高
+            double plateBodyHeight = totalHeight - skirtHeight;
 
-        //    Color plasticBaseColor = Color.FromRgb(210, 210, 210);
-        //    Material transparentPlastic = CreateTransparentPlastic(plasticBaseColor, 150);
+            double BottomWidth = config.labW;//裙边宽=耗材宽度
+            double BottomLength = config.labL;//裙边长=耗材长度
+            double TopWidth = config.ThreeTopWidth;
+            double TopLength = config.ThreeTopLength;
+            int rows = config.numRows;
+            int cols = config.numColumns;
+            double wallThickness = config.ThreeWellThickness;
+            double holeDiameter = config.topRadius * 2;
+            double holeDiameterX = config.topUpperX;
+            double holeDiameterY = config.topUpperY;
+            double holeBotDiameter = config.botRadius * 2;
+            double holeBotDiameterX = config.botHoleX;
+            double holeBotDiameterY = config.botHoleY;
 
-        //    for (int i = 0; i < cols; i++)
-        //    {
-        //        for (int j = 0; j < rows; j++)
-        //        {
-        //            double x = startX + i * spacingX + offsetX;
-        //            double y = startY + j * spacingY + offsetY;
-        //            Point3D pipeStart = new Point3D(x, y, z - wallThickness / 2 - 0.05 + offsetZ);
-        //            Point3D pipeEnd = new Point3D(x, y, z + wallThickness / 2 + 0.05 + offsetZ);
-        //            container.Children.Add(AddPipe(pipeStart, pipeEnd, holeRadius * 2, transparentPlastic));
-        //            Point3D coneBase = new Point3D(x, y, z - wallThickness / 2 + offsetZ);
-        //            Point3D coneTip = new Point3D(x, y, z - wallThickness / 2 - coneHeight + offsetZ);
-        //            container.Children.Add(AddCone(coneBase, coneTip, holeRadius, 0.0, transparentPlastic));
-        //            container.Children.Add(AddSphere(coneTip, 1.0, transparentPlastic));
-        //        }
-        //    }
+            double spacingX = config.distanceColumn;
+            double spacingY = config.distanceRow;
+            double coneHeight = config.consDep; // 孔深度/锥高
 
-        //    container.Children.Add(CreateBox(BottomLength, wallThickness, BottomHeight, new Point3D(offsetX, offsetY - BottomWidth / 2, offsetZ - BottomHeight / 2), transparentPlastic));
-        //    container.Children.Add(CreateBox(BottomLength, wallThickness, BottomHeight, new Point3D(offsetX, offsetY + BottomWidth / 2, offsetZ - BottomHeight / 2), transparentPlastic));
-        //    container.Children.Add(CreateBox(wallThickness, BottomWidth, BottomHeight, new Point3D(offsetX - BottomLength / 2, offsetY, offsetZ - BottomHeight / 2), transparentPlastic));
-        //    container.Children.Add(CreateBox(wallThickness, BottomWidth, BottomHeight, new Point3D(offsetX + BottomLength / 2, offsetY, offsetZ - BottomHeight / 2), transparentPlastic));
+            double startX = -((cols - 1) * spacingX) / 2;
+            double startY = -((rows - 1) * spacingY) / 2;
 
-        //    container.Children.Add(CreateBox(BottomLength, wallThickness, wallThickness, new Point3D(offsetX, offsetY + BottomWidth / 2 - 1, offsetZ), transparentPlastic));
-        //    container.Children.Add(CreateBox(BottomLength, wallThickness, wallThickness, new Point3D(offsetX, offsetY - BottomWidth / 2 + 1, offsetZ), transparentPlastic));
-        //    container.Children.Add(CreateBox(wallThickness, BottomWidth, wallThickness, new Point3D(offsetX + BottomLength / 2 - 1, offsetY, offsetZ), transparentPlastic));
-        //    container.Children.Add(CreateBox(wallThickness, BottomWidth, wallThickness, new Point3D(offsetX - BottomLength / 2 + 1, offsetY, offsetZ), transparentPlastic));
+            double skirtTopZ = offsetZ + skirtHeight; // 裙边顶部高度 = 底部 + 裙边高
+            double plateTopZ = offsetZ + totalHeight; // 板身顶部高度 = 底部 + 总高度
 
-        //    container.Children.Add(CreateBox(wallThickness, CenterWidth, CenterHeight, new Point3D(offsetX - CenterLength / 2, offsetY, offsetZ + CenterHeight / 2), transparentPlastic));
-        //    container.Children.Add(CreateBox(wallThickness, CenterWidth, CenterHeight, new Point3D(offsetX + CenterLength / 2, offsetY, offsetZ + CenterHeight / 2), transparentPlastic));
-        //    container.Children.Add(CreateBox(CenterLength, wallThickness, CenterHeight, new Point3D(offsetX, offsetY - CenterWidth / 2, offsetZ + CenterHeight / 2), transparentPlastic));
-        //    container.Children.Add(CreateBox(CenterLength, wallThickness, CenterHeight, new Point3D(offsetX, offsetY + CenterWidth / 2, offsetZ + CenterHeight / 2), transparentPlastic));
+            float botTaperDep = config.ThreeBotTaperDepth;//底部锥形深度
 
-        //    container.Children.Add(CreateBox(CenterLength, CenterWidth, wallThickness, new Point3D(offsetX, offsetY, offsetZ + CenterHeight + wallThickness / 2), transparentPlastic));
-        //    container.Transform = new ScaleTransform3D(
-        //        1.3, 1.3, 1.3,        // 缩放倍数
-        //        offsetX, offsetY, offsetZ  // 缩放中心 = 板位中心（真正不飘的核心！）
-        //    );
+            // 2. 循环绘制所有孔
+            for (int i = 0; i < cols; i++)
+            {
+                for (int j = 0; j < rows; j++)
+                {
+                    double x = startX + i * spacingX + offsetX;
+                    double y = startY + j * spacingY + offsetY;
+                    double z = plateTopZ; // 孔顶部坐标
 
-        //}
+                    double pipeUp = 0.5;
+                    double bottomHeight = 0;
+                    if (config.botType == 0) // 圆底（半球）：高度=底部半径
+                    {
+                        bottomHeight = config.botRadius;
+                    }
+                    else if (config.botType == 1) // 锥形底：高度=你输入的ThreeBotTaperDepth
+                    {
+                        bottomHeight = config.ThreeBotTaperDepth;
+                    }
+                    double pipeDown = Math.Max(0, config.consDep - bottomHeight);
+
+                    //double pipeDown = coneHeight;
+                    double pipeHeight = pipeUp + pipeDown;
+                    double pipeCenterZ = z - pipeDown / 2;
+
+                    Point3D holeBottomPoint = new Point3D(x, y, z - wallThickness / 2 - pipeDown);
+
+                    Point3D coneTipPoint = new Point3D(x, y, z - wallThickness / 2 - pipeDown - botTaperDep);
+
+                    Point3D flatBottomCenter = new Point3D(x, y, holeBottomPoint.Z - wallThickness / 2);
+
+                    // 根据topShape绘制圆孔或方孔
+                    if (config.topShape == 0) // 圆孔
+                    {
+                        Point3D pipeStart = holeBottomPoint;
+                        Point3D pipeEnd = new Point3D(x, y, z + wallThickness / 2 + pipeUp);
+                        container.Children.Add(AddPipe(pipeStart, pipeEnd, holeDiameter, material));
+
+                        if (config.botType == 0)//圆底
+                        {
+                            if (config.botShape == 0)//圆
+                            {
+                                // 圆孔半圆底
+                                container.Children.Add(AddSphere(
+                                    holeBottomPoint,
+                                    holeBotDiameter / 2,
+                                    material
+                                ));
+                            }
+
+                        }
+                        else if (config.botType == 1)//锥形
+                        {
+                            if (config.botShape == 0)//圆锥
+                            {
+                                container.Children.Add(AddCone(
+                                    holeBottomPoint,  // 圆锥底面中心
+                                    coneTipPoint,     // 圆锥尖端
+                                    holeBotDiameter / 2, // 底面半径
+                                    0,                // 顶面半径=0 → 圆锥
+                                    material
+                                ));
+                            }
+                            else if (config.botShape == 1)// 方孔锥底
+                            {
+                                container.Children.Add(CreateSquareCone(
+                                    holeBottomPoint,
+                                    coneTipPoint,
+                                    holeBotDiameterX, // 底部X方向长度（对应UI的"底部孔长"）
+                                    holeBotDiameterY, // 底部Y方向宽度（对应UI的"底部孔宽"）
+                                    0, // 顶部X方向长度（尖顶=0）
+                                    0, // 顶部Y方向宽度（尖顶=0）
+                                    material
+                                ));
+                            }
+                        }
+                        else if (config.botType == 2)//平底
+                        {
+                            //container.Children.Add(CreateSquareCone(
+                            //    new Point3D(x, y, z - wallThickness / 2 - pipeDown),
+                            //    new Point3D(x, y, z - wallThickness / 2 - pipeDown - botTaperDep),
+                            //    0, 0,
+                            //    material
+                            //));
+                            container.Children.Add(AddPipe(
+                                flatBottomCenter, // 底板中心
+                                new Point3D(x, y, holeBottomPoint.Z), // 底板顶面（与孔底部齐平）
+                                holeBotDiameter, // 底板直径
+                                material
+                            ));
+                        }
+
+                    }
+                    else // 方孔
+                    {
+                        container.Children.Add(CreateBox(
+                            holeDiameterX, holeDiameterY, pipeHeight,
+                            new Point3D(x, y, pipeCenterZ),
+                            material
+                        ));
+                        if (config.botType == 0)//圆底
+                        {
+                            if (config.botShape == 0)//圆
+                            {
+                                // 圆孔半圆底
+                                container.Children.Add(AddSphere(
+                                    holeBottomPoint,
+                                    holeBotDiameter / 2,
+                                    material
+                                ));
+                            }
+
+                        }
+                        else if (config.botType == 1)//锥形
+                        {
+                            if (config.botShape == 0)//圆锥
+                            {
+                                container.Children.Add(AddCone(
+                                    holeBottomPoint,
+                                    coneTipPoint,
+                                    holeBotDiameter / 2,
+                                    0,
+                                    material
+                                ));
+                            }
+                            else if (config.botShape == 1)// 方孔锥底
+                            {
+                                container.Children.Add(CreateSquareCone(
+                                    holeBottomPoint,
+                                    coneTipPoint,
+                                    holeBotDiameterX, // 底部X方向长度（对应UI的"底部孔长"）
+                                    holeBotDiameterY, // 底部Y方向宽度（对应UI的"底部孔宽"）
+                                    0, // 顶部X方向长度（尖顶=0）
+                                    0, // 顶部Y方向宽度（尖顶=0）
+                                    material
+                                ));
+                            }
+                        }
+                        else if (config.botType == 2)//平底
+                        {
+                            container.Children.Add(AddPipe(
+                                flatBottomCenter, // 底板中心
+                                new Point3D(x, y, holeBottomPoint.Z), // 底板顶面（与孔底部齐平）
+                                holeBotDiameter, // 底板直径
+                                material
+                            ));
+                        }
+
+                    }
+                }
+            }
+
+            // 3. 底部支撑结构
+            container.Children.Add(CreateBox(BottomLength, wallThickness, skirtHeight, new Point3D(offsetX, offsetY - BottomWidth / 2, offsetZ + skirtHeight / 2), material));
+            container.Children.Add(CreateBox(BottomLength, wallThickness, skirtHeight, new Point3D(offsetX, offsetY + BottomWidth / 2, offsetZ + skirtHeight / 2), material));
+            container.Children.Add(CreateBox(wallThickness, BottomWidth, skirtHeight, new Point3D(offsetX - BottomLength / 2, offsetY, offsetZ + skirtHeight / 2), material));
+            container.Children.Add(CreateBox(wallThickness, BottomWidth, skirtHeight, new Point3D(offsetX + BottomLength / 2, offsetY, offsetZ + skirtHeight / 2), material));
+
+            // 4. 底部边缘加固
+            double m = wallThickness / 2;
+            container.Children.Add(CreateBox(BottomLength, wallThickness, wallThickness, new Point3D(offsetX, offsetY + BottomWidth / 2 - m, skirtTopZ), material));
+            container.Children.Add(CreateBox(BottomLength, wallThickness, wallThickness, new Point3D(offsetX, offsetY - BottomWidth / 2 + m, skirtTopZ), material));
+            container.Children.Add(CreateBox(wallThickness, BottomWidth, wallThickness, new Point3D(offsetX + BottomLength / 2 - m, offsetY, skirtTopZ), material));
+            container.Children.Add(CreateBox(wallThickness, BottomWidth, wallThickness, new Point3D(offsetX - BottomLength / 2 + m, offsetY, skirtTopZ), material));
+
+            // 5. 外壳
+            container.Children.Add(CreateNotchedBox(
+    TopLength,
+    TopWidth,
+    plateBodyHeight,
+    offsetX,
+    offsetY,
+    skirtTopZ, // 外壳底部刚好在裙边顶部
+    config.NW,
+    config.NE,
+    config.SW,
+    config.SE,
+    material
+));
+
+            // 6. ✅ 带缺口的顶部盖板（替换原来的CreateBox）
+            container.Children.Add(CreateNotchedBox(
+                TopLength,
+                TopWidth,
+                wallThickness,
+                offsetX,
+                offsetY,
+                plateTopZ, // 盖板底部刚好在板身顶部
+                config.NW,
+                config.NE,
+                config.SW,
+                config.SE,
+                material
+            ));
+            //container.Children.Add(CreateBox(
+            //    TopLength,
+            //    TopWidth,
+            //    plateBodyHeight, // 高度=板身高度
+            //    new Point3D(offsetX, offsetY, skirtTopZ + plateBodyHeight / 2), // 中心坐标
+            //    material
+            //));
+
+
+            //// 6. 顶部盖板
+            //container.Children.Add(CreateBox(TopLength, TopWidth, wallThickness, new Point3D(offsetX, offsetY, plateTopZ + wallThickness / 2), material));
+        }
+
+        /// <summary>
+        /// 绘制TIP盒
+        /// </summary>
+        private void CreateDynamicTipBox(ConsSettings config, double offsetX, double offsetY, double offsetZ, ContainerUIElement3D container, Material material)
+        {
+            double totalHeight = config.labH; // 总高度（包含裙边）
+            double skirtHeight = config.ThreeSkirtHeight; // 裙边高度
+            double boxBodyHeight = totalHeight - skirtHeight; // 盒身高度
+
+            double BottomWidth = config.labW;//裙边宽=耗材宽度
+            double BottomLength = config.labL;//裙边长=耗材长度
+            double TopWidth = config.ThreeTopWidth;//顶部宽
+            double TopLength = config.ThreeTopLength;//顶部长
+            int rows = config.numRows;
+            int cols = config.numColumns;
+            double wallThickness = config.ThreeWellThickness; //壁厚
+            double holeDiameter = config.TIPMAXRadius * 2;
+            double spacingX = config.distanceColumn;
+            double spacingY = config.distanceRow;
+            double coneHeight = config.TIPConeLength;
+            double holeProtrusion = config.TIPHeadHeight; // TIP孔口突出高度
+
+            double startX = -((cols - 1) * spacingX) / 2;
+            double startY = -((rows - 1) * spacingY) / 2;
+            double skirtTopZ = offsetZ + skirtHeight; // 裙边顶部
+            double boxTopZ = offsetZ + totalHeight; // 盒身顶部
+            // 循环绘制TIP孔
+            for (int i = 0; i < cols; i++)
+            {
+                for (int j = 0; j < rows; j++)
+                {
+                    double x = startX + i * spacingX + offsetX;
+                    double y = startY + j * spacingY + offsetY;
+                    double z = boxTopZ;
+
+                    Point3D pipeStart = new Point3D(x, y, z - wallThickness / 2 - 0.05);
+                    Point3D pipeEnd = new Point3D(x, y, z + holeProtrusion);
+                    container.Children.Add(AddPipe(pipeStart, pipeEnd, holeDiameter, material));
+
+                    Point3D coneBase = new Point3D(x, y, z - wallThickness / 2);
+                    Point3D coneTip = new Point3D(x, y, z - wallThickness / 2 - coneHeight);
+                    container.Children.Add(AddCone(coneBase, coneTip, holeDiameter / 2, config.TIPMINRadius * 2, material));
+                }
+            }
+
+            // 底部支撑
+            container.Children.Add(CreateBox(BottomLength, wallThickness, skirtHeight, new Point3D(offsetX, offsetY - BottomWidth / 2, offsetZ + skirtHeight / 2), material));
+            container.Children.Add(CreateBox(BottomLength, wallThickness, skirtHeight, new Point3D(offsetX, offsetY + BottomWidth / 2, offsetZ + skirtHeight / 2), material));
+            container.Children.Add(CreateBox(wallThickness, BottomWidth, skirtHeight, new Point3D(offsetX - BottomLength / 2, offsetY, offsetZ + skirtHeight / 2), material));
+            container.Children.Add(CreateBox(wallThickness, BottomWidth, skirtHeight, new Point3D(offsetX + BottomLength / 2, offsetY, offsetZ + skirtHeight / 2), material));
+
+            // 梯形外壳
+            container.Children.Add(CreateTrapezoidBox(BottomLength, BottomWidth, TopLength, TopWidth, boxBodyHeight, offsetX, offsetY, skirtTopZ, material));
+
+            // 顶部盖板
+            container.Children.Add(CreateBox(TopLength, TopWidth, wallThickness, new Point3D(offsetX, offsetY, boxTopZ + wallThickness / 2), material));
+        }
+        #endregion
+        #endregion
+        #region 微孔板
         private PipeVisual3D AddPipe(Point3D p1, Point3D p2, double diameter, Material mat, int thetaDiv = 40)
         {
             return new PipeVisual3D
@@ -1763,6 +2112,116 @@ namespace OctoFixFlow
                 PhiDiv = phiDiv
             };
         }
+        #region 最终修正版：带缺口长方体（完美匹配你的截图）
+        /// <summary>
+        /// 创建带45度倒角缺口的长方体（完美匹配真实耗材缺口）
+        /// 已修复：法线方向、缺口位置、面缺失问题
+        /// </summary>
+        private ModelVisual3D CreateNotchedBox(
+            double length, double width, double height,
+            double offsetX, double offsetY, double bottomZ,
+            int NW, int NE, int SW, int SE,
+            Material material, double gapSize = 5.0)
+        {
+            double halfL = length / 2;
+            double halfW = width / 2;
+            double topZ = bottomZ + height;
+
+            // 边界保护：防止缺口超过板的尺寸
+            gapSize = Math.Min(gapSize, Math.Min(halfL, halfW) - 0.1);
+
+            MeshBuilder meshBuilder = new MeshBuilder();
+
+            // ====================== 1. 生成底部轮廓点（顺时针顺序，保证法线向外） ======================
+            List<Vector3> bottomPoints = new List<Vector3>();
+            // 东北（右上角          
+            if (NE == 1)
+            {
+                bottomPoints.Add(new Vector3((float)(offsetX - halfL), (float)(offsetY - halfW + gapSize), (float)bottomZ));
+                bottomPoints.Add(new Vector3((float)(offsetX - halfL + gapSize), (float)(offsetY - halfW), (float)bottomZ));
+            }
+            else
+            {
+                bottomPoints.Add(new Vector3((float)(offsetX - halfL), (float)(offsetY - halfW), (float)bottomZ));
+            }
+
+            // 西北（左上角
+
+            if (NW == 1)
+            {
+                bottomPoints.Add(new Vector3((float)(offsetX + halfL - gapSize), (float)(offsetY - halfW), (float)bottomZ));
+                bottomPoints.Add(new Vector3((float)(offsetX + halfL), (float)(offsetY - halfW + gapSize), (float)bottomZ));
+            }
+            else
+            {
+                bottomPoints.Add(new Vector3((float)(offsetX + halfL), (float)(offsetY - halfW), (float)bottomZ));
+            }
+            // 西南（左下角）
+            if (SW == 1)
+            {
+                bottomPoints.Add(new Vector3((float)(offsetX + halfL), (float)(offsetY + halfW - gapSize), (float)bottomZ));
+                bottomPoints.Add(new Vector3((float)(offsetX + halfL - gapSize), (float)(offsetY + halfW), (float)bottomZ));
+            }
+            else
+            {
+                bottomPoints.Add(new Vector3((float)(offsetX + halfL), (float)(offsetY + halfW), (float)bottomZ));
+            }
+
+            // 东南（右下角）
+            if (SE == 1)
+            {
+                bottomPoints.Add(new Vector3((float)(offsetX - halfL + gapSize), (float)(offsetY + halfW), (float)bottomZ));
+                bottomPoints.Add(new Vector3((float)(offsetX - halfL), (float)(offsetY + halfW - gapSize), (float)bottomZ));
+            }
+            else
+            {
+                bottomPoints.Add(new Vector3((float)(offsetX - halfL), (float)(offsetY + halfW), (float)bottomZ));
+            }
+
+            // ====================== 2. 生成顶部轮廓点 ======================
+            List<Vector3> topPoints = new List<Vector3>();
+            foreach (var bp in bottomPoints)
+            {
+                topPoints.Add(new Vector3(bp.X, bp.Y, (float)topZ));
+            }
+
+            // ====================== 3. 绘制底面（顺时针，法线向下） ======================
+            for (int i = 1; i < bottomPoints.Count - 1; i++)
+            {
+                meshBuilder.AddTriangle(bottomPoints[0], bottomPoints[i], bottomPoints[i + 1]);
+            }
+
+            // ====================== 4. 绘制顶面（逆时针，法线向上） ======================
+            for (int i = 1; i < topPoints.Count - 1; i++)
+            {
+                meshBuilder.AddTriangle(topPoints[0], topPoints[i + 1], topPoints[i]);
+            }
+
+            // ====================== 5. 绘制所有侧面（统一顺序，法线向外） ======================
+            int pointCount = bottomPoints.Count;
+            for (int i = 0; i < pointCount; i++)
+            {
+                int next = (i + 1) % pointCount;
+                meshBuilder.AddQuad(
+                    bottomPoints[i], bottomPoints[next],
+                    topPoints[next], topPoints[i]
+                );
+            }
+
+            // ====================== 6. 生成最终模型（强制双面材质） ======================
+            GeometryModel3D model = new GeometryModel3D(
+                meshBuilder.ToMesh().ToWndMeshGeometry3D(),
+                material
+            )
+            {
+                BackMaterial = material,
+                // 强制关闭背面剔除，确保任何角度都能看到
+                Geometry = meshBuilder.ToMesh().ToWndMeshGeometry3D()
+            };
+
+            return new ModelVisual3D { Content = model };
+        }
+        #endregion
         private BoxVisual3D CreateBox(double l, double w, double h, Point3D center, Material mat)
         {
             return new BoxVisual3D
@@ -1818,7 +2277,6 @@ namespace OctoFixFlow
             CreatePipetteInTab(config, 0, 0, 0, _pipetteContainer);
 
 
-            // 3. 稍微放大一点，方便观察
             _pipetteContainer.Transform = new ScaleTransform3D(1.5, 1.5, 1.5, 0, 0, 0);
         }
 

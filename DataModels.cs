@@ -156,6 +156,16 @@ namespace OctoFixFlow
         private float _TIPMAXRadius;
         private float _TIPMINRadius;
         private float _TIPDepthOFComp;
+        private float _ThreeWellThickness;//壁厚
+        private float _ThreeSkirtHeight;//裙边高
+        private float _ThreeTopLength;//顶部长
+        private float _ThreeTopWidth;//顶部宽
+        private int _botType;//底部类型 0圆形 1锥形 2平底
+        private float _ThreeBotTaperDepth;//锥形深度
+        private int _botShape;//顶部形状  0圆 1长方形
+        private float _botRadius;
+        private float _botHoleX;
+        private float _botHoleY;
 
         public string name
         {
@@ -639,6 +649,128 @@ namespace OctoFixFlow
                 }
             }
         }
+        public float ThreeWellThickness
+        {
+            get => _ThreeWellThickness;
+            set
+            {
+                if (_ThreeWellThickness != value)
+                {
+                    _ThreeWellThickness = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        public float ThreeSkirtHeight
+        {
+            get => _ThreeSkirtHeight;
+            set
+            {
+                if (_ThreeSkirtHeight != value)
+                {
+                    _ThreeSkirtHeight = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        public float ThreeTopLength
+        {
+            get => _ThreeTopLength;
+            set
+            {
+                if (_ThreeTopLength != value)
+                {
+                    _ThreeTopLength = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        public float ThreeTopWidth
+        {
+            get => _ThreeTopWidth;
+            set
+            {
+                if (_ThreeTopWidth != value)
+                {
+                    _ThreeTopWidth = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        public int botType
+        {
+            get => _botType;
+            set
+            {
+                if (_botType != value)
+                {
+                    _botType = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        public float ThreeBotTaperDepth
+        {
+            get => _ThreeBotTaperDepth;
+            set
+            {
+                if (_ThreeBotTaperDepth != value)
+                {
+                    _ThreeBotTaperDepth = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        public int botShape
+        {
+            get => _botShape;
+            set
+            {
+                if (_botShape != value)
+                {
+                    _botShape = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        public float botRadius
+        {
+            get => _botRadius;
+            set
+            {
+                if (_botRadius != value)
+                {
+                    _botRadius = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public float botHoleX
+        {
+            get => _botHoleX;
+            set
+            {
+                if (_botHoleX != value)
+                {
+                    _botHoleX = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public float botHoleY
+        {
+            get => _botHoleY;
+            set
+            {
+                if (_botHoleY != value)
+                {
+                    _botHoleY = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
         private void UpdateTIPTotalLength()
         {
             TIPTotalLength = TIPHeadHeight + TIPConeLength;
@@ -673,6 +805,7 @@ namespace OctoFixFlow
         private int _consCols;
         private string _wellPosition;
         private bool _isSelected;
+        private bool _isError;
         private string _selectedColumns;
         private string _selectedCells;
         private int _mixCount;
@@ -792,6 +925,7 @@ namespace OctoFixFlow
                     "endLoop" => ResourceHelper.Instance.WindowActionEndLoop,
                     "Annotation" => ResourceHelper.Instance.WindowActionAnno,
                     "Variate" => ResourceHelper.Instance.WindowActionVariate,
+                    "Fluo" => ResourceHelper.Instance.WindowActionFluo,
 
                     _ => _type // 未知类型时显示原始Type值（避免空值）
                 };
@@ -898,6 +1032,15 @@ namespace OctoFixFlow
             set
             {
                 _isSelected = value;
+                OnPropertyChanged();
+            }
+        }
+        public bool IsError
+        {
+            get => _isError;
+            set
+            {
+                _isError = value;
                 OnPropertyChanged();
             }
         }

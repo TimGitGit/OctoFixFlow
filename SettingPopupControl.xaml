@@ -683,6 +683,17 @@
                                             HorizontalAlignment="Left"
                                             Orientation="Horizontal">
                                             <Button
+                                                x:Name="btnGetShakerCool"
+                                                Margin="0,0,10,0"
+                                                Click="btnGetShakerCool_Click"
+                                                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualGetTemperature}"
+                                                Style="{StaticResource ActionButtonStyle}" />
+                                        </StackPanel>
+                                        <StackPanel
+                                            Margin="0,0,0,5"
+                                            HorizontalAlignment="Left"
+                                            Orientation="Horizontal">
+                                            <Button
                                                 x:Name="btnStartTemperature"
                                                 Margin="0,0,10,0"
                                                 Click="btnStartTemperature_Click"
@@ -818,6 +829,17 @@
                                                 Style="{StaticResource InputTextBoxStyle}"
                                                 Text="45" />
                                         </Grid>
+                                        <StackPanel
+                                            Margin="0,0,0,5"
+                                            HorizontalAlignment="Left"
+                                            Orientation="Horizontal">
+                                            <Button
+                                                x:Name="btnGetCool"
+                                                Margin="0,0,10,0"
+                                                Click="btnGetCool_Click"
+                                                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualGetTemperature}"
+                                                Style="{StaticResource ActionButtonStyle}" />
+                                        </StackPanel>
                                         <StackPanel
                                             Margin="0,0,0,5"
                                             HorizontalAlignment="Left"
