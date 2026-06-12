@@ -390,6 +390,12 @@
   <data name="ScriptStepDisFromWellMissing" xml:space="preserve">
     <value>Distance from well bottom missing</value>
   </data>
+  <data name="ScriptStepFluoMissing" xml:space="preserve">
+    <value>Fluo parameters not set</value>
+  </data>
+  <data name="ScriptStepIfMissing" xml:space="preserve">
+    <value>Condition parameters not set</value>
+  </data>
   <data name="ScriptStepMagneticMissing" xml:space="preserve">
     <value>Magnetic parameters not set</value>
   </data>
@@ -723,6 +729,24 @@
   <data name="SettingMagneticHeightInvalid" xml:space="preserve">
     <value>Valid 0~25 required</value>
   </data>
+  <data name="SettingManuaIfEquals" xml:space="preserve">
+    <value>==</value>
+  </data>
+  <data name="SettingManuaIfGreaterThan" xml:space="preserve">
+    <value>＞</value>
+  </data>
+  <data name="SettingManuaIfGreaterThanorEqual" xml:space="preserve">
+    <value>≥</value>
+  </data>
+  <data name="SettingManuaIfLessThan" xml:space="preserve">
+    <value>＜</value>
+  </data>
+  <data name="SettingManuaIfLessThanorEqual" xml:space="preserve">
+    <value>≤</value>
+  </data>
+  <data name="SettingManuaIfNotEquals" xml:space="preserve">
+    <value>!=</value>
+  </data>
   <data name="SettingManualArrowKeys" xml:space="preserve">
     <value>ArrowKeys</value>
   </data>
@@ -786,6 +810,18 @@
   <data name="SettingManualEnableTrash" xml:space="preserve">
     <value>Enable labware waste bin?</value>
   </data>
+  <data name="SettingManualFluo" xml:space="preserve">
+    <value>Fluo‑Detect Module</value>
+  </data>
+  <data name="SettingManualFluoConcHomo" xml:space="preserve">
+    <value>Concentration homogenization</value>
+  </data>
+  <data name="SettingManualFluoControl" xml:space="preserve">
+    <value>Fluo‑Detect control</value>
+  </data>
+  <data name="SettingManualFluoGetValue" xml:space="preserve">
+    <value>Get Value</value>
+  </data>
   <data name="SettingManualGetCalibration" xml:space="preserve">
     <value>Get Calib</value>
   </data>
@@ -815,6 +851,15 @@
   </data>
   <data name="SettingManualHeatingShaking" xml:space="preserve">
     <value>Heater-Shaker Module</value>
+  </data>
+  <data name="SettingManualIfScriptName" xml:space="preserve">
+    <value>Condition Name</value>
+  </data>
+  <data name="SettingManualIfScriptStep" xml:space="preserve">
+    <value>Execute Action</value>
+  </data>
+  <data name="SettingManualIfScriptValue" xml:space="preserve">
+    <value>Compare Value</value>
   </data>
   <data name="SettingManualMagnetic" xml:space="preserve">
     <value>Magnetic Module</value>
@@ -1093,6 +1138,21 @@
   <data name="StepDetailEnableMix" xml:space="preserve">
     <value>Enable Mixing</value>
   </data>
+  <data name="StepDetailFinalVolume" xml:space="preserve">
+    <value>Final volume(ul):</value>
+  </data>
+  <data name="StepDetailFluoDiluentPosition" xml:space="preserve">
+    <value>Diluent Position:</value>
+  </data>
+  <data name="StepDetailFluoprocedure" xml:space="preserve">
+    <value>Fluo procedure</value>
+  </data>
+  <data name="StepDetailFluoProductPosition" xml:space="preserve">
+    <value>Product Position:</value>
+  </data>
+  <data name="StepDetailFluoTipOnPosition" xml:space="preserve">
+    <value>TipOn Position:</value>
+  </data>
   <data name="StepDetailInhaVolume" xml:space="preserve">
     <value>InhalationVolume(ul):</value>
   </data>
@@ -1126,6 +1186,9 @@
   <data name="StepDetailOperationPosition" xml:space="preserve">
     <value>Operation Position:</value>
   </data>
+  <data name="StepDetailOriginalVolume" xml:space="preserve">
+    <value>Original volume(ul):</value>
+  </data>
   <data name="StepDetailPCRprocedure" xml:space="preserve">
     <value>PCR procedure</value>
   </data>
@@ -1135,8 +1198,20 @@
   <data name="StepDetailRowPrefix" xml:space="preserve">
     <value>Row:</value>
   </data>
+  <data name="StepDetailSelect" xml:space="preserve">
+    <value>Select</value>
+  </data>
+  <data name="StepDetailSelectdWells" xml:space="preserve">
+    <value>Selected holes</value>
+  </data>
+  <data name="StepDetailSelectdWellsWindowTitle" xml:space="preserve">
+    <value>Support: Click single well, select entire row/column by header, drag mouse to box select</value>
+  </data>
   <data name="StepDetailSelectedPipette" xml:space="preserve">
     <value>Selected Pipette:</value>
+  </data>
+  <data name="StepDetailSelectWells" xml:space="preserve">
+    <value>Hole position</value>
   </data>
   <data name="StepDetailShakePreHeat" xml:space="preserve">
     <value>Enable Pre-heat</value>
@@ -1192,6 +1267,15 @@
   <data name="WindowActionDispense" xml:space="preserve">
     <value>Dispense</value>
   </data>
+  <data name="WindowActionElse" xml:space="preserve">
+    <value>else</value>
+  </data>
+  <data name="WindowActionElseIf" xml:space="preserve">
+    <value>elif</value>
+  </data>
+  <data name="WindowActionEndIf" xml:space="preserve">
+    <value>endIf</value>
+  </data>
   <data name="WindowActionEndLoop" xml:space="preserve">
     <value>endLoop</value>
   </data>
@@ -1212,6 +1296,9 @@
   </data>
   <data name="WindowActionFunctionOther" xml:space="preserve">
     <value>Other</value>
+  </data>
+  <data name="WindowActionIf" xml:space="preserve">
+    <value>If</value>
   </data>
   <data name="WindowActionInit" xml:space="preserve">
     <value>Init</value>
@@ -1325,7 +1412,7 @@
     <value>Step Size</value>
   </data>
   <data name="WindowLoopTip" xml:space="preserve">
-    <value>Nested loops not supported</value>
+    <value>Nested loops and conditionals not supported</value>
   </data>
   <data name="WindowOneclickdeletion" xml:space="preserve">
     <value>Clear</value>
@@ -1347,7 +1434,8 @@
     <comment>步骤详情</comment>
   </data>
   <data name="WindowTitle" xml:space="preserve">
-    <value>8-Channel Pipetting Workstation</value>
+    <value>12-Position Pipetting Workstation</value>
+    <comment>12-Position Pipetting Workstation&amp;8-Channel Pipetting Workstation</comment>
   </data>
   <data name="WindowUser" xml:space="preserve">
     <value>Current User:</value>

@@ -880,6 +880,24 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 荧光检测参数未配置 的本地化字符串。
+        /// </summary>
+        public static string ScriptStepFluoMissing {
+            get {
+                return ResourceManager.GetString("ScriptStepFluoMissing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 条件参数未设置 的本地化字符串。
+        /// </summary>
+        public static string ScriptStepIfMissing {
+            get {
+                return ResourceManager.GetString("ScriptStepIfMissing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 磁吸参数未配置 的本地化字符串。
         /// </summary>
         public static string ScriptStepMagneticMissing {
@@ -1879,6 +1897,60 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 等于 的本地化字符串。
+        /// </summary>
+        public static string SettingManuaIfEquals {
+            get {
+                return ResourceManager.GetString("SettingManuaIfEquals", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 大于 的本地化字符串。
+        /// </summary>
+        public static string SettingManuaIfGreaterThan {
+            get {
+                return ResourceManager.GetString("SettingManuaIfGreaterThan", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 大于等于 的本地化字符串。
+        /// </summary>
+        public static string SettingManuaIfGreaterThanorEqual {
+            get {
+                return ResourceManager.GetString("SettingManuaIfGreaterThanorEqual", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 小于 的本地化字符串。
+        /// </summary>
+        public static string SettingManuaIfLessThan {
+            get {
+                return ResourceManager.GetString("SettingManuaIfLessThan", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 小于等于 的本地化字符串。
+        /// </summary>
+        public static string SettingManuaIfLessThanorEqual {
+            get {
+                return ResourceManager.GetString("SettingManuaIfLessThanorEqual", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 不等于 的本地化字符串。
+        /// </summary>
+        public static string SettingManuaIfNotEquals {
+            get {
+                return ResourceManager.GetString("SettingManuaIfNotEquals", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 方向键 的本地化字符串。
         /// </summary>
         public static string SettingManualArrowKeys {
@@ -2059,6 +2131,42 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 荧光检测模块 的本地化字符串。
+        /// </summary>
+        public static string SettingManualFluo {
+            get {
+                return ResourceManager.GetString("SettingManualFluo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 浓度均一化 的本地化字符串。
+        /// </summary>
+        public static string SettingManualFluoConcHomo {
+            get {
+                return ResourceManager.GetString("SettingManualFluoConcHomo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 荧光检测模块控制 的本地化字符串。
+        /// </summary>
+        public static string SettingManualFluoControl {
+            get {
+                return ResourceManager.GetString("SettingManualFluoControl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 获取检测值 的本地化字符串。
+        /// </summary>
+        public static string SettingManualFluoGetValue {
+            get {
+                return ResourceManager.GetString("SettingManualFluoGetValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 获取定标 的本地化字符串。
         /// </summary>
         public static string SettingManualGetCalibration {
@@ -2145,6 +2253,33 @@ namespace OctoFixFlow.Resource {
         public static string SettingManualHeatingShaking {
             get {
                 return ResourceManager.GetString("SettingManualHeatingShaking", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 条件名称 的本地化字符串。
+        /// </summary>
+        public static string SettingManualIfScriptName {
+            get {
+                return ResourceManager.GetString("SettingManualIfScriptName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 执行动作 的本地化字符串。
+        /// </summary>
+        public static string SettingManualIfScriptStep {
+            get {
+                return ResourceManager.GetString("SettingManualIfScriptStep", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 比较值 的本地化字符串。
+        /// </summary>
+        public static string SettingManualIfScriptValue {
+            get {
+                return ResourceManager.GetString("SettingManualIfScriptValue", resourceCulture);
             }
         }
         
@@ -2977,6 +3112,51 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 最终体积(ul)： 的本地化字符串。
+        /// </summary>
+        public static string StepDetailFinalVolume {
+            get {
+                return ResourceManager.GetString("StepDetailFinalVolume", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 稀释液位置： 的本地化字符串。
+        /// </summary>
+        public static string StepDetailFluoDiluentPosition {
+            get {
+                return ResourceManager.GetString("StepDetailFluoDiluentPosition", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 荧光检测动作 的本地化字符串。
+        /// </summary>
+        public static string StepDetailFluoprocedure {
+            get {
+                return ResourceManager.GetString("StepDetailFluoprocedure", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 产物位置： 的本地化字符串。
+        /// </summary>
+        public static string StepDetailFluoProductPosition {
+            get {
+                return ResourceManager.GetString("StepDetailFluoProductPosition", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 取头位置： 的本地化字符串。
+        /// </summary>
+        public static string StepDetailFluoTipOnPosition {
+            get {
+                return ResourceManager.GetString("StepDetailFluoTipOnPosition", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 吸入体积(ul)： 的本地化字符串。
         /// </summary>
         public static string StepDetailInhaVolume {
@@ -3076,6 +3256,15 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 原始体积(ul)： 的本地化字符串。
+        /// </summary>
+        public static string StepDetailOriginalVolume {
+            get {
+                return ResourceManager.GetString("StepDetailOriginalVolume", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 PCR动作 的本地化字符串。
         /// </summary>
         public static string StepDetailPCRprocedure {
@@ -3103,11 +3292,47 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 选择 的本地化字符串。
+        /// </summary>
+        public static string StepDetailSelect {
+            get {
+                return ResourceManager.GetString("StepDetailSelect", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 已选孔位 的本地化字符串。
+        /// </summary>
+        public static string StepDetailSelectdWells {
+            get {
+                return ResourceManager.GetString("StepDetailSelectdWells", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 支持：点击单个孔位、点击行列号全选、按住鼠标拖动框选 的本地化字符串。
+        /// </summary>
+        public static string StepDetailSelectdWellsWindowTitle {
+            get {
+                return ResourceManager.GetString("StepDetailSelectdWellsWindowTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 选中移液器: 的本地化字符串。
         /// </summary>
         public static string StepDetailSelectedPipette {
             get {
                 return ResourceManager.GetString("StepDetailSelectedPipette", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 孔位 的本地化字符串。
+        /// </summary>
+        public static string StepDetailSelectWells {
+            get {
+                return ResourceManager.GetString("StepDetailSelectWells", resourceCulture);
             }
         }
         
@@ -3274,6 +3499,33 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
+        ///   查找类似 否则 的本地化字符串。
+        /// </summary>
+        public static string WindowActionElse {
+            get {
+                return ResourceManager.GetString("WindowActionElse", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 否则判断 的本地化字符串。
+        /// </summary>
+        public static string WindowActionElseIf {
+            get {
+                return ResourceManager.GetString("WindowActionElseIf", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 结束判断 的本地化字符串。
+        /// </summary>
+        public static string WindowActionEndIf {
+            get {
+                return ResourceManager.GetString("WindowActionEndIf", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 结束循环 的本地化字符串。
         /// </summary>
         public static string WindowActionEndLoop {
@@ -3333,6 +3585,15 @@ namespace OctoFixFlow.Resource {
         public static string WindowActionFunctionOther {
             get {
                 return ResourceManager.GetString("WindowActionFunctionOther", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 判断 的本地化字符串。
+        /// </summary>
+        public static string WindowActionIf {
+            get {
+                return ResourceManager.GetString("WindowActionIf", resourceCulture);
             }
         }
         
@@ -3643,7 +3904,7 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
-        ///   查找类似 不支持循环嵌套 的本地化字符串。
+        ///   查找类似 不支持嵌套循环和条件判断 的本地化字符串。
         /// </summary>
         public static string WindowLoopTip {
             get {
@@ -3697,7 +3958,7 @@ namespace OctoFixFlow.Resource {
         }
         
         /// <summary>
-        ///   查找类似 高通量蛋白纯化工作站 的本地化字符串。
+        ///   查找类似 12板位自动化移液工作站 的本地化字符串。
         /// </summary>
         public static string WindowTitle {
             get {

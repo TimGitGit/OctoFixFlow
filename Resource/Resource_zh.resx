@@ -390,6 +390,12 @@
   <data name="ScriptStepDisFromWellMissing" xml:space="preserve">
     <value>距孔底距离未设置</value>
   </data>
+  <data name="ScriptStepFluoMissing" xml:space="preserve">
+    <value>荧光检测参数未配置</value>
+  </data>
+  <data name="ScriptStepIfMissing" xml:space="preserve">
+    <value>条件参数未设置</value>
+  </data>
   <data name="ScriptStepMagneticMissing" xml:space="preserve">
     <value>磁吸参数未配置</value>
   </data>
@@ -723,6 +729,24 @@
   <data name="SettingMagneticHeightInvalid" xml:space="preserve">
     <value>有效值(0~25)</value>
   </data>
+  <data name="SettingManuaIfEquals" xml:space="preserve">
+    <value>等于</value>
+  </data>
+  <data name="SettingManuaIfGreaterThan" xml:space="preserve">
+    <value>大于</value>
+  </data>
+  <data name="SettingManuaIfGreaterThanorEqual" xml:space="preserve">
+    <value>大于等于</value>
+  </data>
+  <data name="SettingManuaIfLessThan" xml:space="preserve">
+    <value>小于</value>
+  </data>
+  <data name="SettingManuaIfLessThanorEqual" xml:space="preserve">
+    <value>小于等于</value>
+  </data>
+  <data name="SettingManuaIfNotEquals" xml:space="preserve">
+    <value>不等于</value>
+  </data>
   <data name="SettingManualArrowKeys" xml:space="preserve">
     <value>方向键</value>
   </data>
@@ -783,6 +807,18 @@
   <data name="SettingManualEnableTrash" xml:space="preserve">
     <value>是否启用垃圾桶？</value>
   </data>
+  <data name="SettingManualFluo" xml:space="preserve">
+    <value>荧光检测模块</value>
+  </data>
+  <data name="SettingManualFluoConcHomo" xml:space="preserve">
+    <value>浓度均一化</value>
+  </data>
+  <data name="SettingManualFluoControl" xml:space="preserve">
+    <value>荧光检测模块控制</value>
+  </data>
+  <data name="SettingManualFluoGetValue" xml:space="preserve">
+    <value>获取检测值</value>
+  </data>
   <data name="SettingManualGetCalibration" xml:space="preserve">
     <value>获取定标</value>
   </data>
@@ -812,6 +848,15 @@
   </data>
   <data name="SettingManualHeatingShaking" xml:space="preserve">
     <value>加热振荡模块</value>
+  </data>
+  <data name="SettingManualIfScriptName" xml:space="preserve">
+    <value>条件名称</value>
+  </data>
+  <data name="SettingManualIfScriptStep" xml:space="preserve">
+    <value>执行动作</value>
+  </data>
+  <data name="SettingManualIfScriptValue" xml:space="preserve">
+    <value>比较值</value>
   </data>
   <data name="SettingManualMagnetic" xml:space="preserve">
     <value>磁吸模块</value>
@@ -1089,6 +1134,21 @@
   <data name="StepDetailEnableMix" xml:space="preserve">
     <value>启用混合</value>
   </data>
+  <data name="StepDetailFinalVolume" xml:space="preserve">
+    <value>最终体积(ul)：</value>
+  </data>
+  <data name="StepDetailFluoDiluentPosition" xml:space="preserve">
+    <value>稀释液位置：</value>
+  </data>
+  <data name="StepDetailFluoprocedure" xml:space="preserve">
+    <value>荧光检测动作</value>
+  </data>
+  <data name="StepDetailFluoProductPosition" xml:space="preserve">
+    <value>产物位置：</value>
+  </data>
+  <data name="StepDetailFluoTipOnPosition" xml:space="preserve">
+    <value>取头位置：</value>
+  </data>
   <data name="StepDetailInhaVolume" xml:space="preserve">
     <value>吸入体积(ul)：</value>
   </data>
@@ -1122,6 +1182,9 @@
   <data name="StepDetailOperationPosition" xml:space="preserve">
     <value>操作位置：</value>
   </data>
+  <data name="StepDetailOriginalVolume" xml:space="preserve">
+    <value>原始体积(ul)：</value>
+  </data>
   <data name="StepDetailPCRprocedure" xml:space="preserve">
     <value>PCR动作</value>
   </data>
@@ -1131,8 +1194,20 @@
   <data name="StepDetailRowPrefix" xml:space="preserve">
     <value>行：</value>
   </data>
+  <data name="StepDetailSelect" xml:space="preserve">
+    <value>选择</value>
+  </data>
+  <data name="StepDetailSelectdWells" xml:space="preserve">
+    <value>已选孔位</value>
+  </data>
+  <data name="StepDetailSelectdWellsWindowTitle" xml:space="preserve">
+    <value>支持：点击单个孔位、点击行列号全选、按住鼠标拖动框选</value>
+  </data>
   <data name="StepDetailSelectedPipette" xml:space="preserve">
     <value>选中移液器:</value>
+  </data>
+  <data name="StepDetailSelectWells" xml:space="preserve">
+    <value>孔位</value>
   </data>
   <data name="StepDetailShakePreHeat" xml:space="preserve">
     <value>启用预热</value>
@@ -1188,6 +1263,15 @@
   <data name="WindowActionDispense" xml:space="preserve">
     <value>注液</value>
   </data>
+  <data name="WindowActionElse" xml:space="preserve">
+    <value>否则</value>
+  </data>
+  <data name="WindowActionElseIf" xml:space="preserve">
+    <value>否则判断</value>
+  </data>
+  <data name="WindowActionEndIf" xml:space="preserve">
+    <value>结束判断</value>
+  </data>
   <data name="WindowActionEndLoop" xml:space="preserve">
     <value>结束循环</value>
   </data>
@@ -1208,6 +1292,9 @@
   </data>
   <data name="WindowActionFunctionOther" xml:space="preserve">
     <value>其他</value>
+  </data>
+  <data name="WindowActionIf" xml:space="preserve">
+    <value>判断</value>
   </data>
   <data name="WindowActionInit" xml:space="preserve">
     <value>初始化</value>
@@ -1312,7 +1399,7 @@
     <value>步长</value>
   </data>
   <data name="WindowLoopTip" xml:space="preserve">
-    <value>不支持循环嵌套</value>
+    <value>不支持嵌套循环和条件判断</value>
   </data>
   <data name="WindowOneclickdeletion" xml:space="preserve">
     <value>清除</value>
@@ -1330,7 +1417,8 @@
     <value>步骤详情</value>
   </data>
   <data name="WindowTitle" xml:space="preserve">
-    <value>高通量蛋白纯化工作站</value>
+    <value>12板位自动化移液工作站</value>
+    <comment>高通量蛋白纯化工作站&amp;12板位自动化移液工作站</comment>
   </data>
   <data name="WindowUser" xml:space="preserve">
     <value>当前用户 :</value>

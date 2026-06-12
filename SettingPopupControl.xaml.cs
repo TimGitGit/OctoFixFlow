@@ -1,8 +1,11 @@
-﻿using Microsoft.Win32;
+﻿using ClosedXML.Excel;
+using Microsoft.Win32;
 using Newtonsoft.Json;
+
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -19,11 +22,14 @@ namespace OctoFixFlow
         private readonly MainWidget _mainWidget;
         private string nowModuleName;
         private int nowModuleId;
+        private List<(int Row, int Col)> _manualFluoSelectedWells = new List<(int Row, int Col)>();//荧光检测的孔位
+
         public SettingPopupControl(MainWidget mainWidget)
         {
             InitializeComponent();
             _mainWidget = mainWidget;
         }
+
         #region 变量的新增方法
         private bool _isUpdatingRowVariableCombo = false; // 行下拉框专属锁
         private bool _isUpdatingColVariableCombo = false; // 列下拉框专属锁
@@ -262,7 +268,7 @@ namespace OctoFixFlow
             nowModuleName = moduleName;
             settingTitle.Text = nowModuleName;
             nowModuleId = nowid;
-            switch (moduleType)//0：单通道移液器；1：八通道移液器；2：96通道移液器；3：抓手；4：PCR；5：加热振荡；6：磁吸；7：温控;8:垃圾桶
+            switch (moduleType)//0：单通道移液器；1：八通道移液器；2：96通道移液器；3：抓手；4：PCR；5：加热振荡；6：磁吸；7：温控;8:垃圾桶;9:96荧光检测模块
             {
                 case -1:
                     mainSettingTable.SelectedIndex = 3;
@@ -290,6 +296,9 @@ namespace OctoFixFlow
                     // 开启加热振荡温度&转速实时监控（传入模块ID nowModuleId）
                     //_ = StartShakerRealTimeMonitor(7, nowModuleId);
                     mainSettingTable.SelectedIndex = 6;
+                    break;
+                case 8://96荧光检测模块
+                    mainSettingTable.SelectedIndex = 8;
                     break;
             }
             this.Visibility = Visibility.Visible;
@@ -322,6 +331,9 @@ namespace OctoFixFlow
                 "Annotation" => res.WindowActionAnno,
                 "Variate" => res.WindowActionVariate,
                 "Fluo" => res.WindowActionFluo,
+                "If" => res.WindowActionIf,
+                "elseIf" => res.WindowActionElseIf,
+                "else" => res.WindowActionElse,
 
                 _ => step.Type // 未知类型默认显示原始值
             };
@@ -636,8 +648,8 @@ namespace OctoFixFlow
                 StepDetailPanel.Children.Add(CreateDetailRow(res.SettingManualPCRScriptRun, PCRScriptTextBox));
                 var selectDatFileBtn = new Button
                 {
-                    Style = (Style)FindResource("ActionButtonStyle"), // 复用原有样式，也可替换为按钮专属样式
-                    Content = "Select", // 按钮显示文本
+                    Style = (Style)FindResource("ActionButtonStyle"),
+                    Content = res.StepDetailSelect,
                     Width = 140,
                     VerticalAlignment = VerticalAlignment.Center
                 };
@@ -734,20 +746,22 @@ namespace OctoFixFlow
                 });
                 StepDetailPanel.Children.Add(CreateDetailRow(res.WindowLoopStart, LoopStartNumTextBox));
                 // 循环结束数字
-                var LoopEndNumTextBox = new TextBox
-                {
-                    Style = (Style)FindResource("InputTextBoxStyle"),
-                    Width = 140,
-                    VerticalAlignment = VerticalAlignment.Center
-                };
-                LoopEndNumTextBox.SetBinding(TextBox.TextProperty, new Binding
-                {
-                    Source = step,
-                    Path = new PropertyPath("LoopEndNum"),
-                    Mode = BindingMode.TwoWay,
-                    UpdateSourceTrigger = UpdateSourceTrigger.LostFocus
-                });
-                StepDetailPanel.Children.Add(CreateDetailRow(res.WindowLoopEnd, LoopEndNumTextBox));
+                var loopEndPanel = CreateVariableInputRow(step, nameof(step.LoopEndNum), res.WindowLoopEnd, true, nameof(step.LoopEndVariateName), nameof(step.LoopEndVariateValue));
+                StepDetailPanel.Children.Add(loopEndPanel);
+                //var LoopEndNumTextBox = new TextBox
+                //{
+                //    Style = (Style)FindResource("InputTextBoxStyle"),
+                //    Width = 140,
+                //    VerticalAlignment = VerticalAlignment.Center
+                //};
+                //LoopEndNumTextBox.SetBinding(TextBox.TextProperty, new Binding
+                //{
+                //    Source = step,
+                //    Path = new PropertyPath("LoopEndNum"),
+                //    Mode = BindingMode.TwoWay,
+                //    UpdateSourceTrigger = UpdateSourceTrigger.LostFocus
+                //});
+                //StepDetailPanel.Children.Add(CreateDetailRow(res.WindowLoopEnd, LoopEndNumTextBox));
                 // 循环自增量
                 var LoopAddNumTextBox = new TextBox
                 {
@@ -851,6 +865,297 @@ namespace OctoFixFlow
                 StepDetailPanel.Children.Add(CreateDetailRow(res.SettingManualVariateScriptValue, variateValueTextBox));
                 return;
             }
+            else if (step.Type == "Fluo")
+            {
+                var posFromCombo = new ComboBox
+                {
+                    Style = (Style)FindResource("InputComboBoxStyle"),
+                    ItemsSource = new List<string> { res.SettingManualPCRStart, res.SettingManualPCROpen, res.SettingManualPCRClose, res.SettingManualPCRWaitRun, res.SettingManualFluoConcHomo },
+                    Width = 140,
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                var posFromBinding = new Binding
+                {
+                    Source = step,
+                    Path = new PropertyPath("FluoStep"),
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                };
+                posFromCombo.SetBinding(ComboBox.SelectedItemProperty, posFromBinding);
+
+                StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailFluoprocedure, posFromCombo));
+                var selectWellsBtn = new Button
+                {
+                    Style = (Style)FindResource("ActionButtonStyle"),
+                    Content = res.StepDetailSelect,
+                    Width = 140,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(0, 10, 0, 5)
+                };
+                // 2. 显示已选孔位的文本框（只读）
+                var selectedWellsTextBox = new TextBox
+                {
+                    Style = (Style)FindResource("InputTextBoxStyle"),
+                    Width = 180,
+                    Height = 60,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    IsReadOnly = true,
+                    TextWrapping = TextWrapping.Wrap,
+                    Margin = new Thickness(0, 5, 0, 5)
+                };
+
+                // 绑定到FlowStep的SelectedWells属性（稍后添加）
+                selectedWellsTextBox.SetBinding(TextBox.TextProperty, new Binding
+                {
+                    Source = step,
+                    Path = new PropertyPath("SelectedWells"),
+                    Mode = BindingMode.OneWay
+                });
+
+                // 3. 按钮点击事件：弹出孔位选择窗口
+                selectWellsBtn.Click += (s, e) =>
+                {
+                    var wellWindow = new WellSelectionWindow();
+
+                    // 如果已有选中孔位，传递给窗口进行回显
+                    if (!string.IsNullOrEmpty(step.SelectedWells))
+                    {
+                        wellWindow.SelectedWells = step.SelectedWells
+                            .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                            .Select(wellStr =>
+                            {
+                                var parts = wellStr.Split(',');
+                                return (Row: int.Parse(parts[0]), Col: int.Parse(parts[1]));
+                            })
+                            .ToList();
+                    }
+
+                    // 显示模态窗口
+                    if (wellWindow.ShowDialog() == true)
+                    {
+                        // 将选中的孔位转换为系统统一格式："行,列;行,列"
+                        step.SelectedWells = string.Join(";",
+                            wellWindow.SelectedWells.Select(w => $"{w.Row},{w.Col}"));
+
+                        // 同时同步到WellPosition属性（保持和其他步骤一致）
+                        step.WellPosition = FormatSelectedColumns(wellWindow.SelectedWells, 8, 12);
+                    }
+                };
+
+                // 添加到详情面板
+                StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailSelectWells, selectWellsBtn));
+                StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailSelectdWells, selectedWellsTextBox));
+                // 创建原始体积输入框并绑定
+                var volumeTextBox = new TextBox
+                {
+                    Style = (Style)FindResource("InputTextBoxStyle"),
+                    Width = 150
+                };
+
+                var volumeBinding = new Binding
+                {
+                    Source = step,
+                    Path = new PropertyPath("Volume"),
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.LostFocus
+                };
+
+                volumeTextBox.SetBinding(TextBox.TextProperty, volumeBinding);
+
+                StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailOriginalVolume, volumeTextBox));
+                // 创建最终体积输入框并绑定
+                var volumeFinalTextBox = new TextBox
+                {
+                    Style = (Style)FindResource("InputTextBoxStyle"),
+                    Width = 150
+                };
+
+                var volumeFinalBinding = new Binding
+                {
+                    Source = step,
+                    Path = new PropertyPath("PushOutvolume"),
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.LostFocus
+                };
+
+                volumeFinalTextBox.SetBinding(TextBox.TextProperty, volumeFinalBinding);
+
+                StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailFinalVolume, volumeFinalTextBox));
+                var positionFluoCombo0 = new ComboBox
+                {
+                    Style = (Style)FindResource("InputComboBoxStyle"),
+                    ItemsSource = new List<string> { "P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "P11", "P12" },
+                    Width = 140,
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                // 绑定到step.Position（双向）
+                var positionFluoBinding0 = new Binding
+                {
+                    Source = step,
+                    Path = new PropertyPath("Normaposition0"),
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                };
+                positionFluoCombo0.SetBinding(ComboBox.SelectedItemProperty, positionFluoBinding0);
+                StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailOperationPosition, positionFluoCombo0));
+                var positionFluoCombo1 = new ComboBox
+                {
+                    Style = (Style)FindResource("InputComboBoxStyle"),
+                    ItemsSource = new List<string> { "P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "P11", "P12" },
+                    Width = 140,
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                // 绑定到step.Position（双向）
+                var positionFluoBinding1 = new Binding
+                {
+                    Source = step,
+                    Path = new PropertyPath("Normaposition1"),
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                };
+                positionFluoCombo1.SetBinding(ComboBox.SelectedItemProperty, positionFluoBinding1);
+                StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailFluoTipOnPosition, positionFluoCombo1));
+
+                var positionFluoCombo2 = new ComboBox
+                {
+                    Style = (Style)FindResource("InputComboBoxStyle"),
+                    ItemsSource = new List<string> { "P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "P11", "P12" },
+                    Width = 140,
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                // 绑定到step.Position（双向）
+                var positionFluoBinding2 = new Binding
+                {
+                    Source = step,
+                    Path = new PropertyPath("Normaposition2"),
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                };
+                positionFluoCombo2.SetBinding(ComboBox.SelectedItemProperty, positionFluoBinding2);
+                StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailFluoDiluentPosition, positionFluoCombo2));
+
+                var positionFluoCombo3 = new ComboBox
+                {
+                    Style = (Style)FindResource("InputComboBoxStyle"),
+                    ItemsSource = new List<string> { "P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "P11", "P12" },
+                    Width = 140,
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                // 绑定到step.Position（双向）
+                var positionFluoBinding3 = new Binding
+                {
+                    Source = step,
+                    Path = new PropertyPath("Normaposition3"),
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                };
+                positionFluoCombo3.SetBinding(ComboBox.SelectedItemProperty, positionFluoBinding3);
+                StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailFluoProductPosition, positionFluoCombo3));
+
+                return;
+            }
+            else if (step.Type == "If")
+            {
+                var IfScriptNameTextBox = new TextBox
+                {
+                    Style = (Style)FindResource("InputTextBoxStyle"),
+                    Width = 140,
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                IfScriptNameTextBox.SetBinding(TextBox.TextProperty, new Binding
+                {
+                    Source = step,
+                    Path = new PropertyPath("IfScriptName"),
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                });
+                IfScriptNameTextBox.PreviewTextInput += (s, e) =>
+                {
+                    var textBox = s as TextBox;
+                    string newText = textBox.Text + e.Text;
+
+                    // 第一个不能为数字
+                    if (newText.Length == 1 && char.IsDigit(e.Text[0]))
+                    {
+                        e.Handled = true;
+                    }
+                };
+                StepDetailPanel.Children.Add(CreateDetailRow(res.SettingManualIfScriptName, IfScriptNameTextBox));
+                // 动作
+                var posIfFromCombo = new ComboBox
+                {
+                    Style = (Style)FindResource("InputComboBoxStyle"),
+                    ItemsSource = new List<string> { res.SettingManuaIfGreaterThan, res.SettingManuaIfLessThan, res.SettingManuaIfEquals, res.SettingManuaIfNotEquals, res.SettingManuaIfGreaterThanorEqual, res.SettingManuaIfLessThanorEqual },
+                    Width = 140,
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                var posFromIfBinding = new Binding
+                {
+                    Source = step,
+                    Path = new PropertyPath("IfStep"),
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                };
+                posIfFromCombo.SetBinding(ComboBox.SelectedItemProperty, posFromIfBinding);
+                StepDetailPanel.Children.Add(CreateDetailRow(res.SettingManualIfScriptStep, posIfFromCombo));
+
+                // 判断值
+                var ifValueTextBox = new TextBox
+                {
+                    Style = (Style)FindResource("InputTextBoxStyle"),
+                    Width = 140,
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                ifValueTextBox.SetBinding(TextBox.TextProperty, new Binding
+                {
+                    Source = step,
+                    Path = new PropertyPath("IfNum"),
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
+                    Delay = 300
+                });
+                StepDetailPanel.Children.Add(CreateDetailRow(res.SettingManualIfScriptValue, ifValueTextBox));
+                return;
+            }
+            else if (step.Type == "elseIf")
+            {
+                // 动作
+                var posIfFromCombo = new ComboBox
+                {
+                    Style = (Style)FindResource("InputComboBoxStyle"),
+                    ItemsSource = new List<string> { res.SettingManuaIfGreaterThan, res.SettingManuaIfLessThan, res.SettingManuaIfEquals, res.SettingManuaIfNotEquals, res.SettingManuaIfGreaterThanorEqual, res.SettingManuaIfLessThanorEqual },
+                    Width = 140,
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                var posFromIfBinding = new Binding
+                {
+                    Source = step,
+                    Path = new PropertyPath("IfStep"),
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                };
+                posIfFromCombo.SetBinding(ComboBox.SelectedItemProperty, posFromIfBinding);
+                StepDetailPanel.Children.Add(CreateDetailRow(res.SettingManualIfScriptStep, posIfFromCombo));
+
+                // 判断值
+                var ifValueTextBox = new TextBox
+                {
+                    Style = (Style)FindResource("InputTextBoxStyle"),
+                    Width = 140,
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                ifValueTextBox.SetBinding(TextBox.TextProperty, new Binding
+                {
+                    Source = step,
+                    Path = new PropertyPath("IfNum"),
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
+                    Delay = 300
+                });
+                StepDetailPanel.Children.Add(CreateDetailRow(res.SettingManualIfScriptValue, ifValueTextBox));
+                return;
+            }
+
             // -------------------------- 通用控件（吸液/注液/取头/退头） --------------------------
             // 创建位置下拉框并绑定
             var positionCombo = new ComboBox
@@ -1401,6 +1706,24 @@ pipetteCombo));
                     volumeTextBox.SetBinding(TextBox.TextProperty, volumeBinding);
 
                     StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailVolume, volumeTextBox));
+                    // 创建等待输入框并绑定
+                    var waitTextBox = new TextBox
+                    {
+                        Style = (Style)FindResource("InputTextBoxStyle"),
+                        Width = 150
+                    };
+
+                    var waitBinding = new Binding
+                    {
+                        Source = step,
+                        Path = new PropertyPath("PipeWaitTime"),
+                        Mode = BindingMode.TwoWay,
+                        UpdateSourceTrigger = UpdateSourceTrigger.LostFocus
+                    };
+
+                    waitTextBox.SetBinding(TextBox.TextProperty, waitBinding);
+
+                    StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailWaitTime, waitTextBox));
                 }
                 else if (step.Type == "Dispense")
                 {
@@ -1441,6 +1764,24 @@ pipetteCombo));
                     volumePushTextBox.SetBinding(TextBox.TextProperty, volumePushBinding);
 
                     StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailPushVolume, volumePushTextBox));
+                    // 创建等待输入框并绑定
+                    var waitTextBox = new TextBox
+                    {
+                        Style = (Style)FindResource("InputTextBoxStyle"),
+                        Width = 150
+                    };
+
+                    var waitBinding = new Binding
+                    {
+                        Source = step,
+                        Path = new PropertyPath("PipeWaitTime"),
+                        Mode = BindingMode.TwoWay,
+                        UpdateSourceTrigger = UpdateSourceTrigger.LostFocus
+                    };
+
+                    waitTextBox.SetBinding(TextBox.TextProperty, waitBinding);
+
+                    StepDetailPanel.Children.Add(CreateDetailRow(res.StepDetailWaitTime, waitTextBox));
                 }
                 else if (step.Type == "Mix")
                 {
@@ -1983,6 +2324,10 @@ pipetteCombo));
                     txtCalib900.Text = calibrationParams.k_900.ToString("F2");
                     // 1000挡（txtCalib1000）
                     txtCalib1000.Text = calibrationParams.k_1000.ToString("F2");
+                    // 1挡（txtCalib1）
+                    txtCalib1.Text = calibrationParams.k_1.ToString("F2");
+                    // 2挡（txtCalib2）
+                    txtCalib2.Text = calibrationParams.k_2.ToString("F2");
                 }
                 else
                 {
@@ -2068,7 +2413,11 @@ pipetteCombo));
                     k_700 = float.Parse(txtCalib700.Text),         // 700挡
                     k_800 = float.Parse(txtCalib800.Text),         // 800挡
                     k_900 = float.Parse(txtCalib900.Text),         // 900挡
-                    k_1000 = float.Parse(txtCalib1000.Text)        // 1000挡
+                    k_1000 = float.Parse(txtCalib1000.Text),        // 1000挡
+                    k_1 = float.Parse(txtCalib1.Text),              // 1挡
+                    k_2 = float.Parse(txtCalib2.Text)        // 1挡
+
+
                 };
                 return true;
             }
@@ -2575,6 +2924,284 @@ pipetteCombo));
 
 
 
+
+        #endregion
+        #region 荧光检测模块
+        //脚本选择
+        private void btnSeleteFluo_Click(object sender, RoutedEventArgs e)
+        {
+            // 实例化孔位选择窗口
+            var wellWindow = new WellSelectionWindow();
+
+            // 回显之前已选中的孔位（如果有）
+            if (_manualFluoSelectedWells.Count > 0)
+            {
+                wellWindow.SelectedWells = new List<(int Row, int Col)>(_manualFluoSelectedWells);
+            }
+
+            // 显示模态窗口
+            if (wellWindow.ShowDialog() == true)
+            {
+                // 保存原始选中数据（供后续启动检测使用）
+                _manualFluoSelectedWells = wellWindow.SelectedWells;
+
+                // 转换为易读的格式显示在文本框中（如：A1, A2, B3, C5）
+                string displayText = ConvertSelectedWellsToDisplayText(_manualFluoSelectedWells);
+                FluoFileAddress.Text = displayText;
+            }
+        }
+        //开始检测
+        private async void btnStartFluo_Click(object sender, RoutedEventArgs e)
+        {
+            if (_manualFluoSelectedWells.Count == 0)
+            {
+                _mainWidget.ShowNotification(_mainWidget._res.DeviceOperationFailure, NotificationControl.NotificationType.Error);
+                return;
+            }
+            string nowSelectedWells = string.Join(";",
+                                 _manualFluoSelectedWells.Select(w => $"{w.Row},{w.Col}"));
+            byte[] checkedArray = ConvertToFluoCheckedArray(_manualFluoSelectedWells);
+            string pythonCheckedList = _mainWidget.ConvertSelectedWellsToPythonChecked(nowSelectedWells);
+            try
+            {
+                StringBuilder pythonCode = new StringBuilder();
+
+                pythonCode.AppendLine("from flour import Flour");
+                pythonCode.AppendLine($"Flour.start(id=1,checked={pythonCheckedList}, is_open=True)");
+                var rawFlag = await _mainWidget.ScriptDebugAsync(pythonCode.ToString());
+                var pyFlag = _mainWidget.ParseScriptDebugResponse(rawFlag);
+                if (pyFlag != null)
+                {
+                    if (pyFlag.Result == "succeed")
+                    {
+                        _mainWidget.ShowNotification(_mainWidget._res.DeviceOperationSucc, NotificationControl.NotificationType.Info);
+                    }
+                    else
+                    {
+                        _mainWidget.ShowNotification(_mainWidget._res.DeviceOperationFailure, NotificationControl.NotificationType.Error);
+                    }
+                }
+                else
+                {
+                    _mainWidget.ShowNotification(_mainWidget._res.WindowGrpcComFail, NotificationControl.NotificationType.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                _mainWidget.ShowNotification(_mainWidget._res.DeviceOperationFailure, NotificationControl.NotificationType.Error);
+            }
+        }
+        //开盖
+        private async void btnOpenFluo_Click(object sender, RoutedEventArgs e)
+        {
+            _mainWidget.ShowNotification(_mainWidget._res.SettingManualPCROpen, NotificationControl.NotificationType.Info);
+
+            StringBuilder pythonCode = new StringBuilder();
+            pythonCode.AppendLine("from flour import Flour");
+            pythonCode.AppendLine($"debug(Flour.door_open({nowModuleId}))");
+            var rawFlag = await _mainWidget.ScriptDebugAsync(pythonCode.ToString());
+            var pyFlag = _mainWidget.ParseScriptDebugResponse(rawFlag);
+            if (pyFlag != null)
+            {
+                if (pyFlag.Result == "succeed")
+                {
+                    _mainWidget.ShowNotification(_mainWidget._res.DeviceOperationSucc, NotificationControl.NotificationType.Info);
+                }
+                else
+                {
+                    _mainWidget.ShowNotification(_mainWidget._res.DeviceOperationFailure, NotificationControl.NotificationType.Error);
+                }
+            }
+            else
+            {
+                _mainWidget.ShowNotification(_mainWidget._res.WindowGrpcComFail, NotificationControl.NotificationType.Error);
+            }
+        }
+        //关盖
+        private async void btnCloseFluo_Click(object sender, RoutedEventArgs e)
+        {
+            _mainWidget.ShowNotification(_mainWidget._res.SettingManualPCRClose, NotificationControl.NotificationType.Info);
+
+            StringBuilder pythonCode = new StringBuilder();
+            pythonCode.AppendLine("from flour import Flour");
+            pythonCode.AppendLine($"Flour.door_close({nowModuleId})");
+            var rawFlag = await _mainWidget.ScriptDebugAsync(pythonCode.ToString());
+            var pyFlag = _mainWidget.ParseScriptDebugResponse(rawFlag);
+            if (pyFlag != null)
+            {
+                if (pyFlag.Result == "succeed")
+                {
+                    _mainWidget.ShowNotification(_mainWidget._res.DeviceOperationSucc, NotificationControl.NotificationType.Info);
+                }
+                else
+                {
+                    _mainWidget.ShowNotification(_mainWidget._res.DeviceOperationFailure, NotificationControl.NotificationType.Error);
+                }
+            }
+            else
+            {
+                _mainWidget.ShowNotification(_mainWidget._res.WindowGrpcComFail, NotificationControl.NotificationType.Error);
+            }
+        }
+        //获得值
+        private async void btnGetFluo_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                btnGetFluo.IsEnabled = false;
+                StringBuilder pythonCode = new StringBuilder();
+                pythonCode.AppendLine("from flour import Flour");
+                pythonCode.AppendLine($"debug(Flour.get_state({nowModuleId}))");
+                var rawFlag = await _mainWidget.ScriptDebugAsync(pythonCode.ToString());
+                var pyFlag = _mainWidget.ParseScriptDebugResponse(rawFlag);
+                if (pyFlag == null || pyFlag.Result != "succeed")
+                {
+                    _mainWidget.ShowNotification(_mainWidget._res.WindowGrpcComFail, NotificationControl.NotificationType.Error);
+                    return;
+                }
+                string nowState = pyFlag.Data.ToString();
+                Match workMatch = Regex.Match(nowState, @"['""]work_state['""]\s*:\s*(-?\d+)");
+                int workState = -1;
+                if (workMatch.Success)
+                {
+                    workState = int.Parse(workMatch.Groups[1].Value);
+                }
+                if (workState != 0)
+                {
+                    _mainWidget.ShowNotification(_mainWidget._res.WindowGrpcComFail, NotificationControl.NotificationType.Error);
+                    return;
+                }
+                StringBuilder pythonCode2 = new StringBuilder();
+                pythonCode2.AppendLine("from flour import Flour");
+                pythonCode2.AppendLine($"debug(Flour.get_all_data({nowModuleId}))");
+                var rawFlag2 = await _mainWidget.ScriptDebugAsync(pythonCode2.ToString());
+                var pyFlag2 = _mainWidget.ParseScriptDebugResponse(rawFlag2);
+                if (pyFlag2 == null || pyFlag2.Result != "succeed")
+                {
+                    _mainWidget.ShowNotification(_mainWidget._res.WindowGrpcComFail, NotificationControl.NotificationType.Error);
+
+                    return;
+                }
+                string rawData = pyFlag2.Data.ToString();
+                List<int> Fluoresult = Enumerable.Repeat(0, 96).ToList();
+                MatchCollection matches = Regex.Matches(rawData, @"['""]value['""]\s*:\s*(-?\d+)");
+
+                int count = Math.Min(matches.Count, 96);
+                for (int i = 0; i < count; i++)
+                {
+                    if (int.TryParse(matches[i].Groups[1].Value, out int value))
+                    {
+                        Fluoresult[i] = value;
+                    }
+                }
+                Export96WellToExcel(Fluoresult);
+                _mainWidget.ShowNotification(_mainWidget._res.DeviceOperationSucc, NotificationControl.NotificationType.Info);
+            }
+            finally
+            {
+                btnGetFluo.IsEnabled = true;
+            }
+        }
+        public static void Export96WellToExcel(List<int> fluoData)
+        {
+
+            string fileName = $"Fluo_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+            string savePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, fileName);
+
+            using (var workbook = new XLWorkbook())
+            {
+                var worksheet = workbook.Worksheets.Add("Data");
+
+                // 第一行：列号 1-12（B1到M1）
+                for (int col = 1; col <= 12; col++)
+                {
+                    worksheet.Cell(1, col + 1).Value = col.ToString();
+                }
+
+                // 第一列：行号 A-H（A2到A9）
+                char[] rowLabels = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H' };
+                for (int row = 0; row < 8; row++)
+                {
+                    worksheet.Cell(row + 2, 1).Value = rowLabels[row].ToString();
+                }
+
+
+
+                // ================== 5. 写入96孔数据 ==================
+                // 数据映射关系和之前完全一致：
+                // 索引 0-11 → A1-A12 → 第2行第2-13列
+                // 索引 12-23 → B1-B12 → 第3行第2-13列
+                // ...
+                // 索引 84-95 → H1-H12 → 第9行第2-13列
+                for (int i = 0; i < 96; i++)
+                {
+                    int excelRow = (i / 12) + 2; // ClosedXML行号从1开始
+                    int excelCol = (i % 12) + 2; // ClosedXML列号从1开始
+                    worksheet.Cell(excelRow, excelCol).Value = fluoData[i];
+                }
+
+                worksheet.Row(1).Height = 22;   // 表头行高
+                for (int row = 2; row <= 9; row++)
+                    worksheet.Row(row).Height = 20;
+
+                // 设置字体大小
+                worksheet.Range("A1:M9").Style.Font.FontSize = 12;
+                // 表头加粗
+                worksheet.Row(1).Style.Font.Bold = true;
+
+                // 自动调整列宽（只需这一句，不要重复设置固定宽度）
+                worksheet.Columns().AdjustToContents();
+
+                workbook.SaveAs(savePath);
+
+                Console.WriteLine($"导出成功！文件保存至：{savePath}");
+                //_mainWidget.ShowNotification(savePath, NotificationControl.NotificationType.Info);
+
+                // MessageBox.Show($"导出成功！\n文件路径：{savePath}", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+
+        }
+        /// <summary>
+        /// 将选中的孔位列表转换为用户易读的显示格式（A1, B2, C3...）
+        /// </summary>
+        private string ConvertSelectedWellsToDisplayText(List<(int Row, int Col)> selectedWells)
+        {
+            if (selectedWells == null || selectedWells.Count == 0)
+            {
+                return "未选择任何孔位";
+            }
+
+            string[] rowLabels = { "A", "B", "C", "D", "E", "F", "G", "H" };
+            List<string> displayNames = new List<string>();
+
+            foreach (var well in selectedWells)
+            {
+                // 行号1对应A，行号8对应H
+                string rowLabel = rowLabels[well.Row - 1];
+                displayNames.Add($"{rowLabel}{well.Col}");
+            }
+
+            // 超过10个孔位时显示数量+前几个示例，避免文本框过长
+            //if (displayNames.Count > 10)
+            //{
+            //    return $"已选择 {displayNames.Count} 个孔位：{string.Join(", ", displayNames.Take(10))}...";
+            //}
+
+            return string.Join(", ", displayNames);
+        }
+        private byte[] ConvertToFluoCheckedArray(List<(int Row, int Col)> selectedWells)
+        {
+            byte[] checkedArray = new byte[12];
+
+            foreach (var well in selectedWells)
+            {
+                int colIndex = well.Col - 1;
+                int bitPosition = well.Row - 1;
+                checkedArray[colIndex] |= (byte)(1 << bitPosition);
+            }
+
+            return checkedArray;
+        }
         #endregion
 
 

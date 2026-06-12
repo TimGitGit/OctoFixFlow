@@ -12,266 +12,1688 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="50" />
             <RowDefinition Height="1" />
-            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="55" />
         </Grid.RowDefinitions>
         <Border Grid.Row="0">
-            <TextBlock
-                Margin="20,0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Center"
-                FontSize="16"
-                FontWeight="Bold"
-                Foreground="{StaticResource PrimaryColor}"
-                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=RunningTitle}" />
+            <DockPanel VerticalAlignment="Center" LastChildFill="True">
+                <TextBlock
+                    Margin="20,0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    FontSize="16"
+                    FontWeight="Bold"
+                    Foreground="{StaticResource PrimaryColor}"
+                    Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=RunningTitle}" />
+                <Button
+                    x:Name="runningToggleButton"
+                    Width="30"
+                    Height="30"
+                    Margin="20,0"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Click="runningToggleButton_Click"
+                    Cursor="Hand">
+                    <Path
+                        Data="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"
+                        Fill="{StaticResource PrimaryColor}"
+                        Stretch="Uniform" />
+                </Button>
+            </DockPanel>
+
         </Border>
         <Border
             Grid.Row="1"
             Height="1"
             HorizontalAlignment="Stretch"
             Background="#E0E0E0" />
-        <Grid
-            Grid.Row="2"
-            Margin="10"
-            Background="#FCFCFC">
-            <Border
-                Background="White"
-                BorderBrush="#E0E0E0"
-                BorderThickness="1"
-                CornerRadius="5">
-                <StackPanel Margin="15">
-                    <TextBlock
-                        Margin="0,0,0,15"
-                        FontSize="16"
-                        FontWeight="Medium"
-                        Foreground="{StaticResource PrimaryColor}"
-                        Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=GuideBtnProtocolInfo}" />
+        <Grid x:Name="mainRunControl" Grid.Row="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="55" />
+            </Grid.RowDefinitions>
+            <Grid
+                Grid.Row="0"
+                Margin="10"
+                Background="#FCFCFC">
+                <Border
+                    Background="White"
+                    BorderBrush="#E0E0E0"
+                    BorderThickness="1"
+                    CornerRadius="5">
+                    <StackPanel Margin="15">
+                        <TextBlock
+                            Margin="0,0,0,15"
+                            FontSize="16"
+                            FontWeight="Medium"
+                            Foreground="{StaticResource PrimaryColor}"
+                            Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=GuideBtnProtocolInfo}" />
 
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Row="0" Grid.Column="0">
-                            <TextBlock
-                                Margin="0,0,0,15"
-                                FontSize="16"
-                                FontWeight="Medium"
-                                Foreground="{StaticResource PrimaryColor}"
-                                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=GuideBtnExperimentProtocolInfoName}" />
-                            <TextBox
-                                x:Name="guideProtocolNameTextBox"
-                                Height="30"
-                                Margin="0,0,15,0"
-                                IsEnabled="False"
-                                Style="{StaticResource InputTextBoxStyle}"
-                                TextWrapping="NoWrap" />
-                        </StackPanel>
-                        <StackPanel Grid.Row="0" Grid.Column="1">
-                            <TextBlock
-                                Margin="0,0,0,15"
-                                FontSize="16"
-                                FontWeight="Medium"
-                                Foreground="{StaticResource PrimaryColor}"
-                                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=GuideBtnExperimentProtocolInfoAuthor}" />
-                            <TextBox
-                                x:Name="guideProtocolAuthorTextBox"
-                                Height="30"
-                                Margin="0,0,15,0"
-                                IsEnabled="False"
-                                Style="{StaticResource InputTextBoxStyle}"
-                                TextWrapping="NoWrap" />
-                        </StackPanel>
-                        <StackPanel Grid.Row="0" Grid.Column="2">
-                            <TextBlock
-                                Margin="0,0,0,15"
-                                FontSize="16"
-                                FontWeight="Medium"
-                                Foreground="{StaticResource PrimaryColor}"
-                                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=RunningStartTime}" />
-                            <TextBox
-                                x:Name="guideProtocolStartTimeTextBox"
-                                Height="30"
-                                Margin="0,0,15,0"
-                                IsEnabled="False"
-                                Style="{StaticResource InputTextBoxStyle}"
-                                TextWrapping="NoWrap" />
-                        </StackPanel>
-                        <StackPanel Grid.Row="1" Grid.ColumnSpan="3">
-                            <TextBlock
-                                Margin="0,0,0,15"
-                                FontSize="16"
-                                FontWeight="Medium"
-                                Foreground="{StaticResource PrimaryColor}"
-                                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=GuideBtnExperimentProtocolInfoDescription}" />
-                            <TextBox
-                                x:Name="guideProtocolDescriptionTextBox"
-                                Height="30"
-                                AcceptsReturn="True"
-                                IsEnabled="False"
-                                Style="{StaticResource InputTextBoxStyle}"
-                                TextWrapping="Wrap" />
-                        </StackPanel>
-                    </Grid>
-                </StackPanel>
-            </Border>
-        </Grid>
-        <Grid
-            Grid.Row="3"
-            Margin="10"
-            Background="#FCFCFC">
-            <Border
-                Background="White"
-                BorderBrush="#E0E0E0"
-                BorderThickness="1"
-                CornerRadius="5">
-                <StackPanel Margin="15">
-                    <TextBlock
-                        FontSize="16"
-                        FontWeight="Medium"
-                        Foreground="{StaticResource PrimaryColor}"
-                        Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=RunningTitle}" />
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="2*" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0">
-                            <TextBlock
-                                Margin="0,0,0,15"
-                                FontSize="16"
-                                FontWeight="Medium"
-                                Foreground="{StaticResource PrimaryColor}"
-                                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=RunningDeviceStatus}" />
-                            <TextBox
-                                x:Name="StatusText"
-                                Height="30"
-                                Margin="0,0,15,0"
-                                IsEnabled="False"
-                                Style="{StaticResource InputTextBoxStyle}"
-                                TextWrapping="NoWrap" />
-                            <TextBlock
-                                Margin="0,0,0,15"
-                                FontSize="16"
-                                FontWeight="Medium"
-                                Foreground="{StaticResource PrimaryColor}"
-                                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=RunningRunningTime}" />
-                            <TextBox
-                                x:Name="RunTimeText"
-                                Height="30"
-                                Margin="0,0,15,0"
-                                IsEnabled="False"
-                                Style="{StaticResource InputTextBoxStyle}"
-                                TextWrapping="NoWrap" />
-                            <StackPanel
-                                Margin="0,20,0,0"
-                                VerticalAlignment="Top"
-                                Orientation="Horizontal">
-                                <Button
-                                    x:Name="btnPause"
-                                    Width="180"
-                                    Height="180"
-                                    Click="BtnPause_Click"
-                                    Style="{StaticResource ActionButtonStyle}">
-                                    <Image Source="/OctoFixFlow;component/images/start.png" Stretch="Uniform" />
-                                </Button>
-                                <!--  停止按钮（搭配你的停止图标）  -->
-                                <Button
-                                    x:Name="btnStop"
-                                    Width="180"
-                                    Height="180"
-                                    Click="BtnStop_Click"
-                                    Style="{StaticResource ActionButtonStyle}">
-                                    <Image Source="/OctoFixFlow;component/images/stop.png" Stretch="Uniform" />
-                                </Button>
-                            </StackPanel>
-                        </StackPanel>
-
-                        <Grid Grid.Column="1">
+                        <Grid>
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
-                            <TextBlock
-                                Grid.Row="0"
-                                Margin="0,0,0,15"
-                                FontSize="16"
-                                FontWeight="Medium"
-                                Foreground="{StaticResource PrimaryColor}"
-                                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=RunningRunningProgress}"
-                                Visibility="Collapsed" />
-                            <!--  使用Grid包裹ProgressBar和TextBlock，实现文本重叠显示在进度条内部  -->
-                            <Grid
-                                Grid.Row="1"
-                                Height="30"
-                                Margin="0,0,0,5"
-                                Visibility="Collapsed">
-                                <ProgressBar
-                                    x:Name="RunProgressBar"
-                                    Background="#ECF0F1"
-                                    Foreground="#3498DB"
-                                    Maximum="100"
-                                    Value="30" />
-
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Row="0" Grid.Column="0">
                                 <TextBlock
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Center"
-                                    FontSize="12"
+                                    Margin="0,0,0,15"
+                                    FontSize="16"
                                     FontWeight="Medium"
-                                    Foreground="#2C3E50"
-                                    Text="{Binding ElementName=RunProgressBar, Path=Value, StringFormat={}{0:F0}%}" />
-                            </Grid>
-                            <ScrollViewer
-                                Grid.Row="2"
-                                Height="300"
-                                Background="White"
-                                BorderBrush="#BDC3C7"
-                                BorderThickness="1">
-                                <StackPanel Margin="10">
-                                    <!--  运行日志  -->
-                                    <ListBox
-                                        x:Name="RunLogListBox"
-                                        Height="auto"
-                                        Background="White"
-                                        BorderThickness="0"
-                                        ItemsSource="{Binding RunLogs}"
-                                        ScrollViewer.VerticalScrollBarVisibility="Auto">
-                                        <ListBox.ItemTemplate>
-                                            <DataTemplate>
-                                                <TextBlock
-                                                    Margin="0,2"
-                                                    FontSize="14"
-                                                    Text="{Binding}"
-                                                    TextWrapping="Wrap" />
-                                            </DataTemplate>
-                                        </ListBox.ItemTemplate>
-                                    </ListBox>
+                                    Foreground="{StaticResource PrimaryColor}"
+                                    Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=GuideBtnExperimentProtocolInfoName}" />
+                                <TextBox
+                                    x:Name="guideProtocolNameTextBox"
+                                    Height="30"
+                                    Margin="0,0,15,0"
+                                    IsEnabled="False"
+                                    Style="{StaticResource InputTextBoxStyle}"
+                                    TextWrapping="NoWrap" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="0" Grid.Column="1">
+                                <TextBlock
+                                    Margin="0,0,0,15"
+                                    FontSize="16"
+                                    FontWeight="Medium"
+                                    Foreground="{StaticResource PrimaryColor}"
+                                    Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=GuideBtnExperimentProtocolInfoAuthor}" />
+                                <TextBox
+                                    x:Name="guideProtocolAuthorTextBox"
+                                    Height="30"
+                                    Margin="0,0,15,0"
+                                    IsEnabled="False"
+                                    Style="{StaticResource InputTextBoxStyle}"
+                                    TextWrapping="NoWrap" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="0" Grid.Column="2">
+                                <TextBlock
+                                    Margin="0,0,0,15"
+                                    FontSize="16"
+                                    FontWeight="Medium"
+                                    Foreground="{StaticResource PrimaryColor}"
+                                    Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=RunningStartTime}" />
+                                <TextBox
+                                    x:Name="guideProtocolStartTimeTextBox"
+                                    Height="30"
+                                    Margin="0,0,15,0"
+                                    IsEnabled="False"
+                                    Style="{StaticResource InputTextBoxStyle}"
+                                    TextWrapping="NoWrap" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="1" Grid.ColumnSpan="3">
+                                <TextBlock
+                                    Margin="0,0,0,15"
+                                    FontSize="16"
+                                    FontWeight="Medium"
+                                    Foreground="{StaticResource PrimaryColor}"
+                                    Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=GuideBtnExperimentProtocolInfoDescription}" />
+                                <TextBox
+                                    x:Name="guideProtocolDescriptionTextBox"
+                                    Height="30"
+                                    AcceptsReturn="True"
+                                    IsEnabled="False"
+                                    Style="{StaticResource InputTextBoxStyle}"
+                                    TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </Grid>
+            <Grid
+                Grid.Row="1"
+                Margin="10"
+                Background="#FCFCFC">
+                <Border
+                    Background="White"
+                    BorderBrush="#E0E0E0"
+                    BorderThickness="1"
+                    CornerRadius="5">
+                    <StackPanel Margin="15">
+                        <TextBlock
+                            FontSize="16"
+                            FontWeight="Medium"
+                            Foreground="{StaticResource PrimaryColor}"
+                            Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=RunningTitle}" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="2*" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock
+                                    Margin="0,0,0,15"
+                                    FontSize="16"
+                                    FontWeight="Medium"
+                                    Foreground="{StaticResource PrimaryColor}"
+                                    Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=RunningDeviceStatus}" />
+                                <TextBox
+                                    x:Name="StatusText"
+                                    Height="30"
+                                    Margin="0,0,15,0"
+                                    IsEnabled="False"
+                                    Style="{StaticResource InputTextBoxStyle}"
+                                    TextWrapping="NoWrap" />
+                                <TextBlock
+                                    Margin="0,0,0,15"
+                                    FontSize="16"
+                                    FontWeight="Medium"
+                                    Foreground="{StaticResource PrimaryColor}"
+                                    Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=RunningRunningTime}" />
+                                <TextBox
+                                    x:Name="RunTimeText"
+                                    Height="30"
+                                    Margin="0,0,15,0"
+                                    IsEnabled="False"
+                                    Style="{StaticResource InputTextBoxStyle}"
+                                    TextWrapping="NoWrap" />
+                                <StackPanel
+                                    Margin="0,20,0,0"
+                                    VerticalAlignment="Top"
+                                    Orientation="Horizontal">
+                                    <Button
+                                        x:Name="btnPause"
+                                        Width="180"
+                                        Height="180"
+                                        Click="BtnPause_Click"
+                                        Style="{StaticResource ActionButtonStyle}">
+                                        <Image Source="/OctoFixFlow;component/images/start.png" Stretch="Uniform" />
+                                    </Button>
+                                    <!--  停止按钮（搭配你的停止图标）  -->
+                                    <Button
+                                        x:Name="btnStop"
+                                        Width="180"
+                                        Height="180"
+                                        Click="BtnStop_Click"
+                                        Style="{StaticResource ActionButtonStyle}">
+                                        <Image Source="/OctoFixFlow;component/images/stop.png" Stretch="Uniform" />
+                                    </Button>
                                 </StackPanel>
-                            </ScrollViewer>
+                            </StackPanel>
 
+                            <Grid Grid.Column="1">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+                                <TextBlock
+                                    Grid.Row="0"
+                                    Margin="0,0,0,15"
+                                    FontSize="16"
+                                    FontWeight="Medium"
+                                    Foreground="{StaticResource PrimaryColor}"
+                                    Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=RunningRunningProgress}"
+                                    Visibility="Collapsed" />
+                                <!--  使用Grid包裹ProgressBar和TextBlock，实现文本重叠显示在进度条内部  -->
+                                <Grid
+                                    Grid.Row="1"
+                                    Height="30"
+                                    Margin="0,0,0,5"
+                                    Visibility="Collapsed">
+                                    <ProgressBar
+                                        x:Name="RunProgressBar"
+                                        Background="#ECF0F1"
+                                        Foreground="#3498DB"
+                                        Maximum="100"
+                                        Value="30" />
+
+                                    <TextBlock
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        FontSize="12"
+                                        FontWeight="Medium"
+                                        Foreground="#2C3E50"
+                                        Text="{Binding ElementName=RunProgressBar, Path=Value, StringFormat={}{0:F0}%}" />
+                                </Grid>
+                                <ScrollViewer
+                                    Grid.Row="2"
+                                    Height="300"
+                                    Background="White"
+                                    BorderBrush="#BDC3C7"
+                                    BorderThickness="1">
+                                    <StackPanel Margin="10">
+                                        <!--  运行日志  -->
+                                        <ListBox
+                                            x:Name="RunLogListBox"
+                                            Height="auto"
+                                            Background="White"
+                                            BorderThickness="0"
+                                            ItemsSource="{Binding RunLogs}"
+                                            ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                            <ListBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock
+                                                        Margin="0,2"
+                                                        FontSize="14"
+                                                        Text="{Binding}"
+                                                        TextWrapping="Wrap" />
+                                                </DataTemplate>
+                                            </ListBox.ItemTemplate>
+                                        </ListBox>
+                                    </StackPanel>
+                                </ScrollViewer>
+
+
+                            </Grid>
 
                         </Grid>
 
-                    </Grid>
+                    </StackPanel>
+                </Border>
+            </Grid>
+            <!--  关闭按钮  -->
+            <Button
+                Grid.Row="2"
+                Width="70"
+                Height="35"
+                Margin="0,10"
+                Click="ExitRunningClick"
+                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualClose}"
+                Style="{StaticResource ActionButtonStyle}" />
+        </Grid>
+        <Grid
+            x:Name="mainRunShow"
+            Grid.Row="2"
+            Background="White"
+            Visibility="Collapsed">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="50" />
+                <RowDefinition Height="Auto" />
+                <!--  标题行  -->
+                <RowDefinition Height="*" />
+                <!--  内容行  -->
+                <RowDefinition Height="55" />
+                <!--  按钮行  -->
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0" Background="{StaticResource PrimaryColor}">
+                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                    <Button
+                        Margin="20,0"
+                        Click="RunFluoShow_Click"
+                        Cursor="Hand"
+                        Style="{StaticResource TopToolbarButton}">
+                        <StackPanel Orientation="Horizontal">
+                            <Image
+                                Width="20"
+                                Height="20"
+                                Margin="0,0,5,0"
+                                Source="/OctoFixFlow;component/images/fluoDelection.png" />
+                            <TextBlock Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualFluo}" />
+                        </StackPanel>
+                    </Button>
+                    <Rectangle
+                        Width="1"
+                        Height="30"
+                        Margin="10,0"
+                        Fill="White" />
+                    <Button
+                        Margin="20,0"
+                        Click="RunMagaShow_Click"
+                        IsEnabled="False"
+                        Style="{StaticResource TopToolbarButton}">
+                        <StackPanel Orientation="Horizontal">
+                            <Image
+                                Width="20"
+                                Height="20"
+                                Margin="0,0,5,0"
+                                Source="/OctoFixFlow;component/images/Magnet.png" />
+                            <TextBlock Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualMagnetic}" />
+                        </StackPanel>
+                    </Button>
+                    <Rectangle
+                        Width="1"
+                        Height="30"
+                        Margin="10,0"
+                        Fill="White" />
+                    <Button
+                        Margin="20,0"
+                        Click="RunShakerShow_Click"
+                        IsEnabled="False"
+                        Style="{StaticResource TopToolbarButton}">
+                        <StackPanel Orientation="Horizontal">
+                            <Image
+                                Width="20"
+                                Height="20"
+                                Margin="0,0,5,0"
+                                Source="/OctoFixFlow;component/images/MixedHeating.png" />
+                            <TextBlock Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualHeatingShaking}" />
+                        </StackPanel>
+                    </Button>
 
                 </StackPanel>
             </Border>
+            <StackPanel
+                Grid.Row="1"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Orientation="Horizontal">
+                <TextBlock
+                    Margin="0,5,0,0"
+                    FontSize="16"
+                    FontWeight="Medium"
+                    Foreground="{StaticResource PrimaryColor}"
+                    Text="均一化浓度:" />
+                <TextBox
+                    x:Name="ConsFluoText"
+                    Width="120"
+                    Margin="0,0,0,0"
+                    IsEnabled="True"
+                    Style="{StaticResource InputTextBoxStyle}"
+                    TextWrapping="NoWrap" />
+
+            </StackPanel>
+            <TabControl
+                Grid.Row="2"
+                Background="#FCFCFC"
+                BorderThickness="0">
+                <TabControl.Resources>
+                    <Style TargetType="{x:Type TabItem}">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                    </Style>
+                </TabControl.Resources>
+
+                <!--  荧光检测TabItem  -->
+                <TabItem>
+                    <TabItem.Resources>
+                        <!--  表头单元格样式（深绿色背景+白色文字）  -->
+                        <Style x:Key="HeaderCellStyle" TargetType="Label">
+                            <Setter Property="Background" Value="{StaticResource PrimaryColor}" />
+                            <Setter Property="Foreground" Value="White" />
+                            <Setter Property="FontSize" Value="14" />
+                            <Setter Property="FontWeight" Value="Bold" />
+                            <Setter Property="HorizontalContentAlignment" Value="Center" />
+                            <Setter Property="VerticalContentAlignment" Value="Center" />
+                            <Setter Property="BorderThickness" Value="1" />
+                            <Setter Property="Width" Value="85" />
+                            <Setter Property="Height" Value="60" />
+                        </Style>
+
+                        <!--  孔位单元格样式（白色背景+红色边框）  -->
+                        <Style x:Key="WellCellStyle" TargetType="Label">
+                            <Setter Property="Background" Value="White" />
+                            <Setter Property="Foreground" Value="Black" />
+                            <Setter Property="FontSize" Value="15" />
+                            <Setter Property="HorizontalContentAlignment" Value="Center" />
+                            <Setter Property="VerticalContentAlignment" Value="Center" />
+                            <Setter Property="BorderBrush" Value="{StaticResource PrimaryColor}" />
+                            <Setter Property="BorderThickness" Value="1" />
+                            <Setter Property="Width" Value="85" />
+                            <Setter Property="Height" Value="60" />
+                        </Style>
+                    </TabItem.Resources>
+
+                    <ScrollViewer
+                        Margin="10"
+                        HorizontalScrollBarVisibility="Auto"
+                        VerticalScrollBarVisibility="Auto">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+
+                            <Grid Name="LeftPlateGrid" Margin="10">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <!--  列号表头（1-12）  -->
+                                <Label
+                                    Grid.Row="0"
+                                    Grid.Column="1"
+                                    Content="1"
+                                    Style="{StaticResource HeaderCellStyle}" />
+                                <Label
+                                    Grid.Row="0"
+                                    Grid.Column="2"
+                                    Content="2"
+                                    Style="{StaticResource HeaderCellStyle}" />
+                                <Label
+                                    Grid.Row="0"
+                                    Grid.Column="3"
+                                    Content="3"
+                                    Style="{StaticResource HeaderCellStyle}" />
+                                <Label
+                                    Grid.Row="0"
+                                    Grid.Column="4"
+                                    Content="4"
+                                    Style="{StaticResource HeaderCellStyle}" />
+                                <Label
+                                    Grid.Row="0"
+                                    Grid.Column="5"
+                                    Content="5"
+                                    Style="{StaticResource HeaderCellStyle}" />
+                                <Label
+                                    Grid.Row="0"
+                                    Grid.Column="6"
+                                    Content="6"
+                                    Style="{StaticResource HeaderCellStyle}" />
+                                <Label
+                                    Grid.Row="0"
+                                    Grid.Column="7"
+                                    Content="7"
+                                    Style="{StaticResource HeaderCellStyle}" />
+                                <Label
+                                    Grid.Row="0"
+                                    Grid.Column="8"
+                                    Content="8"
+                                    Style="{StaticResource HeaderCellStyle}" />
+                                <Label
+                                    Grid.Row="0"
+                                    Grid.Column="9"
+                                    Content="9"
+                                    Style="{StaticResource HeaderCellStyle}" />
+                                <Label
+                                    Grid.Row="0"
+                                    Grid.Column="10"
+                                    Content="10"
+                                    Style="{StaticResource HeaderCellStyle}" />
+                                <Label
+                                    Grid.Row="0"
+                                    Grid.Column="11"
+                                    Content="11"
+                                    Style="{StaticResource HeaderCellStyle}" />
+                                <Label
+                                    Grid.Row="0"
+                                    Grid.Column="12"
+                                    Content="12"
+                                    Style="{StaticResource HeaderCellStyle}" />
+
+                                <!--  行号表头（A-H）  -->
+                                <Label
+                                    Grid.Row="1"
+                                    Grid.Column="0"
+                                    Content="A"
+                                    Style="{StaticResource HeaderCellStyle}" />
+                                <Label
+                                    Grid.Row="2"
+                                    Grid.Column="0"
+                                    Content="B"
+                                    Style="{StaticResource HeaderCellStyle}" />
+                                <Label
+                                    Grid.Row="3"
+                                    Grid.Column="0"
+                                    Content="C"
+                                    Style="{StaticResource HeaderCellStyle}" />
+                                <Label
+                                    Grid.Row="4"
+                                    Grid.Column="0"
+                                    Content="D"
+                                    Style="{StaticResource HeaderCellStyle}" />
+                                <Label
+                                    Grid.Row="5"
+                                    Grid.Column="0"
+                                    Content="E"
+                                    Style="{StaticResource HeaderCellStyle}" />
+                                <Label
+                                    Grid.Row="6"
+                                    Grid.Column="0"
+                                    Content="F"
+                                    Style="{StaticResource HeaderCellStyle}" />
+                                <Label
+                                    Grid.Row="7"
+                                    Grid.Column="0"
+                                    Content="G"
+                                    Style="{StaticResource HeaderCellStyle}" />
+                                <Label
+                                    Grid.Row="8"
+                                    Grid.Column="0"
+                                    Content="H"
+                                    Style="{StaticResource HeaderCellStyle}" />
+
+                                <!--  孔位单元格（A1-H12）  -->
+                                <Label
+                                    Name="Left_A1"
+                                    Grid.Row="1"
+                                    Grid.Column="1"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_A2"
+                                    Grid.Row="1"
+                                    Grid.Column="2"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_A3"
+                                    Grid.Row="1"
+                                    Grid.Column="3"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_A4"
+                                    Grid.Row="1"
+                                    Grid.Column="4"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_A5"
+                                    Grid.Row="1"
+                                    Grid.Column="5"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_A6"
+                                    Grid.Row="1"
+                                    Grid.Column="6"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_A7"
+                                    Grid.Row="1"
+                                    Grid.Column="7"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_A8"
+                                    Grid.Row="1"
+                                    Grid.Column="8"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_A9"
+                                    Grid.Row="1"
+                                    Grid.Column="9"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_A10"
+                                    Grid.Row="1"
+                                    Grid.Column="10"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_A11"
+                                    Grid.Row="1"
+                                    Grid.Column="11"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_A12"
+                                    Grid.Row="1"
+                                    Grid.Column="12"
+                                    Style="{StaticResource WellCellStyle}" />
+
+                                <Label
+                                    Name="Left_B1"
+                                    Grid.Row="2"
+                                    Grid.Column="1"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_B2"
+                                    Grid.Row="2"
+                                    Grid.Column="2"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_B3"
+                                    Grid.Row="2"
+                                    Grid.Column="3"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_B4"
+                                    Grid.Row="2"
+                                    Grid.Column="4"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_B5"
+                                    Grid.Row="2"
+                                    Grid.Column="5"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_B6"
+                                    Grid.Row="2"
+                                    Grid.Column="6"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_B7"
+                                    Grid.Row="2"
+                                    Grid.Column="7"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_B8"
+                                    Grid.Row="2"
+                                    Grid.Column="8"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_B9"
+                                    Grid.Row="2"
+                                    Grid.Column="9"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_B10"
+                                    Grid.Row="2"
+                                    Grid.Column="10"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_B11"
+                                    Grid.Row="2"
+                                    Grid.Column="11"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_B12"
+                                    Grid.Row="2"
+                                    Grid.Column="12"
+                                    Style="{StaticResource WellCellStyle}" />
+
+                                <Label
+                                    Name="Left_C1"
+                                    Grid.Row="3"
+                                    Grid.Column="1"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_C2"
+                                    Grid.Row="3"
+                                    Grid.Column="2"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_C3"
+                                    Grid.Row="3"
+                                    Grid.Column="3"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_C4"
+                                    Grid.Row="3"
+                                    Grid.Column="4"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_C5"
+                                    Grid.Row="3"
+                                    Grid.Column="5"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_C6"
+                                    Grid.Row="3"
+                                    Grid.Column="6"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_C7"
+                                    Grid.Row="3"
+                                    Grid.Column="7"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_C8"
+                                    Grid.Row="3"
+                                    Grid.Column="8"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_C9"
+                                    Grid.Row="3"
+                                    Grid.Column="9"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_C10"
+                                    Grid.Row="3"
+                                    Grid.Column="10"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_C11"
+                                    Grid.Row="3"
+                                    Grid.Column="11"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_C12"
+                                    Grid.Row="3"
+                                    Grid.Column="12"
+                                    Style="{StaticResource WellCellStyle}" />
+
+                                <Label
+                                    Name="Left_D1"
+                                    Grid.Row="4"
+                                    Grid.Column="1"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_D2"
+                                    Grid.Row="4"
+                                    Grid.Column="2"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_D3"
+                                    Grid.Row="4"
+                                    Grid.Column="3"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_D4"
+                                    Grid.Row="4"
+                                    Grid.Column="4"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_D5"
+                                    Grid.Row="4"
+                                    Grid.Column="5"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_D6"
+                                    Grid.Row="4"
+                                    Grid.Column="6"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_D7"
+                                    Grid.Row="4"
+                                    Grid.Column="7"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_D8"
+                                    Grid.Row="4"
+                                    Grid.Column="8"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_D9"
+                                    Grid.Row="4"
+                                    Grid.Column="9"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_D10"
+                                    Grid.Row="4"
+                                    Grid.Column="10"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_D11"
+                                    Grid.Row="4"
+                                    Grid.Column="11"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_D12"
+                                    Grid.Row="4"
+                                    Grid.Column="12"
+                                    Style="{StaticResource WellCellStyle}" />
+
+                                <Label
+                                    Name="Left_E1"
+                                    Grid.Row="5"
+                                    Grid.Column="1"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_E2"
+                                    Grid.Row="5"
+                                    Grid.Column="2"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_E3"
+                                    Grid.Row="5"
+                                    Grid.Column="3"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_E4"
+                                    Grid.Row="5"
+                                    Grid.Column="4"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_E5"
+                                    Grid.Row="5"
+                                    Grid.Column="5"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_E6"
+                                    Grid.Row="5"
+                                    Grid.Column="6"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_E7"
+                                    Grid.Row="5"
+                                    Grid.Column="7"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_E8"
+                                    Grid.Row="5"
+                                    Grid.Column="8"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_E9"
+                                    Grid.Row="5"
+                                    Grid.Column="9"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_E10"
+                                    Grid.Row="5"
+                                    Grid.Column="10"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_E11"
+                                    Grid.Row="5"
+                                    Grid.Column="11"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_E12"
+                                    Grid.Row="5"
+                                    Grid.Column="12"
+                                    Style="{StaticResource WellCellStyle}" />
+
+                                <Label
+                                    Name="Left_F1"
+                                    Grid.Row="6"
+                                    Grid.Column="1"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_F2"
+                                    Grid.Row="6"
+                                    Grid.Column="2"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_F3"
+                                    Grid.Row="6"
+                                    Grid.Column="3"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_F4"
+                                    Grid.Row="6"
+                                    Grid.Column="4"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_F5"
+                                    Grid.Row="6"
+                                    Grid.Column="5"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_F6"
+                                    Grid.Row="6"
+                                    Grid.Column="6"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_F7"
+                                    Grid.Row="6"
+                                    Grid.Column="7"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_F8"
+                                    Grid.Row="6"
+                                    Grid.Column="8"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_F9"
+                                    Grid.Row="6"
+                                    Grid.Column="9"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_F10"
+                                    Grid.Row="6"
+                                    Grid.Column="10"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_F11"
+                                    Grid.Row="6"
+                                    Grid.Column="11"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_F12"
+                                    Grid.Row="6"
+                                    Grid.Column="12"
+                                    Style="{StaticResource WellCellStyle}" />
+
+                                <Label
+                                    Name="Left_G1"
+                                    Grid.Row="7"
+                                    Grid.Column="1"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_G2"
+                                    Grid.Row="7"
+                                    Grid.Column="2"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_G3"
+                                    Grid.Row="7"
+                                    Grid.Column="3"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_G4"
+                                    Grid.Row="7"
+                                    Grid.Column="4"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_G5"
+                                    Grid.Row="7"
+                                    Grid.Column="5"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_G6"
+                                    Grid.Row="7"
+                                    Grid.Column="6"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_G7"
+                                    Grid.Row="7"
+                                    Grid.Column="7"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_G8"
+                                    Grid.Row="7"
+                                    Grid.Column="8"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_G9"
+                                    Grid.Row="7"
+                                    Grid.Column="9"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_G10"
+                                    Grid.Row="7"
+                                    Grid.Column="10"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_G11"
+                                    Grid.Row="7"
+                                    Grid.Column="11"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_G12"
+                                    Grid.Row="7"
+                                    Grid.Column="12"
+                                    Style="{StaticResource WellCellStyle}" />
+
+                                <Label
+                                    Name="Left_H1"
+                                    Grid.Row="8"
+                                    Grid.Column="1"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_H2"
+                                    Grid.Row="8"
+                                    Grid.Column="2"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_H3"
+                                    Grid.Row="8"
+                                    Grid.Column="3"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_H4"
+                                    Grid.Row="8"
+                                    Grid.Column="4"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_H5"
+                                    Grid.Row="8"
+                                    Grid.Column="5"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_H6"
+                                    Grid.Row="8"
+                                    Grid.Column="6"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_H7"
+                                    Grid.Row="8"
+                                    Grid.Column="7"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_H8"
+                                    Grid.Row="8"
+                                    Grid.Column="8"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_H9"
+                                    Grid.Row="8"
+                                    Grid.Column="9"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_H10"
+                                    Grid.Row="8"
+                                    Grid.Column="10"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_H11"
+                                    Grid.Row="8"
+                                    Grid.Column="11"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Left_H12"
+                                    Grid.Row="8"
+                                    Grid.Column="12"
+                                    Style="{StaticResource WellCellStyle}" />
+                            </Grid>
+                            <Grid Name="RightPlateGrid" Margin="10">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <!--  列号表头（1-12）  -->
+                                <Label
+                                    Grid.Row="0"
+                                    Grid.Column="1"
+                                    Content="1"
+                                    Style="{StaticResource HeaderCellStyle}" />
+                                <Label
+                                    Grid.Row="0"
+                                    Grid.Column="2"
+                                    Content="2"
+                                    Style="{StaticResource HeaderCellStyle}" />
+                                <Label
+                                    Grid.Row="0"
+                                    Grid.Column="3"
+                                    Content="3"
+                                    Style="{StaticResource HeaderCellStyle}" />
+                                <Label
+                                    Grid.Row="0"
+                                    Grid.Column="4"
+                                    Content="4"
+                                    Style="{StaticResource HeaderCellStyle}" />
+                                <Label
+                                    Grid.Row="0"
+                                    Grid.Column="5"
+                                    Content="5"
+                                    Style="{StaticResource HeaderCellStyle}" />
+                                <Label
+                                    Grid.Row="0"
+                                    Grid.Column="6"
+                                    Content="6"
+                                    Style="{StaticResource HeaderCellStyle}" />
+                                <Label
+                                    Grid.Row="0"
+                                    Grid.Column="7"
+                                    Content="7"
+                                    Style="{StaticResource HeaderCellStyle}" />
+                                <Label
+                                    Grid.Row="0"
+                                    Grid.Column="8"
+                                    Content="8"
+                                    Style="{StaticResource HeaderCellStyle}" />
+                                <Label
+                                    Grid.Row="0"
+                                    Grid.Column="9"
+                                    Content="9"
+                                    Style="{StaticResource HeaderCellStyle}" />
+                                <Label
+                                    Grid.Row="0"
+                                    Grid.Column="10"
+                                    Content="10"
+                                    Style="{StaticResource HeaderCellStyle}" />
+                                <Label
+                                    Grid.Row="0"
+                                    Grid.Column="11"
+                                    Content="11"
+                                    Style="{StaticResource HeaderCellStyle}" />
+                                <Label
+                                    Grid.Row="0"
+                                    Grid.Column="12"
+                                    Content="12"
+                                    Style="{StaticResource HeaderCellStyle}" />
+
+                                <!--  行号表头（A-H）  -->
+                                <Label
+                                    Grid.Row="1"
+                                    Grid.Column="0"
+                                    Content="A"
+                                    Style="{StaticResource HeaderCellStyle}" />
+                                <Label
+                                    Grid.Row="2"
+                                    Grid.Column="0"
+                                    Content="B"
+                                    Style="{StaticResource HeaderCellStyle}" />
+                                <Label
+                                    Grid.Row="3"
+                                    Grid.Column="0"
+                                    Content="C"
+                                    Style="{StaticResource HeaderCellStyle}" />
+                                <Label
+                                    Grid.Row="4"
+                                    Grid.Column="0"
+                                    Content="D"
+                                    Style="{StaticResource HeaderCellStyle}" />
+                                <Label
+                                    Grid.Row="5"
+                                    Grid.Column="0"
+                                    Content="E"
+                                    Style="{StaticResource HeaderCellStyle}" />
+                                <Label
+                                    Grid.Row="6"
+                                    Grid.Column="0"
+                                    Content="F"
+                                    Style="{StaticResource HeaderCellStyle}" />
+                                <Label
+                                    Grid.Row="7"
+                                    Grid.Column="0"
+                                    Content="G"
+                                    Style="{StaticResource HeaderCellStyle}" />
+                                <Label
+                                    Grid.Row="8"
+                                    Grid.Column="0"
+                                    Content="H"
+                                    Style="{StaticResource HeaderCellStyle}" />
+
+                                <!--  孔位单元格（A1-H12）  -->
+                                <Label
+                                    Name="Right_A1"
+                                    Grid.Row="1"
+                                    Grid.Column="1"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_A2"
+                                    Grid.Row="1"
+                                    Grid.Column="2"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_A3"
+                                    Grid.Row="1"
+                                    Grid.Column="3"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_A4"
+                                    Grid.Row="1"
+                                    Grid.Column="4"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_A5"
+                                    Grid.Row="1"
+                                    Grid.Column="5"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_A6"
+                                    Grid.Row="1"
+                                    Grid.Column="6"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_A7"
+                                    Grid.Row="1"
+                                    Grid.Column="7"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_A8"
+                                    Grid.Row="1"
+                                    Grid.Column="8"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_A9"
+                                    Grid.Row="1"
+                                    Grid.Column="9"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_A10"
+                                    Grid.Row="1"
+                                    Grid.Column="10"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_A11"
+                                    Grid.Row="1"
+                                    Grid.Column="11"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_A12"
+                                    Grid.Row="1"
+                                    Grid.Column="12"
+                                    Style="{StaticResource WellCellStyle}" />
+
+                                <Label
+                                    Name="Right_B1"
+                                    Grid.Row="2"
+                                    Grid.Column="1"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_B2"
+                                    Grid.Row="2"
+                                    Grid.Column="2"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_B3"
+                                    Grid.Row="2"
+                                    Grid.Column="3"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_B4"
+                                    Grid.Row="2"
+                                    Grid.Column="4"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_B5"
+                                    Grid.Row="2"
+                                    Grid.Column="5"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_B6"
+                                    Grid.Row="2"
+                                    Grid.Column="6"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_B7"
+                                    Grid.Row="2"
+                                    Grid.Column="7"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_B8"
+                                    Grid.Row="2"
+                                    Grid.Column="8"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_B9"
+                                    Grid.Row="2"
+                                    Grid.Column="9"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_B10"
+                                    Grid.Row="2"
+                                    Grid.Column="10"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_B11"
+                                    Grid.Row="2"
+                                    Grid.Column="11"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_B12"
+                                    Grid.Row="2"
+                                    Grid.Column="12"
+                                    Style="{StaticResource WellCellStyle}" />
+
+                                <Label
+                                    Name="Right_C1"
+                                    Grid.Row="3"
+                                    Grid.Column="1"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_C2"
+                                    Grid.Row="3"
+                                    Grid.Column="2"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_C3"
+                                    Grid.Row="3"
+                                    Grid.Column="3"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_C4"
+                                    Grid.Row="3"
+                                    Grid.Column="4"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_C5"
+                                    Grid.Row="3"
+                                    Grid.Column="5"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_C6"
+                                    Grid.Row="3"
+                                    Grid.Column="6"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_C7"
+                                    Grid.Row="3"
+                                    Grid.Column="7"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_C8"
+                                    Grid.Row="3"
+                                    Grid.Column="8"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_C9"
+                                    Grid.Row="3"
+                                    Grid.Column="9"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_C10"
+                                    Grid.Row="3"
+                                    Grid.Column="10"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_C11"
+                                    Grid.Row="3"
+                                    Grid.Column="11"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_C12"
+                                    Grid.Row="3"
+                                    Grid.Column="12"
+                                    Style="{StaticResource WellCellStyle}" />
+
+                                <Label
+                                    Name="Right_D1"
+                                    Grid.Row="4"
+                                    Grid.Column="1"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_D2"
+                                    Grid.Row="4"
+                                    Grid.Column="2"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_D3"
+                                    Grid.Row="4"
+                                    Grid.Column="3"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_D4"
+                                    Grid.Row="4"
+                                    Grid.Column="4"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_D5"
+                                    Grid.Row="4"
+                                    Grid.Column="5"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_D6"
+                                    Grid.Row="4"
+                                    Grid.Column="6"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_D7"
+                                    Grid.Row="4"
+                                    Grid.Column="7"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_D8"
+                                    Grid.Row="4"
+                                    Grid.Column="8"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_D9"
+                                    Grid.Row="4"
+                                    Grid.Column="9"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_D10"
+                                    Grid.Row="4"
+                                    Grid.Column="10"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_D11"
+                                    Grid.Row="4"
+                                    Grid.Column="11"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_D12"
+                                    Grid.Row="4"
+                                    Grid.Column="12"
+                                    Style="{StaticResource WellCellStyle}" />
+
+                                <Label
+                                    Name="Right_E1"
+                                    Grid.Row="5"
+                                    Grid.Column="1"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_E2"
+                                    Grid.Row="5"
+                                    Grid.Column="2"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_E3"
+                                    Grid.Row="5"
+                                    Grid.Column="3"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_E4"
+                                    Grid.Row="5"
+                                    Grid.Column="4"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_E5"
+                                    Grid.Row="5"
+                                    Grid.Column="5"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_E6"
+                                    Grid.Row="5"
+                                    Grid.Column="6"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_E7"
+                                    Grid.Row="5"
+                                    Grid.Column="7"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_E8"
+                                    Grid.Row="5"
+                                    Grid.Column="8"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_E9"
+                                    Grid.Row="5"
+                                    Grid.Column="9"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_E10"
+                                    Grid.Row="5"
+                                    Grid.Column="10"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_E11"
+                                    Grid.Row="5"
+                                    Grid.Column="11"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_E12"
+                                    Grid.Row="5"
+                                    Grid.Column="12"
+                                    Style="{StaticResource WellCellStyle}" />
+
+                                <Label
+                                    Name="Right_F1"
+                                    Grid.Row="6"
+                                    Grid.Column="1"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_F2"
+                                    Grid.Row="6"
+                                    Grid.Column="2"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_F3"
+                                    Grid.Row="6"
+                                    Grid.Column="3"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_F4"
+                                    Grid.Row="6"
+                                    Grid.Column="4"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_F5"
+                                    Grid.Row="6"
+                                    Grid.Column="5"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_F6"
+                                    Grid.Row="6"
+                                    Grid.Column="6"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_F7"
+                                    Grid.Row="6"
+                                    Grid.Column="7"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_F8"
+                                    Grid.Row="6"
+                                    Grid.Column="8"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_F9"
+                                    Grid.Row="6"
+                                    Grid.Column="9"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_F10"
+                                    Grid.Row="6"
+                                    Grid.Column="10"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_F11"
+                                    Grid.Row="6"
+                                    Grid.Column="11"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_F12"
+                                    Grid.Row="6"
+                                    Grid.Column="12"
+                                    Style="{StaticResource WellCellStyle}" />
+
+                                <Label
+                                    Name="Right_G1"
+                                    Grid.Row="7"
+                                    Grid.Column="1"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_G2"
+                                    Grid.Row="7"
+                                    Grid.Column="2"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_G3"
+                                    Grid.Row="7"
+                                    Grid.Column="3"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_G4"
+                                    Grid.Row="7"
+                                    Grid.Column="4"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_G5"
+                                    Grid.Row="7"
+                                    Grid.Column="5"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_G6"
+                                    Grid.Row="7"
+                                    Grid.Column="6"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_G7"
+                                    Grid.Row="7"
+                                    Grid.Column="7"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_G8"
+                                    Grid.Row="7"
+                                    Grid.Column="8"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_G9"
+                                    Grid.Row="7"
+                                    Grid.Column="9"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_G10"
+                                    Grid.Row="7"
+                                    Grid.Column="10"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_G11"
+                                    Grid.Row="7"
+                                    Grid.Column="11"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_G12"
+                                    Grid.Row="7"
+                                    Grid.Column="12"
+                                    Style="{StaticResource WellCellStyle}" />
+
+                                <Label
+                                    Name="Right_H1"
+                                    Grid.Row="8"
+                                    Grid.Column="1"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_H2"
+                                    Grid.Row="8"
+                                    Grid.Column="2"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_H3"
+                                    Grid.Row="8"
+                                    Grid.Column="3"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_H4"
+                                    Grid.Row="8"
+                                    Grid.Column="4"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_H5"
+                                    Grid.Row="8"
+                                    Grid.Column="5"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_H6"
+                                    Grid.Row="8"
+                                    Grid.Column="6"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_H7"
+                                    Grid.Row="8"
+                                    Grid.Column="7"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_H8"
+                                    Grid.Row="8"
+                                    Grid.Column="8"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_H9"
+                                    Grid.Row="8"
+                                    Grid.Column="9"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_H10"
+                                    Grid.Row="8"
+                                    Grid.Column="10"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_H11"
+                                    Grid.Row="8"
+                                    Grid.Column="11"
+                                    Style="{StaticResource WellCellStyle}" />
+                                <Label
+                                    Name="Right_H12"
+                                    Grid.Row="8"
+                                    Grid.Column="12"
+                                    Style="{StaticResource WellCellStyle}" />
+                            </Grid>
+
+
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
+            </TabControl>
+            <!--  继续按钮  -->
+            <Button
+                Grid.Row="3"
+                Width="70"
+                Height="35"
+                Margin="0,10"
+                Click="RunShowConfirmButton_Click"
+                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingConfirm}"
+                Style="{StaticResource ActionButtonStyle}" />
         </Grid>
-        <!--  关闭按钮  -->
-        <Button
-            Grid.Row="4"
-            Width="70"
-            Height="35"
-            Margin="0,10"
-            Click="ExitRunningClick"
-            Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualClose}"
-            Style="{StaticResource ActionButtonStyle}" />
+
     </Grid>
 </UserControl>

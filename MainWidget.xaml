@@ -73,7 +73,7 @@
                 <Image
                     Grid.Column="0"
                     Width="180"
-                    Source="/OctoFixFlow;component/images/MOXI.png"
+                    Source="/OctoFixFlow;component/images/GenLogo.png"
                     Stretch="Uniform" />
                 <TextBlock
                     Grid.Column="1"
@@ -228,19 +228,24 @@
                     FontSize="16"
                     FontWeight="Bold"
                     Header="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionFunctionArea}">
-                    <ScrollViewer MaxHeight="250" VerticalScrollBarVisibility="Auto">
-                        <StackPanel>
-                            <ComboBox
-                                x:Name="ActionSelectComboBox"
-                                Margin="0,0,0,8"
-                                FontWeight="Normal"
-                                SelectionChanged="ActionSelectComboBox_SelectionChanged"
-                                Style="{StaticResource InputComboBoxStyle}">
-                                <ComboBoxItem Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionFunctionAll}" Tag="All" />
-                                <ComboBoxItem Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionFunctionBasic}" Tag="Basic" />
-                                <ComboBoxItem Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionFunctionModule}" Tag="Module" />
-                                <ComboBoxItem Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionFunctionOther}" Tag="Other" />
-                            </ComboBox>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <ComboBox
+                            x:Name="ActionSelectComboBox"
+                            Grid.Row="0"
+                            Margin="0,0,0,8"
+                            FontWeight="Normal"
+                            SelectionChanged="ActionSelectComboBox_SelectionChanged"
+                            Style="{StaticResource InputComboBoxStyle}">
+                            <ComboBoxItem Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionFunctionAll}" Tag="All" />
+                            <ComboBoxItem Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionFunctionBasic}" Tag="Basic" />
+                            <ComboBoxItem Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionFunctionModule}" Tag="Module" />
+                            <ComboBoxItem Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionFunctionOther}" Tag="Other" />
+                        </ComboBox>
+                        <ScrollViewer Grid.Row="1" MaxHeight="250" VerticalScrollBarVisibility="Auto">
                             <UniformGrid Margin="0,0,0,2" Columns="2">
                                 <Button
                                     x:Name="AspirateButton"
@@ -332,9 +337,16 @@
                                     Click="FluoButton_Click"
                                     Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionFluo}"
                                     Style="{StaticResource ActionButtonStyle}" />
+                                <Button
+                                    x:Name="ActionIFButton"
+                                    Width="100"
+                                    Click="IfButton_Click"
+                                    Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowActionIf}"
+                                    Style="{StaticResource ActionButtonStyle}" />
                             </UniformGrid>
-                        </StackPanel>
-                    </ScrollViewer>
+                        </ScrollViewer>
+
+                    </Grid>
 
                 </GroupBox>
 
@@ -515,7 +527,7 @@
                     </Grid.ColumnDefinitions>
                     <!--  动态生成12个板位  -->
                     <Border
-                        x:Name="PlateBorder10"
+                        x:Name="BorderGrid10"
                         Grid.Row="1"
                         Grid.Column="0"
                         AllowDrop="True"
@@ -539,6 +551,7 @@
                         </Grid>
                     </Border>
                     <Border
+                        x:Name="BorderGrid11"
                         Grid.Row="1"
                         Grid.Column="1"
                         AllowDrop="True"
@@ -579,6 +592,7 @@
                         </Grid>
                     </Border>
                     <Border
+                        x:Name="BorderGrid7"
                         Grid.Row="2"
                         Grid.Column="0"
                         AllowDrop="True"
@@ -602,6 +616,7 @@
                         </Grid>
                     </Border>
                     <Border
+                        x:Name="BorderGrid8"
                         Grid.Row="2"
                         Grid.Column="1"
                         AllowDrop="True"
@@ -625,6 +640,7 @@
                         </Grid>
                     </Border>
                     <Border
+                        x:Name="BorderGrid9"
                         Grid.Row="2"
                         Grid.Column="2"
                         AllowDrop="True"
@@ -673,6 +689,7 @@
                         </Grid>
                     </Border>
                     <Border
+                        x:Name="BorderGrid4"
                         Grid.Row="3"
                         Grid.Column="0"
                         AllowDrop="True"
@@ -696,6 +713,7 @@
                         </Grid>
                     </Border>
                     <Border
+                        x:Name="BorderGrid5"
                         Grid.Row="3"
                         Grid.Column="1"
                         AllowDrop="True"
@@ -719,6 +737,7 @@
                         </Grid>
                     </Border>
                     <Border
+                        x:Name="BorderGrid6"
                         Grid.Row="3"
                         Grid.Column="2"
                         AllowDrop="True"
@@ -767,6 +786,7 @@
                         </Grid>
                     </Border>
                     <Border
+                        x:Name="BorderGrid1"
                         Grid.Row="4"
                         Grid.Column="0"
                         AllowDrop="True"
@@ -790,6 +810,7 @@
                         </Grid>
                     </Border>
                     <Border
+                        x:Name="BorderGrid2"
                         Grid.Row="4"
                         Grid.Column="1"
                         AllowDrop="True"
@@ -813,6 +834,7 @@
                         </Grid>
                     </Border>
                     <Border
+                        x:Name="BorderGrid3"
                         Grid.Row="4"
                         Grid.Column="2"
                         AllowDrop="True"
@@ -988,7 +1010,8 @@
         <!--  状态栏  -->
         <StatusBar Grid.Row="3" Background="{StaticResource DarkBackground}">
             <StatusBarItem>
-                <TextBlock Foreground="White" Text="MoxiPlatform S1 | " />
+                <TextBlock Foreground="White" Text="TIRB-12C | " />
+                <!--  简石:TIRB-12C  墨析:MP S1  -->
             </StatusBarItem>
             <StatusBarItem>
                 <TextBlock Foreground="White" Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=WindowVersion}" />

@@ -275,6 +275,40 @@
                                                 Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualSetCalibration}"
                                                 Style="{StaticResource ActionButtonStyle}" />
                                         </StackPanel>
+                                        <!--  1挡/0.1挡  -->
+                                        <StackPanel
+                                            Margin="0,0,0,15"
+                                            HorizontalAlignment="Left"
+                                            Orientation="Horizontal">
+                                            <!--  1挡  -->
+                                            <StackPanel Width="120" Margin="0,0,0,10">
+                                                <TextBlock
+                                                    Margin="0,0,0,5"
+                                                    FontSize="13"
+                                                    Foreground="#666666"
+                                                    Text="1" />
+                                                <TextBox
+                                                    x:Name="txtCalib1"
+                                                    Width="100"
+                                                    Margin="-20,0,0,0"
+                                                    Style="{StaticResource InputTextBoxStyle}"
+                                                    Text="0.00" />
+                                            </StackPanel>
+                                            <!--  2挡  -->
+                                            <StackPanel Width="120" Margin="0,0,0,10">
+                                                <TextBlock
+                                                    Margin="0,0,0,5"
+                                                    FontSize="13"
+                                                    Foreground="#666666"
+                                                    Text="2" />
+                                                <TextBox
+                                                    x:Name="txtCalib2"
+                                                    Width="100"
+                                                    Margin="-20,0,0,0"
+                                                    Style="{StaticResource InputTextBoxStyle}"
+                                                    Text="0.00" />
+                                            </StackPanel>
+                                        </StackPanel>
                                         <!--  回程差/10挡  -->
                                         <StackPanel
                                             Margin="0,0,0,15"
@@ -934,6 +968,87 @@
                                             <Button
                                                 x:Name="btnClosePCR"
                                                 Click="btnClosePCR_Click"
+                                                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualPCRClose}"
+                                                Style="{StaticResource ActionButtonStyle}" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+
+                            </Grid>
+                        </TabItem>
+                        <TabItem Header="Fluo">
+                            <Grid>
+                                <Border
+                                    Margin="0,0,0,20"
+                                    Background="White"
+                                    BorderBrush="#E0E0E0"
+                                    BorderThickness="1"
+                                    CornerRadius="5">
+                                    <StackPanel Margin="15">
+                                        <TextBlock
+                                            Margin="0,0,0,15"
+                                            FontSize="16"
+                                            FontWeight="Medium"
+                                            Foreground="{StaticResource PrimaryColor}"
+                                            Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualFluoControl}" />
+
+                                        <Grid Margin="0,0,0,8">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock
+                                                Grid.Column="0"
+                                                VerticalAlignment="Center"
+                                                FontSize="13"
+                                                Foreground="#666666"
+                                                Text="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=StepDetailSelectdWells}" />
+                                            <Button
+                                                x:Name="btnSeleteFluo"
+                                                Grid.Column="1"
+                                                Click="btnSeleteFluo_Click"
+                                                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=StepDetailSelect}"
+                                                Style="{StaticResource ActionButtonStyle}" />
+                                        </Grid>
+                                        <Grid Margin="0,0,0,15">
+                                            <TextBox
+                                                x:Name="FluoFileAddress"
+                                                MinHeight="100"
+                                                MaxWidth="260"
+                                                AcceptsReturn="True"
+                                                IsEnabled="false"
+                                                Style="{StaticResource InputTextBoxStyle}"
+                                                TextWrapping="WrapWithOverflow" />
+                                        </Grid>
+                                        <StackPanel
+                                            Margin="0,0,0,5"
+                                            HorizontalAlignment="Left"
+                                            Orientation="Horizontal">
+                                            <Button
+                                                x:Name="btnStartFluo"
+                                                Margin="0,0,10,0"
+                                                Click="btnStartFluo_Click"
+                                                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualPCRStart}"
+                                                Style="{StaticResource ActionButtonStyle}" />
+                                            <Button
+                                                x:Name="btnGetFluo"
+                                                Click="btnGetFluo_Click"
+                                                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualFluoGetValue}"
+                                                Style="{StaticResource ActionButtonStyle}" />
+                                        </StackPanel>
+                                        <StackPanel
+                                            Margin="0,0,0,5"
+                                            HorizontalAlignment="Left"
+                                            Orientation="Horizontal">
+                                            <Button
+                                                x:Name="btnOpenFluo"
+                                                Margin="0,0,10,0"
+                                                Click="btnOpenFluo_Click"
+                                                Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualPCROpen}"
+                                                Style="{StaticResource ActionButtonStyle}" />
+                                            <Button
+                                                x:Name="btnCloseFluo"
+                                                Click="btnCloseFluo_Click"
                                                 Content="{Binding Source={x:Static local:ResourceHelper.Instance}, Path=SettingManualPCRClose}"
                                                 Style="{StaticResource ActionButtonStyle}" />
                                         </StackPanel>

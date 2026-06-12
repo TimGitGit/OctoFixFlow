@@ -800,6 +800,7 @@ namespace OctoFixFlow
         public string _displayIndex;
         private float _volume;
         private string _position;
+        private int _pipeWaitTime;
         private string _consName;
         private int _consRows;
         private int _consCols;
@@ -849,6 +850,16 @@ namespace OctoFixFlow
         private string _variateScriptName;
         private string _variateStep;
         private float _variateNum = 1;
+        private string _fluoStep;
+        private string _selectedWells;
+        private string _normaposition0;
+        private string _normaposition1;
+        private string _normaposition2;
+        private string _normaposition3;
+        private string _ifScriptName;
+        private string _ifStep;
+        private float _ifNum = 1;
+
 
         #region 变量振荡
         private string _shakerVariateTimeName;
@@ -869,6 +880,10 @@ namespace OctoFixFlow
         #region 变量等待
         private string _waitVariateName;
         private string _waitVariateValue;
+        #endregion
+        #region 变量循环
+        private string _loopEndVariateName;
+        private string _loopEndVariateValue;
         #endregion
         #region 变量孔位
         // 行变量（对应界面的「行」）
@@ -926,6 +941,10 @@ namespace OctoFixFlow
                     "Annotation" => ResourceHelper.Instance.WindowActionAnno,
                     "Variate" => ResourceHelper.Instance.WindowActionVariate,
                     "Fluo" => ResourceHelper.Instance.WindowActionFluo,
+                    "If" => ResourceHelper.Instance.WindowActionIf,
+                    "elseIf" => ResourceHelper.Instance.WindowActionElseIf,
+                    "else" => ResourceHelper.Instance.WindowActionElse,
+                    "endIf" => ResourceHelper.Instance.WindowActionEndIf,
 
                     _ => _type // 未知类型时显示原始Type值（避免空值）
                 };
@@ -987,6 +1006,15 @@ namespace OctoFixFlow
                 _position = value;
                 OnPropertyChanged();
                 UpdateStepDescription();
+            }
+        }
+        public int PipeWaitTime
+        {
+            get => _pipeWaitTime;
+            set
+            {
+                _pipeWaitTime = value;
+                OnPropertyChanged();
             }
         }
         public string ConsName
@@ -1287,7 +1315,7 @@ namespace OctoFixFlow
             {
                 int newStart = Math.Max(1, value);
                 _loopStartNum = newStart;
-                if (_loopEndNum <= newStart)
+                if (_loopEndNum < newStart)
                 {
                     _loopEndNum = newStart + 1;
                     OnPropertyChanged(nameof(LoopEndNum));
@@ -1306,7 +1334,7 @@ namespace OctoFixFlow
             get => _loopEndNum;
             set
             {
-                int minEnd = _loopStartNum + 1;
+                int minEnd = _loopStartNum;
                 _loopEndNum = Math.Max(value, minEnd);
                 if (_loopAddNum > _loopEndNum - _loopStartNum)
                 {
@@ -1362,6 +1390,91 @@ namespace OctoFixFlow
         {
             get => _variateNum;
             set { _variateNum = value; OnPropertyChanged(); UpdateStepDescription(); }
+        }
+        public string FluoStep
+        {
+            get => _fluoStep;
+            set
+            {
+                _fluoStep = value;
+                OnPropertyChanged();
+                UpdateStepDescription();
+            }
+        }
+        public string SelectedWells
+        {
+            get => _selectedWells;
+            set
+            {
+                _selectedWells = value;
+                OnPropertyChanged();
+                UpdateStepDescription();
+            }
+        }
+        public string Normaposition3
+        {
+            get => _normaposition3;
+            set
+            {
+                _normaposition3 = value;
+                OnPropertyChanged();
+                UpdateStepDescription();
+            }
+        }
+        public string Normaposition0
+        {
+            get => _normaposition0;
+            set
+            {
+                _normaposition0 = value;
+                OnPropertyChanged();
+                UpdateStepDescription();
+            }
+        }
+        public string Normaposition1
+        {
+            get => _normaposition1;
+            set
+            {
+                _normaposition1 = value;
+                OnPropertyChanged();
+                UpdateStepDescription();
+            }
+        }
+        public string Normaposition2
+        {
+            get => _normaposition2;
+            set
+            {
+                _normaposition2 = value;
+                OnPropertyChanged();
+                UpdateStepDescription();
+            }
+        }
+        public string IfScriptName
+        {
+            get => _ifScriptName;
+            set
+            {
+                _ifScriptName = value;
+                OnPropertyChanged();
+                UpdateStepDescription();
+            }
+        }
+        public string IfStep
+        {
+            get => _ifStep;
+            set
+            {
+                _ifStep = value;
+                OnPropertyChanged();
+                UpdateStepDescription();
+            }
+        }
+        public float IfNum
+        {
+            get => _ifNum;
+            set { _ifNum = value; OnPropertyChanged(); UpdateStepDescription(); }
         }
         #region 变量振荡
         public string ShakerVariateTimeName
@@ -1453,6 +1566,22 @@ namespace OctoFixFlow
         {
             get => _waitVariateValue;
             set { _waitVariateValue = value; OnPropertyChanged(); UpdateStepDescription(); }
+        }
+        #endregion
+        #region 变量循环
+        public string LoopEndVariateName
+        {
+            get => _loopEndVariateName;
+            set
+            {
+                _loopEndVariateName = value;
+                OnPropertyChanged();
+            }
+        }
+        public string LoopEndVariateValue
+        {
+            get => _loopEndVariateValue;
+            set { _loopEndVariateValue = value; OnPropertyChanged(); UpdateStepDescription(); }
         }
         #endregion
         #region 变量孔位  罗贤全
@@ -2128,6 +2257,7 @@ namespace OctoFixFlow
         public float Acc { get; set; }
         public float Dcc { get; set; }
     }
+
     public class PipeCalibrationParams
     {
         // 回程差

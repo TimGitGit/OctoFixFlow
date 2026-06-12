@@ -1,11 +1,11 @@
-﻿using QybotrunPkg;
+﻿using Newtonsoft.Json.Linq;
+using QybotrunPkg;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Threading;
-
 namespace OctoFixFlow
 {
     /// <summary>
@@ -22,6 +22,7 @@ namespace OctoFixFlow
         private int _lastLoggedState = -1;
         private DispatcherTimer _infoPollingTimer; // 定时获取ScriptInfo的计时器
         private runtime_info _currentRuntimeInfo; // 存储当前实时运行信息
+        private bool _inputStateHandled = false;
         public RunningInfoShow(MainWidget mainWidget)
         {
             InitializeComponent();
@@ -76,17 +77,17 @@ namespace OctoFixFlow
                 // _mainWidget.ShowNotification($"获取运行信息失败：{ex.Message}", NotificationControl.NotificationType.Warn);
             }
         }
-        private void UpdateRuntimeInfoUI(runtime_info info)
+        private async void UpdateRuntimeInfoUI(runtime_info info)
         {
-            Debug.WriteLine("=============");
+            //Debug.WriteLine("=============");
 
-            Debug.WriteLine(info.ScriptName);
-            Debug.WriteLine(info.StepName);
-            Debug.WriteLine(info.SysState);
+            //Debug.WriteLine(info.ScriptName);
+            //Debug.WriteLine(info.StepName);
+            //Debug.WriteLine("SysState" + info.SysState);
 
-            Debug.WriteLine(info.TotalStep);
-            Debug.WriteLine(info.CurrentStep);
-            Debug.WriteLine("====++++++==");
+            //Debug.WriteLine(info.TotalStep);
+            //Debug.WriteLine(info.CurrentStep);
+            //Debug.WriteLine("====++++++==");
 
             if (info.TotalStep > 0)
             {
@@ -99,7 +100,8 @@ namespace OctoFixFlow
             {
                 case QybotrunPkg.runtime_info.Types.state.Idle://idle
                     nowState = 0;
-                    StatusText.Foreground = new SolidColorBrush(Color.FromRgb(153, 153, 153));
+                    _inputStateHandled = false;
+                    StatusText.Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(153, 153, 153));
                     StatusText.Text = _mainWidget._res.ScriptUINotRun;
                     RunTimeText.Text = "00:00:00";
                     RunProgressBar.Value = 0;
@@ -108,21 +110,90 @@ namespace OctoFixFlow
                     break;
                 case QybotrunPkg.runtime_info.Types.state.Err://err
                     nowState = 1;
+                    _inputStateHandled = false;
                     //StatusIndicator.Fill = new SolidColorBrush(Color.FromRgb(231, 76, 60)); // 红色
-                    StatusText.Foreground = new SolidColorBrush(Color.FromRgb(231, 76, 60));
+                    StatusText.Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60));
                     StatusText.Text = _mainWidget._res.ScriptUILogError;
                     break;
                 case QybotrunPkg.runtime_info.Types.state.Busy://run
                     nowState = 2;
+                    _inputStateHandled = false;
                     //StatusIndicator.Fill = new SolidColorBrush(Color.FromRgb(39, 174, 96)); // 绿色
-                    StatusText.Foreground = new SolidColorBrush(Color.FromRgb(39, 174, 96));
+                    StatusText.Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(39, 174, 96));
                     StatusText.Text = _mainWidget._res.ScriptUILogRun;
                     break;
                 case QybotrunPkg.runtime_info.Types.state.Pause://pause
                     nowState = 3;
-                    // StatusIndicator.Fill = new SolidColorBrush(Color.FromRgb(243, 156, 18)); // 橙色
-                    StatusText.Foreground = new SolidColorBrush(Color.FromRgb(243, 156, 18));
+                    _inputStateHandled = false;
+                    StatusText.Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(243, 156, 18));
                     StatusText.Text = _mainWidget._res.ScriptUILogPause;
+                    break;
+                case QybotrunPkg.runtime_info.Types.state.Input://bridgee
+                    nowState = 4;
+                    StatusText.Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(33, 18, 243));//蓝色
+                    StatusText.Text = _mainWidget._res.ScriptUILogPause;
+                    if (!_inputStateHandled)
+                    {
+                        _inputStateHandled = true;
+                        var input = await _mainWidget.ScriptGetInputAsync();
+
+                        var nowFluoData = input.Data;
+
+                        JObject fluoData = JObject.Parse(nowFluoData);
+                        float? fluoMinFloat = (float?)fluoData["fluoMin"];
+                        JArray fluoW = (JArray)fluoData["fluoW"];
+                        JArray dilutionPlan = (JArray)fluoData["plan"];
+
+                        if (fluoMinFloat.HasValue)
+                        {
+                            float actualValue = fluoMinFloat.Value;
+                            ConsFluoText.Text = actualValue.ToString();
+                        }
+                        if (fluoW != null)
+                        {
+                            //ClearAllWells(true);
+                            // 1. 填充左边荧光值孔板（LeftPlateGrid）
+                            foreach (JToken wellItem in fluoW)
+                            {
+                                int wellIndex = (int)wellItem[0];
+                                double fluoValue = (double)wellItem[1];
+
+                                if (FindName(GetWellControlName(wellIndex, "Left")) is Label lbl)
+                                {
+                                    lbl.Content = fluoValue.ToString("F0"); // 显示整数，要小数就改成F2
+                                }
+                            }
+                        }
+                        if (dilutionPlan != null)
+                        {
+                            //ClearAllWells(false);
+
+                            // 2. 填充右边稀释方案孔板（RightPlateGrid）
+                            foreach (JToken planItem in dilutionPlan)
+                            {
+                                int wellIndex = (int)planItem["well"];
+                                double sampleVol = (double)planItem["sample_vol_uL"];
+                                double diluentVol = (double)planItem["diluent_vol_uL"];
+
+                                if (FindName(GetWellControlName(wellIndex, "Right")) is Label lbl)
+                                {
+                                    // 竖着显示：上面样本量，下面稀释液量
+                                    lbl.Content = $"{sampleVol:F2}\n{diluentVol:F2}";
+                                    lbl.FontSize = 15; // 调小字体，确保两行都能显示
+                                }
+                            }
+                        }
+
+
+
+
+                        mainRunControl.Visibility = Visibility.Collapsed;
+                        mainRunShow.Visibility = Visibility.Visible;
+
+                    }
+
+
+
                     break;
             }
             if (info.CurrentStep > 0 && info.CurrentStep != _lastLoggedStep)
@@ -137,20 +208,6 @@ namespace OctoFixFlow
                 _infoPollingTimer.Tick -= InfoPollingTimer_Tick;
                 _infoPollingTimer = null;
             }
-            //     bool shouldLog = (info.CurrentStep != _lastLoggedStep) ||
-            //(nowState == 1 && _lastLoggedState != 1) ||
-            //_lastLoggedStep == -1;
-            //     Debug.WriteLine(shouldLog);
-            //     Debug.WriteLine(info.CurrentStep);
-
-            //     if (shouldLog && info.CurrentStep > 0)
-            //     {
-            //         // 添加日志条目
-            //         GenerateStepLog(nowState, info.CurrentStep, info.TotalStep, info.StepName, info.Details);
-            //         // 更新记录的步骤和状态
-            //         _lastLoggedStep = info.CurrentStep;
-            //         _lastLoggedState = nowState;
-            //     }
         }
 
 
@@ -286,5 +343,105 @@ namespace OctoFixFlow
 
             await _mainWidget.ScriptStopAsync();
         }
+        #region 数据显示页面
+        private string GetWellControlName(int wellIndex, string prefix)
+        {
+            int row = wellIndex / 12;
+            int col = wellIndex % 12 + 1;
+            char rowChar = (char)('A' + row);
+            return $"{prefix}_{rowChar}{col}";
+        }
+
+        // 清空所有孔位的旧数据（避免残留）
+        private void ClearAllWells(bool isLeft)
+        {
+            if (isLeft)
+            {
+                // 清空左边荧光值孔板
+                for (int row = 0; row < 8; row++)
+                {
+                    for (int col = 1; col <= 12; col++)
+                    {
+                        if (FindName($"Left_{(char)('A' + row)}{col}") is Label lbl)
+                        {
+                            lbl.Content = string.Empty;
+                            lbl.FontSize = 15;
+                        }
+                    }
+                }
+            }
+            else
+            {            // 清空右边稀释方案孔板
+                for (int row = 0; row < 8; row++)
+                {
+                    for (int col = 1; col <= 12; col++)
+                    {
+                        if (FindName($"Right_{(char)('A' + row)}{col}") is Label lbl)
+                        {
+                            lbl.Content = string.Empty;
+                            lbl.FontSize = 15;
+                        }
+                    }
+                }
+
+            }
+
+
+
+        }
+        //切换显示界面
+        private void runningToggleButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (mainRunShow.Visibility == Visibility.Visible)
+            {
+                mainRunControl.Visibility = Visibility.Visible;
+                mainRunShow.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                mainRunControl.Visibility = Visibility.Collapsed;
+                mainRunShow.Visibility = Visibility.Visible;
+            }
+
+        }
+        //显示荧光检测数据页面
+        private void RunFluoShow_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+        //显示磁吸数据页面
+        private void RunMagaShow_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+        //显示振荡数据页面
+        private void RunShakerShow_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+        //确认
+        private void RunShowConfirmButton_Click(object sender, RoutedEventArgs e)
+        {
+            _mainWidget.ShowNotification(_mainWidget._res.ScriptContinue, NotificationControl.NotificationType.Info);
+            if (ConsFluoText.Text == null)
+            {
+                Dictionary<string, string> user_out = new();
+                user_out.Add("dddd", "212");
+                _mainWidget.ScriptSetInputAsync(user_out);
+            }
+            else
+            {
+                Dictionary<string, string> user_out = new();
+                user_out.Add("fluoMin", ConsFluoText.Text);
+                _mainWidget.ScriptSetInputAsync(user_out);
+
+            }
+
+            mainRunControl.Visibility = Visibility.Visible;
+            mainRunShow.Visibility = Visibility.Collapsed;
+        }
+        #endregion
+
+
     }
 }

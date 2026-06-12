@@ -1507,6 +1507,10 @@ namespace OctoFixFlow
         {
             TopSettingPopup.Show(4, "PCR_1", 1);
         }
+        private void FluoSettingBtn_Click(object sender, RoutedEventArgs e)
+        {
+            TopSettingPopup.Show(8, "Fluo_1", 1);
+        }
 
         private void AddHeatingOscillModule(int nowId, string nowPlate)//"P1" 
         {
@@ -2426,6 +2430,7 @@ namespace OctoFixFlow
             return config.PassageTopRadius; // 通道以上
         }
         #endregion
+
 
     }
 }

@@ -76,7 +76,7 @@ namespace OctoFixFlow
         public string WindowLoopEnd => IsEnglish ? Resource.Resource_en.WindowLoopEnd : Resource.Resource_zh.WindowLoopEnd;
         //步长  /Step Size
         public string WindowLoopStep => IsEnglish ? Resource.Resource_en.WindowLoopStep : Resource.Resource_zh.WindowLoopStep;
-        //不支持循环嵌套 Nested loops not supported
+        //不支持嵌套循环和条件判断 Nested loops and conditionals not supported
         public string WindowLoopTip => IsEnglish ? Resource.Resource_en.WindowLoopTip : Resource.Resource_zh.WindowLoopTip;
         //注释 /Annotation
         public string WindowActionAnno => IsEnglish ? Resource.Resource_en.WindowActionAnno : Resource.Resource_zh.WindowActionAnno;
@@ -89,6 +89,15 @@ namespace OctoFixFlow
         public string WindowConsumablesWarehouse => IsEnglish ? Resource.Resource_en.WindowConsumablesWarehouse : Resource.Resource_zh.WindowConsumablesWarehouse;
         public string WindowLoginCancel => IsEnglish ? Resource.Resource_en.WindowLoginCancel : Resource.Resource_zh.WindowLoginCancel;
         public string WindowLoginOK => IsEnglish ? Resource.Resource_en.WindowLoginOK : Resource.Resource_zh.WindowLoginOK;
+        //判断 If
+        public string WindowActionIf => IsEnglish ? Resource.Resource_en.WindowActionIf : Resource.Resource_zh.WindowActionIf;
+        //否则判断 elif
+        public string WindowActionElseIf => IsEnglish ? Resource.Resource_en.WindowActionElseIf : Resource.Resource_zh.WindowActionElseIf;
+        //否则 else
+        public string WindowActionElse => IsEnglish ? Resource.Resource_en.WindowActionElse : Resource.Resource_zh.WindowActionElse;
+        //结束判断 endIf
+        public string WindowActionEndIf => IsEnglish ? Resource.Resource_en.WindowActionEndIf : Resource.Resource_zh.WindowActionEndIf;
+
         //自动加载仪器已配置设备/Auto load preconfigured devices in the instrument
         public string WindowLoginCheck => IsEnglish ? Resource.Resource_en.WindowLoginCheck : Resource.Resource_zh.WindowLoginCheck;
         //记住用户名/Remember Username
@@ -352,10 +361,16 @@ namespace OctoFixFlow
         public string SettingManualPCROpen => IsEnglish ? Resource.Resource_en.SettingManualPCROpen : Resource.Resource_zh.SettingManualPCROpen;
         //关盖/Close Lid
         public string SettingManualPCRClose => IsEnglish ? Resource.Resource_en.SettingManualPCRClose : Resource.Resource_zh.SettingManualPCRClose;
+        //获取检测值/Get Value
+        public string SettingManualFluoGetValue => IsEnglish ? Resource.Resource_en.SettingManualFluoGetValue : Resource.Resource_zh.SettingManualFluoGetValue;
         //等待运行完成/Wait for Run Completion 
         public string SettingManualPCRWaitRun => IsEnglish ? Resource.Resource_en.SettingManualPCRWaitRun : Resource.Resource_zh.SettingManualPCRWaitRun;
         //脚本选择/Script Selection
         public string SettingManualPCRSelection => IsEnglish ? Resource.Resource_en.SettingManualPCRSelection : Resource.Resource_zh.SettingManualPCRSelection;
+        //荧光检测模块控制/Fluo‑Detect control
+        public string SettingManualFluoControl => IsEnglish ? Resource.Resource_en.SettingManualFluoControl : Resource.Resource_zh.SettingManualFluoControl;
+        //浓度均一化/Concentration homogenization
+        public string SettingManualFluoConcHomo => IsEnglish ? Resource.Resource_en.SettingManualFluoConcHomo : Resource.Resource_zh.SettingManualFluoConcHomo;
         public string SettingManualClose => IsEnglish ? Resource.Resource_en.SettingManualClose : Resource.Resource_zh.SettingManualClose;
         //变量名称/Variable Name
         public string SettingManualVariateScriptName => IsEnglish ? Resource.Resource_en.SettingManualVariateScriptName : Resource.Resource_zh.SettingManualVariateScriptName;
@@ -373,6 +388,27 @@ namespace OctoFixFlow
         public string SettingManualVariateDivide => IsEnglish ? Resource.Resource_en.SettingManualVariateDivide : Resource.Resource_zh.SettingManualVariateDivide;
         //变量值/Variable value
         public string SettingManualVariateScriptValue => IsEnglish ? Resource.Resource_en.SettingManualVariateScriptValue : Resource.Resource_zh.SettingManualVariateScriptValue;
+        //条件名称/ Condition Name
+        public string SettingManualIfScriptName => IsEnglish ? Resource.Resource_en.SettingManualIfScriptName : Resource.Resource_zh.SettingManualIfScriptName;
+        //执行动作/ Execute Action
+        public string SettingManualIfScriptStep => IsEnglish ? Resource.Resource_en.SettingManualIfScriptStep : Resource.Resource_zh.SettingManualIfScriptStep;
+        //大于 ＞
+        public string SettingManuaIfGreaterThan => IsEnglish ? Resource.Resource_en.SettingManuaIfGreaterThan : Resource.Resource_zh.SettingManuaIfGreaterThan;
+        //小于 ＜
+        public string SettingManuaIfLessThan => IsEnglish ? Resource.Resource_en.SettingManuaIfLessThan : Resource.Resource_zh.SettingManuaIfLessThan;
+        //等于 ＝
+        public string SettingManuaIfEquals => IsEnglish ? Resource.Resource_en.SettingManuaIfEquals : Resource.Resource_zh.SettingManuaIfEquals;
+        //不等于 ≠
+        public string SettingManuaIfNotEquals => IsEnglish ? Resource.Resource_en.SettingManuaIfNotEquals : Resource.Resource_zh.SettingManuaIfNotEquals;
+        //大于等于 ≥
+        public string SettingManuaIfGreaterThanorEqual => IsEnglish ? Resource.Resource_en.SettingManuaIfGreaterThanorEqual : Resource.Resource_zh.SettingManuaIfGreaterThanorEqual;
+        //小于等于 ≤
+        public string SettingManuaIfLessThanorEqual => IsEnglish ? Resource.Resource_en.SettingManuaIfLessThanorEqual : Resource.Resource_zh.SettingManuaIfLessThanorEqual;
+
+        //比较值/ Compare Value
+        public string SettingManualIfScriptValue => IsEnglish ? Resource.Resource_en.SettingManualIfScriptValue : Resource.Resource_zh.SettingManualIfScriptValue;
+        //条件参数未设置/ Condition parameters not set
+        public string ScriptStepIfMissing => IsEnglish ? Resource.Resource_en.ScriptStepIfMissing : Resource.Resource_zh.ScriptStepIfMissing;
         public string QuickTitile => IsEnglish ? Resource.Resource_en.QuickTitile : Resource.Resource_zh.QuickTitile;
         public string QuickSampleQty => IsEnglish ? Resource.Resource_en.QuickSampleQty : Resource.Resource_zh.QuickSampleQty;
         public string QuickTipPickPos => IsEnglish ? Resource.Resource_en.QuickTipPickPos : Resource.Resource_zh.QuickTipPickPos;
@@ -403,6 +439,8 @@ namespace OctoFixFlow
         public string SettingManualTemperatureControl => IsEnglish ? Resource.Resource_en.SettingManualTemperatureControl : Resource.Resource_zh.SettingManualTemperatureControl;
         //热循环模块  PCR Module
         public string SettingManualPCR => IsEnglish ? Resource.Resource_en.SettingManualPCR : Resource.Resource_zh.SettingManualPCR;
+        //荧光检测模块  Fluo‑Detect Module
+        public string SettingManualFluo => IsEnglish ? Resource.Resource_en.SettingManualFluo : Resource.Resource_zh.SettingManualFluo;
         //是否启用抓手？  Enable gripper?
         public string SettingManualEnableGripper => IsEnglish ? Resource.Resource_en.SettingManualEnableGripper : Resource.Resource_zh.SettingManualEnableGripper;
         //是否启用PCR？  Enable Thermocycler Module??
@@ -497,6 +535,11 @@ namespace OctoFixFlow
         public string StepDetailWellPosition => IsEnglish ? Resource.Resource_en.StepDetailWellPosition : Resource.Resource_zh.StepDetailWellPosition;
         // 体积（“Volume(ul):”/“体积(ul)：”）
         public string StepDetailVolume => IsEnglish ? Resource.Resource_en.StepDetailVolume : Resource.Resource_zh.StepDetailVolume;
+        // 原始体积（“Original volume(ul):”/“原始体积(ul)：”）
+        public string StepDetailOriginalVolume => IsEnglish ? Resource.Resource_en.StepDetailOriginalVolume : Resource.Resource_zh.StepDetailOriginalVolume;
+        // 最终体积（“Final volume(ul):”/“最终体积(ul)：”）
+        public string StepDetailFinalVolume => IsEnglish ? Resource.Resource_en.StepDetailFinalVolume : Resource.Resource_zh.StepDetailFinalVolume;
+
         // 推出体积（“PushOutVolume(ul):”/“推出体积(ul)：”）
         public string StepDetailPushVolume => IsEnglish ? Resource.Resource_en.StepDetailPushVolume : Resource.Resource_zh.StepDetailPushVolume;
         // 吸入体积（“InhalationVolume(ul):”/“吸入体积(ul)：”）
@@ -539,6 +582,23 @@ namespace OctoFixFlow
         public string StepDetailTempCtrlAction => IsEnglish ? Resource.Resource_en.StepDetailTempCtrlAction : Resource.Resource_zh.StepDetailTempCtrlAction;
         // （“PCR动作”/“PCR procedure”）
         public string StepDetailPCRprocedure => IsEnglish ? Resource.Resource_en.StepDetailPCRprocedure : Resource.Resource_zh.StepDetailPCRprocedure;
+        // （“荧光检测动作”/“Fluo procedure”）
+        // 取头位置（“TipOn Position:”/“取头位置：”）
+        public string StepDetailFluoTipOnPosition => IsEnglish ? Resource.Resource_en.StepDetailFluoTipOnPosition : Resource.Resource_zh.StepDetailFluoTipOnPosition;
+        // 稀释液位置（“Diluent Position:”/“稀释液位置：”）
+        public string StepDetailFluoDiluentPosition => IsEnglish ? Resource.Resource_en.StepDetailFluoDiluentPosition : Resource.Resource_zh.StepDetailFluoDiluentPosition;
+        // 产物位置（“Product Position:”/“产物位置：”）
+        public string StepDetailFluoProductPosition => IsEnglish ? Resource.Resource_en.StepDetailFluoProductPosition : Resource.Resource_zh.StepDetailFluoProductPosition;
+
+        public string StepDetailFluoprocedure => IsEnglish ? Resource.Resource_en.StepDetailFluoprocedure : Resource.Resource_zh.StepDetailFluoprocedure;
+        // （“孔位”/“Hole position”）
+        public string StepDetailSelectWells => IsEnglish ? Resource.Resource_en.StepDetailSelectWells : Resource.Resource_zh.StepDetailSelectWells;
+        // （“选择”/“Select”）
+        public string StepDetailSelect => IsEnglish ? Resource.Resource_en.StepDetailSelect : Resource.Resource_zh.StepDetailSelect;
+        // （“已选孔位”/“Selected holes”）
+        public string StepDetailSelectdWells => IsEnglish ? Resource.Resource_en.StepDetailSelectdWells : Resource.Resource_zh.StepDetailSelectdWells;
+        // （“支持：点击单个孔位、点击行列号全选、按住鼠标拖动框选”/“Support: Click single well, select entire row/column by header, drag mouse to box select”）
+        public string StepDetailSelectdWellsWindowTitle => IsEnglish ? Resource.Resource_en.StepDetailSelectdWellsWindowTitle : Resource.Resource_zh.StepDetailSelectdWellsWindowTitle;
         #endregion
 
         #region 步骤详情 - 提示/通知类
@@ -618,6 +678,8 @@ namespace OctoFixFlow
         public string ScriptStepAnnotationMissing => IsEnglish ? Resource.Resource_en.ScriptStepAnnotationMissing : Resource.Resource_zh.ScriptStepAnnotationMissing;
         // 变量名称未设置(Variate name not set）
         public string ScriptStepVariateMissing => IsEnglish ? Resource.Resource_en.ScriptStepVariateMissing : Resource.Resource_zh.ScriptStepVariateMissing;
+        // 荧光检测参数未配置(Fluo parameters not set）
+        public string ScriptStepFluoMissing => IsEnglish ? Resource.Resource_en.ScriptStepFluoMissing : Resource.Resource_zh.ScriptStepFluoMissing;
         // 移液前必须安装枪头 (Tip required before operation)
         public string ScriptTipRequired => IsEnglish ? Resource.Resource_en.ScriptTipRequired : Resource.Resource_zh.ScriptTipRequired;
 

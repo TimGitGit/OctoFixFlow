@@ -13,7 +13,7 @@
         <!--  青云青  -->
         <!-- <SolidColorBrush x:Key="PrimaryColor" Color="#00B7D4" />-->
         <!--  墨析深蓝  -->
-        <Color x:Key="PrimaryColorValue">#00466E</Color>
+        <Color x:Key="PrimaryColorValue">#048B46</Color>
         <SolidColorBrush x:Key="PrimaryColor" Color="{StaticResource PrimaryColorValue}" />
 
         <SolidColorBrush x:Key="SecondaryColor" Color="#FFFFFF" />

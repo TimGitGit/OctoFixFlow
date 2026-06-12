@@ -28,6 +28,9 @@
     <Compile Update="SettingPopupControl.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="WellSelectionWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Update="Resource\Resource_en.resx">
@@ -57,6 +60,9 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Update="SettingPopupControl.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="WellSelectionWindow.xaml">
       <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
